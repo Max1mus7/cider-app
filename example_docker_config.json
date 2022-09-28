@@ -1,0 +1,191 @@
+{
+    "title": "CIder 0.1 Example Docker Config",
+    "operating_system": "Windows",
+    "backend": "Docker",
+    "image": "Python 3.10",
+    "metadata": {
+        "o_VeR43C_vIeW": "This file shows what configuration settings may be used to set up a group of docker pipelines.",
+        "Note_1": "Backend can be changed at a pipeline level. If a pipeline backend is set to the same value as the top-level backend, no ill behavior will occur, and the same backend will be used regardless.",
+        "Note_2": "Pipelines must be defined using an array of strings ahead of time, or the app will not be able to read them.",
+        "Note_3": "Tags will be able to hold both Key/Value pairs as well as a list of tags. The key associated with this list does not need to be named according to a standard.",
+        "Note_4": "The Actions tag may be omitted if Pipelines exist. One or the other must be present for the app to work.",
+        "Note_5": "Condition flags are extrememly limited right now, but more will be added in the future.",
+        "Note_6": "Actions can all use the same environment, or be separated into different pipelines or top-level actions in order to use unique environments."
+    },
+    "pipelines": [
+        "Test_Ruby",
+        "Test_Rust", 
+        "Test_Python",
+        "Deploy",
+        "Build",
+        "System_Test",
+        "All_Tests",
+        "Full_Logging"
+    ],
+    "actions": ["Test_Scripts"],
+    "Test_Scripts": {
+        "Backend": "Bash",
+        "Manual": {
+            "Step_1": "sudo /test_script.sh >> log1.txt",
+            "Step_2": "sudo /test_script2.sh >> log2.txt"
+        },
+        "Retries": 0,
+        "Conditions": {
+            "WATCH": false,
+            "TEST_DIRECTORY": "./tests/scripts"
+        },
+        "Allowed_Failure": false,
+        "Output_Directory": "./tests/scripts/logs"
+    },
+    "Test_Ruby": {
+        "Name": "This name will be listed separately.",
+        "Metadata": {
+            "Note_1": "Actions are executed in the order which they are defined.",
+            "Note_2": "If using Docker, the environment should already be set up before actions are run.",
+            "Note_3": "Allowed_Failure will default to false."
+        },
+        "Backend": "Docker",
+        "Image": "Ruby 3.2",
+        "Actions": ["Setup_Environment", "Verify_Environment", "Run_Tests", "Send_Results"],
+        "Setup_Environment": {
+            "Metadata": {
+                "Note_1": "This simply proves that metadata can be included in Actions."
+            },
+            "Manual": {
+                "Step_1": "bundle install"
+            },
+            "Conditions": {
+                "SOURCE_DIRECTORY": "./src/ruby"
+            },
+            "Retries": 0,
+            "Tags": {
+                "Tag_List": ["Ruby", "Environment Setup", "Setup", "Continuous Integration"]
+            },
+            "Output_Directory": "./tests/ruby"
+        },
+        "Verify_Environment": {
+            "Manual": {
+                "Step_1": "ruby lib.rs"
+            },
+            "Conditions": {
+                "SOURCE_DIRECTORY": "./src/ruby"
+            },
+            "Retries": 0,
+            "Tags": {
+                "Tag_List": ["Ruby", "Environment Setup", "Setup", "Continuous Integration"]
+            },
+            "Output_Directory": "./tests/ruby"
+        },
+        "Run_Tests": {
+            "Manual": {
+                "Step_1": "rake test"
+            },
+            "Conditions": {
+                "SOURCE_DIRECTORY": "./src/ruby"
+            },
+            "Tags": {
+                "Tag_List": ["Ruby", "Testing", "Logging", "Continuous Integration"]
+            },
+            "Output_Directory": "./tests/ruby",
+            "Allowed_Failure": true,
+            "Retries": 1
+        },
+        "Send_Results": {
+            "Manual": {
+                "Step_1": "ruby report.rs"
+            },
+            "Conditions": {
+                "SOURCE_DIRECTORY": "./src/ruby"
+            },
+            "Tags": {
+                "Tag_List": ["Ruby", "Consolidation", "Reporting", "Continuous Integration"]
+            },
+            "Output_Directory": "./tests/ruby/logs",
+            "Retries": 0
+        }
+    },
+    "Test_Rust": {
+        "Metadata": {
+            "Note_1": "If using the same backend as specified at the top-level, the Backend tag is optional."
+        },
+        "Image": "Rust 1.63.0",
+        "Actions": ["Some_Action"],
+        "Some_Action": {
+            "Manual": {
+                "Step_1": "echo 'hello world'",
+                "Step_2": "cargo run"
+            }
+        },
+        "Source_Directory": "./src/rust",
+        "Output_Directory": "./tests/rust/logs"
+    },
+    "Test_Python": {
+        "Actions": ["Some_Other_Action"],
+        "Some_Other_Action": {
+            "Step_1": "python helloworld.py >> helloworld.txt"
+        }
+    },
+    "Deploy": {
+        "Backend": "Docker",
+        "Image":"Python 3.10",
+        "Requires": ["Build"],
+        "Source_Directory": "./dist",
+        "Actions": ["Deploy", "Confirm_Deployment"],
+        "Deploy": {
+            "Manual": {
+                "Step_1": "pip install twine",
+                "Step_2": "twine upload dist/*"
+            }
+        },
+        "Confirm_Deployment": {
+            "Manual": {
+                "Step_1": "pip install requests",
+                "Step_2": "python ../tests/python/confirm_deployment.py"
+            }
+        }
+
+    },
+    "Build": {
+        "Actions": ["Build_Distributable"],
+        "Build_Distributable": {
+            "Manual": {
+                "Step_1": "pip install build ",
+                "Step_2": "python -m build",
+                "Step_3": "python setup.py bdist_wheel"
+            }
+        }
+    },
+    "System_Test": {
+        "Actions": ["Test_System"],
+        "Test_System": {
+            "Manual": {
+                "Step_1": "pip install pytest",
+                "Step_2": "pytest ./tests/python/system_tests.py"
+            }
+        }
+    },
+    "All_Tests": {
+        "Actions": ["Test_Everything"],
+        "Test_Everything": {
+            "Manual": {
+                "Step_1": "pip install pytest",
+                "Step_2": "pytest ./tests/python"
+            }
+        }
+    },
+    "Full_Logging": {
+        "Actions": ["Consolidate_Reports"],
+        "Consolidate_Reports": {
+            "Image": "Ruby 3.2",
+            "Manual": {
+                "Step_1": "ruby report.rs -d ./tests/*/logs"
+            }
+        }
+    },
+    "output_directory": "./tests/logs",
+    "source_directory": "./src",
+    "tags": {
+        "Key": "Value",
+        "Tag_List": ["tag1", "tag2", "tag3"]
+    }
+}
