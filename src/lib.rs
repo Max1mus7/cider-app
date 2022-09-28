@@ -351,6 +351,90 @@ pub mod config {
             self.manual = new_manual;
         }
     }
+
+    #[derive(Debug)]
+    #[derive(PartialEq)]
+    pub struct Pipeline {
+        shared_config: ShareableConfiguration,
+        pipeline_config: PipelineConfig
+    }
+    impl Pipeline {
+        pub fn new(shared_config: ShareableConfiguration, pipeline_config: PipelineConfig) -> Pipeline {
+            Pipeline { shared_config , pipeline_config }
+        }
+
+        pub fn get_shared_config(&self) -> &ShareableConfiguration {
+            &self.shared_config
+        }
+        pub fn set_shared_config(&mut self, new_shared_config: ShareableConfiguration)-> () {
+            self.shared_config = new_shared_config;
+        }
+
+        pub fn get_pipeline_config(&self) -> &PipelineConfig {
+            &self.pipeline_config
+        }
+        pub fn set_action_config(&mut self, new_pipeline_config: PipelineConfig) -> () {
+            self.pipeline_config = new_pipeline_config;
+        }
+    }
+
+    #[derive(Debug)]
+    #[derive(PartialEq)]
+    pub struct PipelineConfig { 
+        //Not required at runtime, can be None
+        //default = None
+        conditions: Option<Vec<Condition>>,
+
+        //A pipeline must contain one or more actions, and those actions must be defined
+        //default = no default, required argument.
+        action_defs: Vec<String>,
+
+        //A pipeline must contain one or more actions
+        //default = no default, required argument
+        actions: Vec<Action>,
+
+        //allows a Pipeline object to keep track of whether or not it has run
+        //not able to be set on new objects
+        //default = false
+        has_run: bool,
+
+        //A pipeline should be able to wait until other pipelines have executed before it attempts to run
+        //not required at runtime
+        //default = empty Vector
+        requires: Vec<String>
+
+    }
+    impl PipelineConfig {
+        fn new(conditions: Option<Vec<Condition>>, action_defs: Vec<String>, actions: Vec<Action>, requires: Option<Vec<String>>) -> Self {
+            let has_run = false;
+            let requires = match requires {
+                Some(requires) => {
+                    requires
+                }
+                None => {
+                    vec![]
+                }  
+            };
+            Self{ conditions, action_defs, actions, has_run, requires }
+        }
+        fn get_conditions(&self) -> Result<&Vec<Condition>, &'static str> {
+            match &self.conditions {
+                Some(conditions) => {
+                    info!("Conditions successfully retrieved: {:#?}", &conditions);
+                    Ok(conditions)
+                },
+                None => {
+                    let res_str = "No conditions found or no conditions configured.";
+                    warn!("{}", res_str);
+                    Err(res_str)
+                }
+            }
+        }
+        fn set_conditions(&mut self, new_conditions: Vec<Condition>) -> () {
+            info!("New conditions set: {:#?}", new_conditions);
+            self.conditions = Some(new_conditions);
+        }
+    }
     
     //Holds information with conditions that will resolve to either true or false
     #[derive(Debug)]
@@ -406,37 +490,7 @@ pub mod config {
         }
     }
 
-    #[derive(Debug)]
-    #[derive(PartialEq)]
-    pub struct Pipeline {
-        shared_config: ShareableConfiguration,
-        pipeline_config: PipelineConfig
-    }
 
-    #[derive(Debug)]
-    #[derive(PartialEq)]
-    struct PipelineConfig { 
-        //Not required at runtime, can be None
-        //default = None
-        conditions: Option<Vec<Condition>>,
-
-        //A pipeline must contain one or more actions, and those actions must be defined
-        //default = no default, required argument.
-        action_defs: Vec<String>,
-
-        //A pipeline must contain one or more actions
-        //default = no default, required argument
-        actions: Vec<Action>,
-
-        //allows a Pipeline object to keep track of whether or not it has run
-        //default = false
-        has_run: bool,
-
-        //A pipeline should be able to wait until other pipelines have executed before it attempts to run
-        //default = empty Vector
-        requires: Vec<String>
-
-    }
 
 }
 
