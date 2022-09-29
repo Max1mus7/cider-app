@@ -1,9 +1,8 @@
 pub mod config {
     use std::collections::HashMap;
-    use log::{info,warn, error};
-    use super::parsing::Parser;
+    use log::{info,warn};
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     #[derive(PartialEq)]
     pub struct ShareableConfiguration {
         //metadata not required at runtime
@@ -162,21 +161,20 @@ pub mod config {
             self.output = new_output;
         }
 
-        pub fn get_source(&self) -> Result<&str, &'static str> {
+        pub fn get_source(&self) -> &str {
             info!("Source directory successfully retrieved: {:?}", &self.source);
-            Ok(&self.source)
+            &self.source
         }
         pub fn set_source(&mut self, new_source: String) -> () {
             info!("New source directory set: {}", new_source);
             self.backend = new_source;
         }
     }
-
     #[derive(Debug)]
     #[derive(PartialEq)]
     pub struct TopLevelConfiguration {
         //ShareableConfiguration data required to perform top-level tasks
-        s_config: ShareableConfiguration,
+        pub s_config: ShareableConfiguration,
 
         //pipeline definitions required at runtime, even if it is an empty Vector
         //defaulted to an empty vector
@@ -196,9 +194,18 @@ pub mod config {
     }
     impl TopLevelConfiguration {
 
-        // pub fn new(filename: String) -> Self {
-        //     Parser::parse_new(filename)
-        // }
+        pub fn new(s_config: ShareableConfiguration, pipeline_defs: Vec<String>, pipelines: Vec<Pipeline>, action_defs: Vec<String>, actions: Vec<Action>) -> Self {
+            Self { s_config, pipeline_defs, pipelines, action_defs, actions }
+        }
+
+        pub fn get_shared_config(&self) -> &ShareableConfiguration {
+            info!("Shareable configuration successfully retrieved from top-level configuration: {:#?}", &self.s_config);
+            &&self.s_config
+        }
+        pub fn set_shared_config(&mut self, new_s_config: ShareableConfiguration) -> () {
+            info!("New shareable configuration set: {:#?}", new_s_config);
+            self.s_config = new_s_config;
+        }
 
         pub fn get_pipeline_defs(&self) -> &Vec<String> {
             info!("Pipelines successfully retrieved from configuration: {:#?}", &self.pipeline_defs);
@@ -284,7 +291,7 @@ pub mod config {
         manual: Vec<Step>
     }
     impl ActionConfig {
-        fn new(conditions: Option<Vec<Condition>>, retries: Option<i8>, allowed_failure: Option<bool>, manual: Vec<Step>) -> Self {
+        pub fn new(conditions: Option<Vec<Condition>>, retries: Option<i8>, allowed_failure: Option<bool>, manual: Vec<Step>) -> Self {
             let retries = match retries {
                 Some(retries) => {
                     retries
@@ -306,7 +313,7 @@ pub mod config {
             ActionConfig { conditions, retries, allowed_failure, manual }
         }
 
-        fn get_conditions(&self) -> Result<&Vec<Condition>, &'static str> {
+        fn _get_conditions(&self) -> Result<&Vec<Condition>, &'static str> {
             match &self.conditions {
                 Some(conditions) => {
                     info!("Conditions successfully retrieved: {:#?}", &conditions);
@@ -319,34 +326,34 @@ pub mod config {
                 }
             }
         }
-        fn set_conditions(&mut self, new_conditions: Vec<Condition>) -> () {
+        fn _set_conditions(&mut self, new_conditions: Vec<Condition>) -> () {
             info!("New conditions set: {:#?}", new_conditions);
             self.conditions = Some(new_conditions);
         }
 
-        fn get_retries(&self) -> &i8 {
+        fn _get_retries(&self) -> &i8 {
             info!("Retry count successfully acquired: {} ", &self.retries);
             &self.retries
         }
-        fn set_retries(&mut self, new_retries: i8) -> () {
+        fn _set_retries(&mut self, new_retries: i8) -> () {
             info!("New retry count set: {:?}", &new_retries);
             self.retries = new_retries
         }
 
-        fn get_allowed_failure(&self) -> &bool {
+        fn _get_allowed_failure(&self) -> &bool {
             info!("Failure allowance successfully acquired: {} ", &self.allowed_failure);
             &self.allowed_failure
         }
-        fn set_allowed_failure(&mut self, new_allowed_failure: bool) -> () {
+        fn _set_allowed_failure(&mut self, new_allowed_failure: bool) -> () {
             info!("New failure allowance set: {:?}", &new_allowed_failure);
             self.allowed_failure = new_allowed_failure;
         }
 
-        fn get_manual(&self) -> &Vec<Step> {
+        fn _get_manual(&self) -> &Vec<Step> {
             info!("Manual successfully retrieved: {:#?}", &self.manual);
             &self.manual
         }
-        fn set_manual(&mut self, new_manual: Vec<Step>) -> () {
+        fn _set_manual(&mut self, new_manual: Vec<Step>) -> () {
             info!("New manual set: {:#?}", new_manual);
             self.manual = new_manual;
         }
@@ -405,7 +412,7 @@ pub mod config {
 
     }
     impl PipelineConfig {
-        fn new(conditions: Option<Vec<Condition>>, action_defs: Vec<String>, actions: Vec<Action>, requires: Option<Vec<String>>) -> Self {
+        pub fn new(conditions: Option<Vec<Condition>>, action_defs: Vec<String>, actions: Vec<Action>, requires: Option<Vec<String>>) -> Self {
             let has_run = false;
             let requires = match requires {
                 Some(requires) => {
@@ -417,7 +424,7 @@ pub mod config {
             };
             Self{ conditions, action_defs, actions, has_run, requires }
         }
-        fn get_conditions(&self) -> Result<&Vec<Condition>, &'static str> {
+        fn _get_conditions(&self) -> Result<&Vec<Condition>, &'static str> {
             match &self.conditions {
                 Some(conditions) => {
                     info!("Conditions successfully retrieved: {:#?}", &conditions);
@@ -430,7 +437,7 @@ pub mod config {
                 }
             }
         }
-        fn set_conditions(&mut self, new_conditions: Vec<Condition>) -> () {
+        fn _set_conditions(&mut self, new_conditions: Vec<Condition>) -> () {
             info!("New conditions set: {:#?}", new_conditions);
             self.conditions = Some(new_conditions);
         }
@@ -448,19 +455,19 @@ pub mod config {
         condition: String
     }
     impl Condition {
-        fn new(name: String, condition: String) -> Condition {
+        pub fn new(name: String, condition: String) -> Condition {
             Condition { name, condition }
         }
 
-        fn get_name(&self) -> &str {
+        pub fn get_name(&self) -> &str {
             &self.name
         }
 
-        fn get_condition(&self) -> &str {
+        pub fn get_condition(&self) -> &str {
             &self.condition
         }
 
-        fn update_condition(&mut self, name: String, condition: String) -> () {
+        pub fn update_condition(&mut self, name: String, condition: String) -> () {
             self.name = name;
             self.condition = condition;
         }
@@ -470,93 +477,415 @@ pub mod config {
     //Holds hashmap information with data necessary to run scripts
     #[derive(Debug)]
     #[derive(PartialEq)]
-    struct Step {
+    pub struct Step {
         name: String,
         script: String
     }
     impl Step {
-        fn new(name: String, script: String) -> Self {
+        pub fn new(name: String, script: String) -> Self {
             Self {name, script}
         }
-        fn get_name(&self) -> &str {
+        pub fn get_name(&self) -> &str {
             &self.name
         }
-        fn get_script(&self) -> &str {
+        pub fn get_script(&self) -> &str {
             &self.script
         }
-        fn update_script(&mut self, name: String, script: String) -> () {
+        pub fn update_script(&mut self, name: String, script: String) -> () {
             self.name = name;
             self.script = script;
         }
     }
 
-
-
 }
 
 pub mod parsing {
     use std::{fs, collections::HashMap};
-    use std::error::Error;
     use json::JsonValue;
     use log::{info, warn, error};
-
-    use super::config::TopLevelConfiguration;
+    use std::env::current_dir;
+    use relative_path::RelativePath;
+    use super::config::*;
 
     pub struct Parser {
-
     }
 
     impl Parser {
 
-        fn parse_json_map(json: JsonValue) -> Option<HashMap<String, String>>{
-            println!("{:#?}", json);
+        
+
+        fn parse_json_map(json: &JsonValue) -> HashMap<String, String>{
+            // println!("{:#?}", json);
             let mut map = HashMap::new();
             for key_value in json.entries() {
                 map.insert(key_value.0.to_string(), key_value.1.to_string());
             }
-            println!("{:#?}", json);
+            // println!("{:#?}", json);
             if map.is_empty() {
                 warn!("No mappable values found in {:#?}", json);
-                return None;
+                return map;
             }
-            Some(map)
+            map
         } 
 
-        fn parse_json_vector(json: JsonValue) -> Option<Vec<String>> {
-            println!("{:#?}", json);
+        fn parse_json_to_conditions(json: &JsonValue) -> Vec<Condition> {
+            info!("{:#?}", json);
+            let mut conditions = vec![];
+            for key_value in json.entries() {
+                conditions.push(Condition::new(key_value.0.to_string(), key_value.1.to_string()));
+            }
+            conditions
+        }
+
+        fn parse_json_to_steps( json: &JsonValue) -> Vec<Step> {
+            info!("{:#?}", json);
+            let mut steps = vec![];
+            for key_value in json.entries() {
+                steps.push(Step::new(key_value.0.to_string(), key_value.1.to_string()));
+            }
+            steps
+        }
+
+        fn parse_json_vector(json: &JsonValue) -> Vec<String> {
+            // println!("{:#?}", json);
             let mut vec = vec![];
             for value in json.members() {
                 vec.push(value.to_string())
             }
-            println!("{:#?}", json);
+            // println!("{:#?}", json);
             if vec.is_empty() {
                 warn!("No mappable values found in {:#?}", json);
-                return None;
+                return vec;
             }
-            Some(vec)
+            vec
         }
 
-        // pub fn parse_overwrite(mut config: Configuration, filename: String) -> Result<Configuration, Box<dyn Error>> {
-        //     let contents = fs::read_to_string(filename).unwrap_or_else(|err| {
-        //         eprintln!("{}", err);
-        //         error!("There was an error locating your configuration file: {}", err);
-        //         panic!("{}",err.to_string());
-        //     });
-        //     let parsed = json::parse(&contents).unwrap_or_else(|err| {
-        //         eprintln!();
-        //         error!("There was an error parsing your configuration file: {}", err);
-        //         panic!("{}", err.to_string());
-        //     });
-        //     info!("'backend' tag from example_docker_file.json: {}", &parsed["backend"]);
-        //     config.set_metadata(Self::parse_json_map(parsed["metadata"].clone()).unwrap());
-        //     config.set_title(parsed["title"].clone().to_string());
-        //     config.set_tags(Self::parse_json_map(parsed["tags"].clone()).unwrap());
-        //     config.set_language(parsed["language"].clone().to_string());
-        //     config.set_image(parsed["image"].clone().to_string());
-        //     config.set_backend(parsed["backend"].clone().to_string());
-        //     config.set_actions(Self::parse_json_vector(parsed["actions"].clone()).unwrap());
-        //     config.set_output(parsed["output_directory"].clone().to_string());
-        //     config.set_source(parsed["source_directory"].clone().to_string());
+        fn parse_action_defs(shared_config: &ShareableConfiguration, action_defs: &Vec<String>, data: &JsonValue) -> Vec<Action> {
+            let mut actions = vec![];
+            for str in action_defs {
+                actions.push(Self::parse_action(shared_config, &data[str], str));
+            }
+            actions
+        }
+
+        fn parse_action(shared_config: &ShareableConfiguration, json: &JsonValue, name: &str) -> Action {
+            let root = current_dir().unwrap();
+            if json.is_null(){
+                panic!("Could not find action defined with appropriate tag: {}", name)
+            }
+            let backend = {
+                if json["backend"].is_null() {
+                    shared_config.get_backend().to_string()
+                }
+                else {
+                    json["backend"].to_string()
+                }
+            };
+            
+            let new_shared_config = ShareableConfiguration::new(
+                Some(Self::parse_json_map(&json["metadata"])),
+                Some(name.to_string()),
+                Some(Self::parse_json_map(&json["tags"])),
+                { 
+                    if json["language"].is_null() {
+                        shared_config.get_language().to_string()
+                    }
+                    else {
+                        json["language"].to_string()
+                    }
+                },
+                {
+                    if !backend.to_lowercase().eq("docker") {
+                        warn!("Image cannot be set if docker is not the backend.");
+                        None
+                    }
+                    else {
+                        if json["image"].is_null() {
+                            Some(shared_config.get_image().unwrap().to_string())
+                        }
+                        else {
+                            Some(json["image"].to_string())
+                        }
+                    }
+                },
+                backend,
+                { 
+                    if json["output_directory"].is_null() {
+                        shared_config.get_output().to_string()
+                    }
+                    else {
+                        RelativePath::new(&json["output_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
+                    }
+                },
+                { 
+                    if json["source_directory"].is_null() {
+                        shared_config.get_source().to_string()
+                    }
+                    else {
+                        RelativePath::new(&json["source_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
+                    }
+                },
+            );
+
+            let action_config = ActionConfig::new(
+                {
+                    let conditions = Self::parse_json_to_conditions(&json["conditions"]);
+                    if conditions.is_empty() {
+                        None
+                    }
+                    else {
+                        Some(conditions)
+                    }
+                },
+                {
+                    if json["retries"].is_null() {
+                        Some(0)
+                    }
+                    else {
+                        Some(json["retries"].as_i8().unwrap_or_else(|| {
+                            error!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
+                            panic!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
+                        }))
+                    }
+                },
+                {
+                    if json["allowed_failure"].is_null() {
+                        Some(false)
+                    }
+                    else {
+                        Some(json["allowed_failure"].as_bool().unwrap_or_else(|| {
+                            error!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
+                            panic!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
+                        }))
+                    }
+                },
+                {
+                    let manual = Self::parse_json_to_steps(&json["manual"]);
+                    if manual.is_empty() {
+                        error!("Actions require at least one step in their manual. Error occured in Action: {}", name);
+                        panic!("Actions require at least one step in their manual. Error occured in Action: {}", name);
+                    }
+                    manual
+                }
+            );
+            Action::new( new_shared_config, action_config)
+
+        }
+
+        fn parse_pipeline_defs(shared_config: &ShareableConfiguration, json: &JsonValue, pipeline_defs: &Vec<String>) -> Vec<Pipeline> {
+            let mut pipelines = vec![];
+            for str in pipeline_defs {
+                pipelines.push(Self::parse_pipeline(shared_config, &json[str], str));
+            }
+            pipelines
+        }
+
+        fn parse_pipeline(shared_config: &ShareableConfiguration, json: &JsonValue, name: &str) -> Pipeline {
+            let root = current_dir().unwrap();
+            if json.is_null() {
+                panic!("No pipeline found with the name: {}", name);
+            }
+            let backend = {
+                if json["backend"].is_null() {
+                    shared_config.get_backend().to_string()
+                }
+                else {
+                    json["backend"].to_string()
+                }
+            };
+            
+            let new_shared_config = ShareableConfiguration::new(
+                Some(Self::parse_json_map(&json["metadata"])),
+                Some(name.to_string()),
+                Some(Self::parse_json_map(&json["tags"])),
+                { 
+                    if json["language"].is_null() {
+                        shared_config.get_language().to_string()
+                    }
+                    else {
+                        json["language"].to_string()
+                    }
+                },
+                {
+                    if !backend.to_lowercase().eq("docker") {
+                        warn!("Image cannot be set if docker is not the backend.");
+                        None
+                    }
+                    else {
+                        if json["image"].is_null() {
+                            Some(shared_config.get_image().unwrap().to_string())
+                        }
+                        else {
+                            Some(json["image"].to_string())
+                        }
+                    }
+                },
+                backend,
+                { 
+                    if json["output_directory"].is_null() {
+                        shared_config.get_output().to_string()
+                    }
+                    else {
+                        RelativePath::new(&json["output_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
+                    }
+                },
+                { 
+                    if json["source_directory"].is_null() {
+                        shared_config.get_source().to_string()
+                    }
+                    else {
+                        RelativePath::new(&json["source_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
+                    }
+                },
+            );
+
+            let pipeline_config = PipelineConfig::new(
+                {
+                    let conditions = Self::parse_json_to_conditions(&json["conditions"]);
+                    if conditions.is_empty() {
+                        None
+                    }
+                    else {
+                        Some(conditions)
+                    }
+                },
+                { 
+                    if json["actions"].is_null() {
+                        panic!("No list of action definitions found!");
+                    }
+                    else {
+                        Self::parse_json_vector(&json["actions"])
+                    }
+                },
+                Self::parse_action_defs(&new_shared_config, &Self::parse_json_vector(&json["actions"]), json),
+                { 
+                    if json["requires"].is_null() {
+                        None
+                    }
+                    else {
+                        Some(Self::parse_json_vector(&json["requires"]))
+                    }
+                }
+            );
+            Pipeline::new( new_shared_config, pipeline_config ) 
+        }
+
+        fn parse_shared_config(json: &JsonValue) -> ShareableConfiguration {
+            let root = current_dir().unwrap();
+            let backend = {
+                if json["backend"].is_null() {
+                    "bash".to_string()
+                }
+                else {
+                    json["backend"].to_string()
+                }
+            };
+            
+            let new_shared_config = ShareableConfiguration::new(
+                Some(Self::parse_json_map(&json["metadata"])),
+                Some(json["title"].to_string()),
+                Some(Self::parse_json_map(&json["tags"])),
+                { 
+                    if json["language"].is_null() {
+                        "Python".to_string()
+                    }
+                    else {
+                        json["language"].to_string()
+                    }
+                },
+                {
+                    if !backend.to_lowercase().eq("docker") {
+                        warn!("Image cannot be set if docker is not the backend.");
+                        None
+                    }
+                    else {
+                        if json["image"].is_null() {
+                            None
+                        }
+                        else {
+                            Some(json["image"].to_string())
+                        }
+                    }
+                },
+                backend,
+                { 
+                    if json["output_directory"].is_null() {
+                        RelativePath::new("./dist/cider/").to_path(&root).to_str().unwrap().to_string()
+
+                    }
+                    else {
+                        RelativePath::new(&json["output_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
+
+                    }
+                },
+                { 
+                    if json["source_directory"].is_null() {
+                        RelativePath::new("./src").to_path(&root).to_str().unwrap().to_string()
+                    }
+                    else {
+                        RelativePath::new(&json["source_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
+                    }
+                },
+            );
+            new_shared_config
+        }
+
+        pub fn new_top_level(filename: String) -> TopLevelConfiguration {
+            let file_contents = fs::read_to_string(filename).unwrap_or_else(|err| {
+                eprintln!("{}", err);
+                error!("There was an error locating your configuration file: {}", err);
+                panic!("{}",err.to_string());
+            });
+            let parsed_data = json::parse(&file_contents).unwrap_or_else(|err| {
+                eprintln!();
+                error!("There was an error parsing your configuration file: {}", err);
+                panic!("{}", err.to_string());
+            });
+            let s_config = Self::parse_shared_config(&parsed_data);
+            let pipeline_defs = {
+                if (&parsed_data["pipelines"]).is_null() {
+                    vec![]
+                }
+                else {
+                    Self::parse_json_vector(&parsed_data["pipelines"])
+                }
+            };
+            let pipelines = Self::parse_pipeline_defs(&s_config, &parsed_data, &pipeline_defs);
+            let action_defs = {
+                if (&parsed_data["actions"]).is_null() {
+                    vec![]
+                }
+                else {
+                    Self::parse_json_vector(&parsed_data["actions"])
+                }
+            };
+            let actions = Self::parse_action_defs(&s_config, &action_defs, &parsed_data);
+            TopLevelConfiguration::new(s_config, pipeline_defs, pipelines, action_defs, actions)
+        }
+
+
+        // pub fn overwrite_top_level(mut config: TopLevelConfiguration, filename: String) -> Result<TopLevelConfiguration, Box<dyn Error>> {
+        // let file_contents = fs::read_to_string(filename).unwrap_or_else(|err| {
+        //     eprintln!("{}", err);
+        //     error!("There was an error locating your configuration file: {}", err);
+        //     panic!("{}",err.to_string());
+        // });
+        // let parsed_data = json::parse(&file_contents).unwrap_or_else(|err| {
+        //     eprintln!();
+        //     error!("There was an error parsing your configuration file: {}", err);
+        //     panic!("{}", err.to_string());
+        // });
+        //     info!("'backend' tag from example_docker_file.json: {}", &parsed_data["backend"]);
+        //     config.s_config.set_metadata(Self::parse_json_map(&parsed_data["metadata"].clone()));
+        //     config.s_config.set_title((&parsed_data["title"]).to_string());
+        //     config.s_config.set_tags(Self::parse_json_map(&parsed_data["tags"].clone()));
+        //     config.s_config.set_language(parsed_data["language"].to_string());
+        //     config.s_config.set_image(parsed_data["image"].to_string());
+        //     config.s_config.set_backend(parsed_data["backend"].to_string());
+        //     config.s_config.set_output(parsed_data["output_directory"].to_string());
+        //     config.s_config.set_source(parsed_data["source_directory"].to_string());
+        //     config.set_action_defs(Self::parse_json_vector(&(parsed_data["actions"])));
+            
         //     Ok(config)
         // }
 
@@ -564,9 +893,9 @@ pub mod parsing {
         //Created strictly for testing purposes.
         pub fn parse_json_string(filename: &str) -> JsonValue {
             let contents = fs::read_to_string(filename).unwrap();
-            let parsed = json::parse(&contents);
-            println!("{:#?}", parsed.as_ref().unwrap().clone());
-            parsed.unwrap()
+            let parsed_data = json::parse(&contents);
+            // println!("{:#?}", parsed_data.as_ref().unwrap().clone());
+            parsed_data.unwrap()
         }
     }
 }
@@ -574,33 +903,20 @@ pub mod parsing {
 
 #[cfg(test)]
 mod tests {
-    use crate::{config::*, parsing::*};
+
+    use crate::{parsing::*};
     use log::info;
-    // #[test]
-    // fn print_file_name(){
-    //     let config = Configuration::new(None).unwrap();
-    //     println!("{:#?}", config);
-    //     assert!(true);
-    // }
+    #[test]
+    fn print_file_name(){
+        // let config = Configuration::new(None).unwrap();
+        println!("");
+        assert!(true);
+    }
 
-    // #[test]
-    // fn parse_string() {
-    //     info!("{}", Parser::parse_json_string("example_docker_config.json"));
-    //     assert!(true);
-    // }
+    #[test]
+    fn parse_string() {
+        info!("{}", Parser::parse_json_string("example_docker_config.json"));
+        assert!(true);
+    }
 
-    // fn test_for_string_equality() {
-    //     let config = Configuration::default();
-    //     info!("{:#?}, {}, Equal? {:#?}", config.get_backend(), "bash", config.get_backend().eq("bash"));
-    //     assert!(config.get_backend().eq("bash"));
-    // }
-
-    // #[test]
-    // fn ensure_return_equality() {
-    //     let filename = "example_docker_config.json".to_string();
-    //     let conf1 = Configuration::new(Some(filename.clone())).unwrap();
-    //     let conf2 = Configuration::new(None).unwrap();
-    //     let conf2 = Parser::parse_overwrite(conf2, filename).unwrap();
-    //     assert!(conf1 == conf2);
-    // }
 }

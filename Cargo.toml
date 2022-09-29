@@ -8,3 +8,4 @@ default-run = "cider"
 [dependencies]
 json = "0.12.4"
 log = "0.4.17"
+relative-path = "1.7.2"
