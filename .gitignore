@@ -1,6 +1,7 @@
 /target
 logs
 /logs
+tests/scripts/output
 # Added by cargo
 #
 # already existing elements were commented out

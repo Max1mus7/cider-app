@@ -26,8 +26,8 @@
     "Test_Scripts": {
         "backend": "Bash",
         "manual": {
-            "step_1": "sudo /test_script.sh >> log1.txt",
-            "step_2": "sudo /test_script2.sh >> log2.txt"
+            "step_1": "./tests/scripts/test_script.sh",
+            "step_2": "./tests/scripts/test_script2.bat"
         },
         "retries": 0,
         "conditions": {
@@ -184,7 +184,7 @@
             }
         }
     },
-    "output_directory": "./tests/logs/",
+    "output_directory": "./dist/logs/",
     "source_directory": "./src",
     "tags": {
         "Key": "Value",
