@@ -8,7 +8,7 @@ fn main() -> std::io::Result<()> {
 
     CombinedLogger::init(
         vec![
-            TermLogger::new(LevelFilter::Warn, Config::default(), TerminalMode::Mixed, ColorChoice::Auto),
+            TermLogger::new(LevelFilter::max(), Config::default(), TerminalMode::Mixed, ColorChoice::Auto),
             WriteLogger::new(LevelFilter::Info, Config::default(), File::create(curate_filepath("dist/logs/","runtime_log.txt")).unwrap()),
         ]
     ).unwrap();
@@ -20,7 +20,7 @@ fn main() -> std::io::Result<()> {
     let mut file = File::create(curate_filepath(conf.get_shared_config().get_output(), "main_test.txt"))?;
     file.write_fmt(format_args!("{:#?}", executor::exec_actions(conf.get_actions())))?;
     let mut file = File::create("./dist/logs/config_output.txt")?;
-    file.write_fmt(format_args!("{:#?}", conf));
+    file.write_fmt(format_args!("{:#?}", conf))?;
     // conf.print_filename();
     // let conf = Parser::parse_file(conf, "example_docker_config.json".to_string()).unwrap_or_else(|err| {
     //     eprintln!("There was an error finding the input file: {}", err);

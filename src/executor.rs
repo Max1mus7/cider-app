@@ -62,6 +62,32 @@ pub mod executor {
             }
             outputs
         } else {
+            for step in manual {
+                let mut command = Command::new("sh");
+                command.current_dir("/");
+                let output_str = format_args!("Running {}",step.get_name()).to_string();
+                info!("{}",output_str);
+                println!("{}",output_str);
+                outputs.push(output_str);
+                let script = step.get_script().to_string();
+                let script: Vec<String> = script.split(" ").map(|item| {
+                    if item.contains("../") {
+                        RelativePath::new(&item).to_path(&root).to_str().unwrap().to_string()
+                    } else if item.contains("./") {
+                        RelativePath::new(&item).to_path(&root).to_str().unwrap().to_string()
+                    } else {
+                        item.to_string()
+                    }
+                }).collect();
+                println!("{:#?}", &script);
+                let stdout = String::from_utf8(command.args([vec!["-c"], script.iter().map(String::as_str).collect()].concat()).current_dir(current_dir().unwrap()).output().expect(&("Failed to execute: ".to_string() + &script.concat())).stdout).expect("Command output could not be parsed");
+                println!("stdout: {}",stdout);
+                outputs.push(if stdout.is_empty() {
+                    "No standard output detected. Check to see if it was piped to another file.".to_string()
+                } else {
+                    stdout
+                });
+            }
             outputs
         }
     }
