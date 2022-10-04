@@ -103,14 +103,14 @@ mod tests {
     use super::*;
     use std::process::Command;
 
-    #[test]
-    fn echo_with_command_windows() {
-        let output = Command::new("cmd").args(["/C","echo", "Hello World"]).output().expect("Failed to execute command.");
-        assert_eq!(b"\"Hello World\"\r\n", output.stdout.as_slice());
-    }
+    // #[test]
+    // fn echo_with_command_windows() {
+    //     let output = Command::new("cmd").args(["/C","echo", "Hello World"]).output().expect("Failed to execute command.");
+    //     assert_eq!(b"\"Hello World\"\r\n", output.stdout.as_slice());
+    // }
 
-    #[test]
-    fn create_file_with_command() {
-        Command::new("cmd").args(["/C","echo Hello World >> log1.txt"]).output().expect("Failed to execute command.");
-    }
+    // #[test]
+    // fn create_file_with_command() {
+    //     Command::new("cmd").args(["/C","echo Hello World >> log1.txt"]).output().expect("Failed to execute command.");
+    // }
 }
