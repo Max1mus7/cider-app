@@ -19,6 +19,9 @@ pub mod executor {
         match exec_info.backend.to_lowercase().as_str() {
             "bash" => {
                 run_bash_scripts(exec_info.manual)
+            },
+            "docker" => {
+                run_bash_scripts(exec_info.manual)
             }
             &_ => {
                 panic!("Specified backend not supported");
@@ -42,6 +45,7 @@ pub mod executor {
                 println!("{}",output_str);
                 outputs.push(output_str);
                 let script = step.get_script().to_string();
+                println!("{script}");
                 let script: Vec<String> = script.split(" ").map(|item| {
                     if item.contains("../") {
                         RelativePath::new(&item).to_path(&root).to_str().unwrap().to_string()
@@ -51,12 +55,30 @@ pub mod executor {
                         item.to_string()
                     }
                 }).collect();
-                println!("{:#?}", &script);
-                let stdout = String::from_utf8(command.args([vec!["/C"], script.iter().map(String::as_str).collect()].concat()).current_dir(current_dir().unwrap()).output().expect(&("Failed to execute: ".to_string() + &script.concat())).stdout).expect("Command output could not be parsed");
-                println!("stdout: {}",stdout);
+                // println!("{:#?}", &script);
+                let output = command.args(
+                    [vec!["/c"], 
+                    script.iter().map(String::as_str).collect()
+                    ].concat()).current_dir(
+                        current_dir().unwrap()
+                    ).output().expect(
+                        &("Failed to execute: ".to_string() + &script.concat())
+                );
+                let stdout = String::from_utf8(output.stdout).expect("Could not parse command output as a String.");
+                let stderr = String::from_utf8(output.stderr).expect("Could not parse command output as a String.");
+                
+                // println!("stdout from {}: {stdout}", step.get_name());
+                // println!("stderr from {}: {stderr}", step.get_name());
+
                 outputs.push(if stdout.is_empty() {
-                    "No standard output detected. Check to see if it was piped to another file.".to_string()
+                    if stderr.is_empty() {
+                        "No standard output detected. Check to see if it was piped to another file.".to_string()
+                    } else {
+                        warn!("Standard output from step {}: {}", step.get_name(), stderr);
+                        stderr
+                    }
                 } else {
+                    info!("Standard output from step {}: {}", step.get_name(), stdout);
                     stdout
                 });
             }
@@ -70,6 +92,8 @@ pub mod executor {
                 println!("{}",output_str);
                 outputs.push(output_str);
                 let script = step.get_script().to_string();
+                println!("{script}");
+                let script = step.get_script().to_string();
                 let script: Vec<String> = script.split(" ").map(|item| {
                     if item.contains("../") {
                         RelativePath::new(&item).to_path(&root).to_str().unwrap().to_string()
@@ -79,12 +103,19 @@ pub mod executor {
                         item.to_string()
                     }
                 }).collect();
-                println!("{:#?}", &script);
-                let stdout = String::from_utf8(command.args([vec!["-c"], script.iter().map(String::as_str).collect()].concat()).current_dir(current_dir().unwrap()).output().expect(&("Failed to execute: ".to_string() + &script.concat())).stdout).expect("Command output could not be parsed");
-                println!("stdout: {}",stdout);
+                let output = command.args([vec!["-c"], script.iter().map(String::as_str).collect()].concat()).current_dir(current_dir().unwrap()).output().expect(&("Failed to execute: ".to_string() + &script.concat()));
+                let stdout = String::from_utf8(output.stdout).expect("Could not parse command output as a String.");
+                let stderr = String::from_utf8(output.stderr).expect("Could not parse command output as a String.");
+                
                 outputs.push(if stdout.is_empty() {
-                    "No standard output detected. Check to see if it was piped to another file.".to_string()
+                    if stderr.is_empty() {
+                        "No standard output detected. Check to see if it was piped to another file.".to_string()
+                    } else {
+                        warn!("Standard output from step {}:\n{}", step.get_name(), stderr);
+                        stderr
+                    }
                 } else {
+                    info!("Standard output from step {}:\n{}", step.get_name(), stdout);
                     stdout
                 });
             }

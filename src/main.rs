@@ -8,8 +8,12 @@ fn main() -> std::io::Result<()> {
 
     CombinedLogger::init(
         vec![
-            TermLogger::new(LevelFilter::max(), Config::default(), TerminalMode::Mixed, ColorChoice::Auto),
-            WriteLogger::new(LevelFilter::Info, Config::default(), File::create(curate_filepath("dist/logs/","runtime_log.txt")).unwrap()),
+            TermLogger::new(LevelFilter::Warn, Config::default(), TerminalMode::Mixed, ColorChoice::Auto),
+            WriteLogger::new(LevelFilter::max(), Config::default(), File::create(curate_filepath("dist/logs/","verbose_runtime_log.txt")).unwrap()),
+            WriteLogger::new(LevelFilter::Trace, Config::default(), File::create(curate_filepath("dist/logs/","trace_runtime_log.txt")).unwrap()),
+            WriteLogger::new(LevelFilter::Error, Config::default(), File::create(curate_filepath("dist/logs/","error_runtime_log.txt")).unwrap()),
+            WriteLogger::new(LevelFilter::Warn, Config::default(), File::create(curate_filepath("dist/logs/","warn_runtime_log.txt")).unwrap()),
+            WriteLogger::new(LevelFilter::Info, Config::default(), File::create(curate_filepath("dist/logs/","info_runtime_log.txt")).unwrap())
         ]
     ).unwrap();
     // let conf = ShareableConfiguration::new(None).unwrap();
@@ -18,8 +22,8 @@ fn main() -> std::io::Result<()> {
     let conf = Parser::new_top_level("example_docker_config.json");
     // println!("{:#?}", curate_filepath(conf.get_shared_config().get_output(), Some("main_test")));
     let mut file = File::create(curate_filepath(conf.get_shared_config().get_output(), "main_test.txt"))?;
-    file.write_fmt(format_args!("{:#?}", executor::exec_actions(conf.get_actions())))?;
-    let mut file = File::create("./dist/logs/config_output.txt")?;
+    file.write_fmt(format_args!("{:#?}", executor::exec_actions(&conf.get_all_actions())))?;
+    let mut file = File::create("./dist/output/config_output.txt")?;
     file.write_fmt(format_args!("{:#?}", conf))?;
     // conf.print_filename();
     // let conf = Parser::parse_file(conf, "example_docker_config.json".to_string()).unwrap_or_else(|err| {

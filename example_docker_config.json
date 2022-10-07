@@ -113,7 +113,7 @@
         "Some_Action": {
             "manual": {
                 "step_1": "echo 'hello world'",
-                "step_2": "cargo run"
+                "step_2": "cargo test"
             }
         },
         "source_directory": "./src/rust",
@@ -184,7 +184,7 @@
             }
         }
     },
-    "output_directory": "./dist/logs/",
+    "output_directory": "./dist/output/",
     "source_directory": "./src",
     "tags": {
         "Key": "Value",

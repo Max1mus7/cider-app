@@ -200,11 +200,11 @@ pub mod config {
         }
 
         pub fn get_shared_config(&self) -> &ShareableConfiguration {
-            info!("Shareable configuration successfully retrieved from top-level configuration: {:#?}", &self.s_config);
+            // info!("Shareable configuration successfully retrieved from top-level configuration: \n{:#?}", &self.s_config);
             &&self.s_config
         }
         pub fn set_shared_config(&mut self, new_s_config: ShareableConfiguration) -> () {
-            info!("New shareable configuration set: {:#?}", new_s_config);
+            info!("New shareable configuration set: \n{:#?}", new_s_config);
             self.s_config = new_s_config;
         }
 
@@ -218,11 +218,11 @@ pub mod config {
         }
 
         pub fn get_pipelines(&self) -> &Vec<Pipeline> {
-            info!("Pipelines successfully retrieved: {:#?}", &self.pipelines);
+            // info!("Pipelines successfully retrieved: \n{:#?}", &self.pipelines);
             &self.pipelines
         }
         pub fn set_pipelines(&mut self, new_pipelines: Vec<Pipeline>) -> () {
-            info!("New pipelines set: {:#?}", new_pipelines);
+            info!("New pipelines set: \n{:#?}", new_pipelines);
             self.pipelines = new_pipelines;
         }
 
@@ -236,19 +236,32 @@ pub mod config {
         }
 
         pub fn get_actions(&self) -> &Vec<Action> {
-            info!("Actions successfully retrieved: {:#?}", &self.actions);
+            // info!("Actions successfully retrieved: {:#?}", &self.actions);
             &self.actions
         }
         pub fn set_actions(&mut self, new_actions: Vec<Action>) -> () {
-            info!("New actions set: {:#?}", new_actions);
+            info!("New actions set: \n{:#?}", new_actions);
             self.actions = new_actions;
+        }
+
+        pub fn get_all_actions(&self) -> Vec<Action> {
+            let mut actions: Vec<Action> = vec![];
+            for action in self.get_actions() {
+                actions.push(action.to_owned());
+            };
+            for pipeline in self.get_pipelines() {
+                for action in pipeline.get_pipeline_config().get_actions() {
+                    actions.push(action.to_owned());
+                }
+            };
+            actions
         }
 
     }
     
 
     //holds action-specific configuration information
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     #[derive(PartialEq)]
     pub struct Action {
         shared_config: ShareableConfiguration,
@@ -274,7 +287,7 @@ pub mod config {
         }
     }
     
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     #[derive(PartialEq)]
     pub struct ActionConfig {
         //Not required at runtime, can be None
@@ -528,7 +541,7 @@ pub mod parsing {
         } 
 
         fn parse_json_to_conditions(json: &JsonValue) -> Vec<Condition> {
-            info!("{:#?}", json);
+            // info!("{:#?}", json);
             let mut conditions = vec![];
             for key_value in json.entries() {
                 conditions.push(Condition::new(key_value.0.to_string(), key_value.1.to_string()));
@@ -537,7 +550,7 @@ pub mod parsing {
         }
 
         fn parse_json_to_steps( json: &JsonValue) -> Vec<Step> {
-            info!("{:#?}", json);
+            // info!("{:#?}", json);
             let mut steps = vec![];
             for key_value in json.entries() {
                 steps.push(Step::new(key_value.0.to_string(), key_value.1.to_string()));

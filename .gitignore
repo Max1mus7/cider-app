@@ -2,6 +2,7 @@
 logs
 /logs
 /tests/scripts/output/*
+dist
 # Added by cargo
 #
 # already existing elements were commented out
