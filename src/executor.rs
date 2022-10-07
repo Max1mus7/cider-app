@@ -2,7 +2,7 @@ pub mod executor {
     use std::{collections::HashMap, env::current_dir};
     use std::process::Command;
     use crate::config::{Action, Condition, Step};
-    use log::{info, warn};
+    use log::{info, warn, error};
     use relative_path::RelativePath;
     
     pub fn exec_actions(action_vec: &Vec<Action>) -> Vec<Vec<String>> {
@@ -74,7 +74,7 @@ pub mod executor {
                     if stderr.is_empty() {
                         "No standard output detected. Check to see if it was piped to another file.".to_string()
                     } else {
-                        warn!("Standard output from step {}: {}", step.get_name(), stderr);
+                        error!("Standard output from step {}: {}", step.get_name(), stderr);
                         stderr
                     }
                 } else {
@@ -111,7 +111,7 @@ pub mod executor {
                     if stderr.is_empty() {
                         "No standard output detected. Check to see if it was piped to another file.".to_string()
                     } else {
-                        warn!("Standard output from step {}:\n{}", step.get_name(), stderr);
+                        error!("Standard output from step {}:\n{}", step.get_name(), stderr);
                         stderr
                     }
                 } else {
