@@ -261,7 +261,7 @@ pub mod config {
 
     //holds action-specific configuration information
     #[derive(Debug, Clone)]
-    #[derive(PartialEq)]
+    #[derive(PartialEq, Eq)]
     pub struct Action {
         shared_config: ShareableConfiguration,
         action_config: ActionConfig
@@ -389,7 +389,7 @@ pub mod config {
     }
 
     #[derive(Debug)]
-    #[derive(PartialEq)]
+    #[derive(PartialEq, Eq)]
     pub struct PipelineConfig { 
         //Not required at runtime, can be None
         //default = None
