@@ -171,7 +171,7 @@ pub mod config {
         }
     }
     #[derive(Debug)]
-    #[derive(PartialEq)]
+    #[derive(PartialEq, Eq)]
     pub struct TopLevelConfiguration {
         //ShareableConfiguration data required to perform top-level tasks
         pub s_config: ShareableConfiguration,
@@ -363,7 +363,7 @@ pub mod config {
     }
 
     #[derive(Debug)]
-    #[derive(PartialEq)]
+    #[derive(PartialEq, Eq)]
     pub struct Pipeline {
         shared_config: ShareableConfiguration,
         pipeline_config: PipelineConfig
