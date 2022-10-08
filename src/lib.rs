@@ -49,8 +49,7 @@ pub mod config {
                 if !backend.to_lowercase().eq("docker") {
                     warn!("Image cannot be set if docker is not the backend.");
                     None
-                }
-                else {
+                } else {
                     image
                 }
             };
@@ -71,7 +70,7 @@ pub mod config {
             }
         }
 
-        pub fn set_metadata(&mut self, new_metadata: HashMap<String, String>) -> () {
+        pub fn set_metadata(&mut self, new_metadata: HashMap<String, String>) {
             info!("New metadata set: {:#?}", new_metadata);
             self.metadata = Some(new_metadata);
         }
@@ -90,7 +89,7 @@ pub mod config {
             }
         }
 
-        pub fn set_title(&mut self, new_title: String) -> () {
+        pub fn set_title(&mut self, new_title: String)  {
             info!("New title set: {}", new_title);
             self.title = Some(new_title);
         }
@@ -109,14 +108,14 @@ pub mod config {
             }
         }
 
-        pub fn set_tags(&mut self, new_tags: HashMap<String, String>) -> () {
+        pub fn set_tags(&mut self, new_tags: HashMap<String, String>)  {
             self.tags = Some(new_tags);
         }
 
         pub fn get_language(&self) -> &str {
             &self.language
         }
-        pub fn set_language(&mut self, new_language: String) -> () {
+        pub fn set_language(&mut self, new_language: String)  {
             info!("New language set: {}", new_language);
             self.language = new_language;
         }
@@ -134,7 +133,7 @@ pub mod config {
                 }
             }
         }
-        pub fn set_image(&mut self, new_image: String) -> () {
+        pub fn set_image(&mut self, new_image: String)  {
             if !self.get_backend().to_lowercase().eq("docker") {
                 warn!("image can only be set on configurations with a docker backend");
                 self.image = None
@@ -146,7 +145,7 @@ pub mod config {
         pub fn get_backend(&self) -> &str {
             &self.backend
         }
-        pub fn set_backend(&mut self, new_backend: String) -> () {
+        pub fn set_backend(&mut self, new_backend: String)  {
             info!("New backend set: {}", new_backend);
             self.backend = new_backend;
         }
@@ -157,7 +156,7 @@ pub mod config {
             info!("Output directory successfully retrieved: {:?}", &self.output);
             &self.output
         }
-        pub fn set_output(&mut self, new_output: String) -> () {
+        pub fn set_output(&mut self, new_output: String)  {
             info!("New output directory set: {}", new_output);
             self.output = new_output;
         }
@@ -166,7 +165,7 @@ pub mod config {
             info!("Source directory successfully retrieved: {:?}", &self.source);
             &self.source
         }
-        pub fn set_source(&mut self, new_source: String) -> () {
+        pub fn set_source(&mut self, new_source: String)  {
             info!("New source directory set: {}", new_source);
             self.backend = new_source;
         }
@@ -201,9 +200,9 @@ pub mod config {
 
         pub fn get_shared_config(&self) -> &ShareableConfiguration {
             // info!("Shareable configuration successfully retrieved from top-level configuration: \n{:#?}", &self.s_config);
-            &&self.s_config
+            &self.s_config
         }
-        pub fn set_shared_config(&mut self, new_s_config: ShareableConfiguration) -> () {
+        pub fn set_shared_config(&mut self, new_s_config: ShareableConfiguration)  {
             info!("New shareable configuration set: \n{:#?}", new_s_config);
             self.s_config = new_s_config;
         }
@@ -212,7 +211,7 @@ pub mod config {
             info!("Pipelines successfully retrieved from configuration: {:#?}", &self.pipeline_defs);
             &self.pipeline_defs
         }
-        pub fn set_pipeline_defs(&mut self, new_pipeline_defs: Vec<String>) -> () {
+        pub fn set_pipeline_defs(&mut self, new_pipeline_defs: Vec<String>)  {
             info!("New pipeline definitions set: {:#?}", new_pipeline_defs);
             self.pipeline_defs = new_pipeline_defs;
         }
@@ -221,7 +220,7 @@ pub mod config {
             // info!("Pipelines successfully retrieved: \n{:#?}", &self.pipelines);
             &self.pipelines
         }
-        pub fn set_pipelines(&mut self, new_pipelines: Vec<Pipeline>) -> () {
+        pub fn set_pipelines(&mut self, new_pipelines: Vec<Pipeline>)  {
             info!("New pipelines set: \n{:#?}", new_pipelines);
             self.pipelines = new_pipelines;
         }
@@ -230,7 +229,7 @@ pub mod config {
             info!("Actions successfully retrieved from configuration: {:#?}", &self.action_defs);
             &self.action_defs
         }
-        pub fn set_action_defs(&mut self, new_action_defs: Vec<String>) -> () {
+        pub fn set_action_defs(&mut self, new_action_defs: Vec<String>)  {
             info!("New action definitions set: {:#?}", new_action_defs);
             self.action_defs = new_action_defs;
         }
@@ -239,7 +238,7 @@ pub mod config {
             // info!("Actions successfully retrieved: {:#?}", &self.actions);
             &self.actions
         }
-        pub fn set_actions(&mut self, new_actions: Vec<Action>) -> () {
+        pub fn set_actions(&mut self, new_actions: Vec<Action>)  {
             info!("New actions set: \n{:#?}", new_actions);
             self.actions = new_actions;
         }
@@ -248,12 +247,12 @@ pub mod config {
             let mut actions: Vec<Action> = vec![];
             for action in self.get_actions() {
                 actions.push(action.to_owned());
-            };
+            }
             for pipeline in self.get_pipelines() {
                 for action in pipeline.get_pipeline_config().get_actions() {
                     actions.push(action.to_owned());
                 }
-            };
+            }
             actions
         }
 
@@ -275,14 +274,14 @@ pub mod config {
         pub fn get_shared_config(&self) -> &ShareableConfiguration {
             &self.shared_config
         }
-        pub fn set_shared_config(&mut self, new_shared_config: ShareableConfiguration)-> () {
+        pub fn set_shared_config(&mut self, new_shared_config: ShareableConfiguration) {
             self.shared_config = new_shared_config;
         }
 
         pub fn get_action_config(&self) -> &ActionConfig {
             &self.action_config
         }
-        pub fn set_action_config(&mut self, action_config: ActionConfig) -> () {
+        pub fn set_action_config(&mut self, action_config: ActionConfig)  {
             self.action_config = action_config;
         }
     }
@@ -330,7 +329,7 @@ pub mod config {
         pub fn get_conditions(&self) -> Option<Vec<Condition>> {
             self.conditions.clone()
         }
-        pub fn set_conditions(&mut self, new_conditions: Vec<Condition>) -> () {
+        pub fn set_conditions(&mut self, new_conditions: Vec<Condition>)  {
             info!("New conditions set: {:#?}", new_conditions);
             self.conditions = Some(new_conditions);
         }
@@ -339,7 +338,7 @@ pub mod config {
             info!("Retry count successfully acquired: {} ", &self.retries);
             &self.retries
         }
-        pub fn set_retries(&mut self, new_retries: i8) -> () {
+        pub fn set_retries(&mut self, new_retries: i8)  {
             info!("New retry count set: {:?}", &new_retries);
             self.retries = new_retries
         }
@@ -348,7 +347,7 @@ pub mod config {
             info!("Failure allowance successfully acquired: {} ", &self.allowed_failure);
             &self.allowed_failure
         }
-        pub fn set_allowed_failure(&mut self, new_allowed_failure: bool) -> () {
+        pub fn set_allowed_failure(&mut self, new_allowed_failure: bool)  {
             info!("New failure allowance set: {:?}", &new_allowed_failure);
             self.allowed_failure = new_allowed_failure;
         }
@@ -357,7 +356,7 @@ pub mod config {
             info!("Manual successfully retrieved: {:#?}", &self.manual);
             &self.manual
         }
-        pub fn set_manual(&mut self, new_manual: Vec<Step>) -> () {
+        pub fn set_manual(&mut self, new_manual: Vec<Step>)  {
             info!("New manual set: {:#?}", new_manual);
             self.manual = new_manual;
         }
@@ -377,14 +376,14 @@ pub mod config {
         pub fn get_shared_config(&self) -> &ShareableConfiguration {
             &self.shared_config
         }
-        pub fn set_shared_config(&mut self, new_shared_config: ShareableConfiguration)-> () {
+        pub fn set_shared_config(&mut self, new_shared_config: ShareableConfiguration) {
             self.shared_config = new_shared_config;
         }
 
         pub fn get_pipeline_config(&self) -> &PipelineConfig {
             &self.pipeline_config
         }
-        pub fn set_action_config(&mut self, new_pipeline_config: PipelineConfig) -> () {
+        pub fn set_action_config(&mut self, new_pipeline_config: PipelineConfig)  {
             self.pipeline_config = new_pipeline_config;
         }
     }
@@ -421,8 +420,7 @@ pub mod config {
             let requires = match requires {
                 Some(requires) => {
                     requires
-                }
-                None => {
+                } None => {
                     vec![]
                 }  
             };
@@ -433,15 +431,14 @@ pub mod config {
                 Some(conditions) => {
                     info!("Conditions successfully retrieved: {:#?}", &conditions);
                     Ok(conditions)
-                },
-                None => {
+                } None => {
                     let res_str = "No conditions found or no conditions configured.";
                     warn!("{}", res_str);
                     Err(res_str)
                 }
             }
         }
-        pub fn set_conditions(&mut self, new_conditions: Vec<Condition>) -> () {
+        pub fn set_conditions(&mut self, new_conditions: Vec<Condition>)  {
             info!("New conditions set: {:#?}", new_conditions);
             self.conditions = Some(new_conditions);
         }
@@ -479,7 +476,7 @@ pub mod config {
             &self.condition
         }
 
-        pub fn update_condition(&mut self, name: String, condition: String) -> () {
+        pub fn update_condition(&mut self, name: String, condition: String)  {
             self.name = name;
             self.condition = condition;
         }
@@ -503,7 +500,7 @@ pub mod config {
         pub fn get_script(&self) -> &str {
             &self.script
         }
-        pub fn update_script(&mut self, name: String, script: String) -> () {
+        pub fn update_script(&mut self, name: String, script: String)  {
             self.name = name;
             self.script = script;
         }
@@ -514,7 +511,7 @@ pub mod config {
 pub mod parsing {
     use std::{fs, collections::HashMap};
     use json::JsonValue;
-    use log::{info, warn, error};
+    use log::{warn, error};
     use std::env::current_dir;
     use relative_path::RelativePath;
     use super::config::*;
@@ -588,8 +585,7 @@ pub mod parsing {
             let backend = {
                 if json["backend"].is_null() {
                     shared_config.get_backend().to_string()
-                }
-                else {
+                } else {
                     json["backend"].to_string()
                 }
             };
@@ -613,8 +609,7 @@ pub mod parsing {
                 { 
                     if json["language"].is_null() {
                         shared_config.get_language().to_string()
-                    }
-                    else {
+                    } else {
                         json["language"].to_string()
                     }
                 },
@@ -623,29 +618,24 @@ pub mod parsing {
                         warn!("Image cannot be set if docker is not the backend.");
                         None
                     }
-                    else {
-                        if json["image"].is_null() {
-                            Some(shared_config.get_image().unwrap().to_string())
-                        }
-                        else {
-                            Some(json["image"].to_string())
-                        }
+                    else if json["image"].is_null() {
+                        Some(shared_config.get_image().unwrap())
+                    } else {
+                        Some(json["image"].to_string())
                     }
                 },
                 backend,
                 { 
                     if json["output_directory"].is_null() {
                         shared_config.get_output().to_string()
-                    }
-                    else {
+                    } else {
                         RelativePath::new(&json["output_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
                     }
                 },
                 { 
                     if json["source_directory"].is_null() {
                         shared_config.get_source().to_string()
-                    }
-                    else {
+                    } else {
                         RelativePath::new(&json["source_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
                     }
                 },
@@ -656,16 +646,14 @@ pub mod parsing {
                     let conditions = Self::parse_json_to_conditions(&json["conditions"]);
                     if conditions.is_empty() {
                         None
-                    }
-                    else {
+                    } else {
                         Some(conditions)
                     }
                 },
                 {
                     if json["retries"].is_null() {
                         Some(0)
-                    }
-                    else {
+                    } else {
                         Some(json["retries"].as_i8().unwrap_or_else(|| {
                             error!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
                             panic!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
@@ -675,12 +663,12 @@ pub mod parsing {
                 {
                     if json["allowed_failure"].is_null() {
                         Some(false)
-                    }
-                    else {
+                    } else {
                         Some(json["allowed_failure"].as_bool().unwrap_or_else(|| {
                             error!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
                             panic!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
-                        }))
+                            }
+                        ))
                     }
                 },
                 {
@@ -712,8 +700,7 @@ pub mod parsing {
             let backend = {
                 if json["backend"].is_null() {
                     shared_config.get_backend().to_string()
-                }
-                else {
+                } else {
                     json["backend"].to_string()
                 }
             };
@@ -737,8 +724,7 @@ pub mod parsing {
                 { 
                     if json["language"].is_null() {
                         shared_config.get_language().to_string()
-                    }
-                    else {
+                    } else {
                         json["language"].to_string()
                     }
                 },
@@ -746,30 +732,24 @@ pub mod parsing {
                     if !backend.to_lowercase().eq("docker") {
                         warn!("Image cannot be set if docker is not the backend.");
                         None
-                    }
-                    else {
-                        if json["image"].is_null() {
-                            Some(shared_config.get_image().unwrap().to_string())
-                        }
-                        else {
-                            Some(json["image"].to_string())
-                        }
+                    } else if json["image"].is_null() {
+                        Some(shared_config.get_image().unwrap())
+                    } else {
+                        Some(json["image"].to_string())
                     }
                 },
                 backend,
                 { 
                     if json["output_directory"].is_null() {
                         shared_config.get_output().to_string()
-                    }
-                    else {
+                    } else {
                         RelativePath::new(&json["output_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
                     }
                 },
                 { 
                     if json["source_directory"].is_null() {
                         shared_config.get_source().to_string()
-                    }
-                    else {
+                    } else {
                         RelativePath::new(&json["source_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
                     }
                 },
@@ -780,16 +760,14 @@ pub mod parsing {
                     let conditions = Self::parse_json_to_conditions(&json["conditions"]);
                     if conditions.is_empty() {
                         None
-                    }
-                    else {
+                    } else {
                         Some(conditions)
                     }
                 },
                 { 
                     if json["actions"].is_null() {
                         panic!("No list of action definitions found!");
-                    }
-                    else {
+                    } else {
                         Self::parse_json_vector(&json["actions"])
                     }
                 },
@@ -797,8 +775,7 @@ pub mod parsing {
                 { 
                     if json["requires"].is_null() {
                         None
-                    }
-                    else {
+                    } else {
                         Some(Self::parse_json_vector(&json["requires"]))
                     }
                 }
@@ -811,8 +788,7 @@ pub mod parsing {
             let backend = {
                 if json["backend"].is_null() {
                     "bash".to_string()
-                }
-                else {
+                } else {
                     json["backend"].to_string()
                 }
             };
@@ -836,8 +812,7 @@ pub mod parsing {
                 { 
                     if json["language"].is_null() {
                         "Python".to_string()
-                    }
-                    else {
+                    } else {
                         json["language"].to_string()
                     }
                 },
@@ -845,15 +820,12 @@ pub mod parsing {
                     if !backend.to_lowercase().eq("docker") {
                         warn!("Image cannot be set if docker is not the backend.");
                         None
+                    } else if json["image"].is_null() {
+                        None
+                    } else {
+                        Some(json["image"].to_string())
                     }
-                    else {
-                        if json["image"].is_null() {
-                            None
-                        }
-                        else {
-                            Some(json["image"].to_string())
-                        }
-                    }
+                    
                 },
                 backend,
                 { 
@@ -891,7 +863,7 @@ pub mod parsing {
             });
             let s_config = Self::parse_shared_config(&parsed_data);
             let pipeline_defs = {
-                if (&parsed_data["pipelines"]).is_null() {
+                if (parsed_data["pipelines"]).is_null() {
                     vec![]
                 }
                 else {
@@ -900,7 +872,7 @@ pub mod parsing {
             };
             let pipelines = Self::parse_pipeline_defs(&s_config, &parsed_data, &pipeline_defs);
             let action_defs = {
-                if (&parsed_data["actions"]).is_null() {
+                if (parsed_data["actions"]).is_null() {
                     vec![]
                 }
                 else {
@@ -925,7 +897,7 @@ pub mod parsing {
             config.set_shared_config(Self::parse_shared_config(&parsed_data));
             config.set_pipeline_defs(
                 {
-                    if (&parsed_data["pipelines"]).is_null() {
+                    if (parsed_data["pipelines"]).is_null() {
                         vec![]
                     }
                     else {
@@ -936,7 +908,7 @@ pub mod parsing {
             config.set_pipelines(Self::parse_pipeline_defs(config.get_shared_config(), &parsed_data, config.get_pipeline_defs()));
             config.set_action_defs(
                 {
-                    if (&parsed_data["actions"]).is_null() {
+                    if (parsed_data["actions"]).is_null() {
                         vec![]
                     }
                     else {
@@ -966,7 +938,7 @@ mod tests {
     #[test]
     fn print_file_name(){
         // let config = Configuration::new(None).unwrap();
-        println!("");
+        println!();
         assert!(true);
     }
 

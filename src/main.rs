@@ -5,17 +5,7 @@ use cider::executor::*;
 use simplelog::*;
 
 fn main() -> std::io::Result<()> {
-
-    CombinedLogger::init(
-        vec![
-            TermLogger::new(LevelFilter::Warn, Config::default(), TerminalMode::Mixed, ColorChoice::Auto),
-            WriteLogger::new(LevelFilter::max(), Config::default(), File::create(curate_filepath("dist/logs/","verbose_runtime_log.txt")).unwrap()),
-            WriteLogger::new(LevelFilter::Trace, Config::default(), File::create(curate_filepath("dist/logs/","trace_runtime_log.txt")).unwrap()),
-            WriteLogger::new(LevelFilter::Error, Config::default(), File::create(curate_filepath("dist/logs/","error_runtime_log.txt")).unwrap()),
-            WriteLogger::new(LevelFilter::Warn, Config::default(), File::create(curate_filepath("dist/logs/","warn_runtime_log.txt")).unwrap()),
-            WriteLogger::new(LevelFilter::Info, Config::default(), File::create(curate_filepath("dist/logs/","info_runtime_log.txt")).unwrap())
-        ]
-    ).unwrap();
+    setup_logger();
     // let conf = ShareableConfiguration::new(None).unwrap();
     // println!("{:#?}", conf);
     // let conf = conf;
@@ -33,6 +23,19 @@ fn main() -> std::io::Result<()> {
     // conf.print_filename();
     // conf.parse_file("somethingelse.txt");
     Ok(())
+}
+
+fn setup_logger() {
+    CombinedLogger::init(
+        vec![
+            TermLogger::new(LevelFilter::Warn, Config::default(), TerminalMode::Mixed, ColorChoice::Auto),
+            WriteLogger::new(LevelFilter::max(), Config::default(), File::create(curate_filepath("dist/logs/","verbose_runtime_log.txt")).unwrap()),
+            WriteLogger::new(LevelFilter::Trace, Config::default(), File::create(curate_filepath("dist/logs/","trace_runtime_log.txt")).unwrap()),
+            WriteLogger::new(LevelFilter::Error, Config::default(), File::create(curate_filepath("dist/logs/","error_runtime_log.txt")).unwrap()),
+            WriteLogger::new(LevelFilter::Warn, Config::default(), File::create(curate_filepath("dist/logs/","warn_runtime_log.txt")).unwrap()),
+            WriteLogger::new(LevelFilter::Info, Config::default(), File::create(curate_filepath("dist/logs/","info_runtime_log.txt")).unwrap())
+        ]
+    ).unwrap();
 }
 
 fn curate_filepath(path: &str, filename: &str) -> String{

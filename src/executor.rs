@@ -30,7 +30,6 @@ pub mod executor {
     }
 
     fn run_bash_scripts(manual: Vec<Step>) -> Vec<String> {
-        let root = current_dir().unwrap();
 
         let mut outputs = vec![];
         
@@ -46,15 +45,7 @@ pub mod executor {
                 outputs.push(output_str);
                 let script = step.get_script().to_string();
                 println!("{script}");
-                let script: Vec<String> = script.split(" ").map(|item| {
-                    if item.contains("../") {
-                        RelativePath::new(&item).to_path(&root).to_str().unwrap().to_string()
-                    } else if item.contains("./") {
-                        RelativePath::new(&item).to_path(&root).to_str().unwrap().to_string()
-                    } else {
-                        item.to_string()
-                    }
-                }).collect();
+                let script = clean_script_pathing(&script);
                 // println!("{:#?}", &script);
                 let output = command.args(
                     [vec!["/c"], 
@@ -94,15 +85,7 @@ pub mod executor {
                 let script = step.get_script().to_string();
                 println!("{script}");
                 let script = step.get_script().to_string();
-                let script: Vec<String> = script.split(" ").map(|item| {
-                    if item.contains("../") {
-                        RelativePath::new(&item).to_path(&root).to_str().unwrap().to_string()
-                    } else if item.contains("./") {
-                        RelativePath::new(&item).to_path(&root).to_str().unwrap().to_string()
-                    } else {
-                        item.to_string()
-                    }
-                }).collect();
+                let script = clean_script_pathing(&script);
                 let output = command.args([vec!["-c"], script.iter().map(String::as_str).collect()].concat()).current_dir(current_dir().unwrap()).output().expect(&("Failed to execute: ".to_string() + &script.concat()));
                 let stdout = String::from_utf8(output.stdout).expect("Could not parse command output as a String.");
                 let stderr = String::from_utf8(output.stderr).expect("Could not parse command output as a String.");
@@ -121,6 +104,17 @@ pub mod executor {
             }
             outputs
         }
+    }
+
+    fn clean_script_pathing(script: &str) -> Vec<String> {
+        let root = current_dir().unwrap();
+        script.split(' ').map(|item| {
+            if item.contains("../") || item.contains("./") {
+                RelativePath::new(&item).to_path(&root).to_str().unwrap().to_string()
+            } else {
+                item.to_string()
+            }
+        }).collect()
     }
 
     struct ExecInfo {
@@ -148,8 +142,8 @@ pub mod executor {
                 source: action.get_shared_config().get_source().to_string(), 
                 conditions: action.get_action_config().get_conditions(), 
                 manual: action.get_action_config().get_manual().to_vec(), 
-                retries: action.get_action_config().get_retries().clone(), 
-                allowed_failure: action.get_action_config().get_allowed_failure().clone() 
+                retries: *action.get_action_config().get_retries(), 
+                allowed_failure: *action.get_action_config().get_allowed_failure()
             }
         }
     }

@@ -123,7 +123,7 @@
         "actions": ["Some_Other_Action"],
         "Some_Other_Action": {
             "manual": {
-                "step_1": "python helloworld.py >> helloworld.txt"
+                "step_1": "python helloworld.py > helloworld.txt"
             }
         }
     },
