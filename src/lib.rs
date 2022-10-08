@@ -4,7 +4,7 @@ pub mod config {
     use log::{info,warn};
 
     #[derive(Debug, Clone)]
-    #[derive(PartialEq)]
+    #[derive(PartialEq, Eq)]
     pub struct ShareableConfiguration {
         //metadata not required at runtime
         //defaulted to None
@@ -287,7 +287,7 @@ pub mod config {
     }
     
     #[derive(Debug, Clone)]
-    #[derive(PartialEq)]
+    #[derive(PartialEq, Eq)]
     pub struct ActionConfig {
         //Not required at runtime, can be None
         //default = None
@@ -454,7 +454,7 @@ pub mod config {
     
     //Holds information with conditions that will resolve to either true or false
     #[derive(Debug, Clone)]
-    #[derive(PartialEq)]
+    #[derive(PartialEq, Eq)]
     pub struct Condition {
         //A name is necessary for a condition to exist.
         //There cannot be a default name for a condition, as it would be meaningless
@@ -485,7 +485,7 @@ pub mod config {
 
     //Holds hashmap information with data necessary to run scripts
     #[derive(Debug, Clone)]
-    #[derive(PartialEq)]
+    #[derive(PartialEq, Eq)]
     pub struct Step {
         name: String,
         script: String
