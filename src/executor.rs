@@ -1,3 +1,8 @@
+/**
+ * Module used to clean input and execute actions
+ * Eventually, this module will also be used to separate pipeline executions and handle conditional logic
+ * May also be split into modules on an action/pipeline level in the future
+ */
 pub mod executor {
     use std::{collections::HashMap, env::current_dir};
     use std::process::Command;
@@ -5,6 +10,7 @@ pub mod executor {
     use log::{info, warn, error};
     use relative_path::RelativePath;
     
+    /// Small wrapper used to gather output of multiple actions and run actions programatically
     pub fn exec_actions(action_vec: &Vec<Action>) -> Vec<Vec<String>> {
         let mut all_output = vec![];
         for action in action_vec {
@@ -14,6 +20,7 @@ pub mod executor {
         all_output
     }
 
+    /// Determines how to perform steps defined by an Action
     fn exec_action(action: &Action) -> Vec<String> {
         let exec_info = ExecInfo::new(action);
         match exec_info.backend.to_lowercase().as_str() {
@@ -29,10 +36,14 @@ pub mod executor {
         }
     }
 
+    ///Runs bash scripts defined in an Action's Manual
     fn run_bash_scripts(manual: Vec<Step>) -> Vec<String> {
 
         let mut outputs = vec![];
         
+        /*
+         * Performs action using windows-specific configuration.
+         */
         if cfg!(windows) {
             warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
             
@@ -74,7 +85,11 @@ pub mod executor {
                 });
             }
             outputs
-        } else {
+        } 
+        /*
+         * Performs action using Unix-specific configuration.
+         */
+        else {
             for step in manual {
                 let mut command = Command::new("sh");
                 command.current_dir("/");
@@ -106,6 +121,10 @@ pub mod executor {
         }
     }
 
+    /// Cleans paths used within scripts.
+    /// TODO: Fix paths being "overcleaned" i.e. directory/"some other directory"/low_dir being split incorrectly
+    /// TODO: Fix paths being incorrectly parsed (FIX options: split by OS or split into multiple functions.)
+    /// 
     fn clean_script_pathing(script: &str) -> Vec<String> {
         let root = current_dir().unwrap();
         script.split(' ').map(|item| {
@@ -117,6 +136,7 @@ pub mod executor {
         }).collect()
     }
 
+    /// Contains data necessary to perform specific actions in a configurable manner 
     struct ExecInfo {
         pub backend: String, 
         pub image: Option<String>,
@@ -131,6 +151,10 @@ pub mod executor {
         pub allowed_failure: bool
     }
 
+    /**
+     * Functions to be used by the ExecInfo struct.
+     * Should only contain a constructor and/or cleanup scripts.
+     */
     impl ExecInfo {
         fn new(action: &Action) -> Self {
             ExecInfo { backend: action.get_shared_config().get_backend().to_string(), 
@@ -152,16 +176,4 @@ pub mod executor {
 #[cfg(test)]
 mod tests {
     
-    
-
-    // #[test]
-    // fn echo_with_command_windows() {
-    //     let output = Command::new("cmd").args(["/C","echo", "Hello World"]).output().expect("Failed to execute command.");
-    //     assert_eq!(b"\"Hello World\"\r\n", output.stdout.as_slice());
-    // }
-
-    // #[test]
-    // fn create_file_with_command() {
-    //     Command::new("cmd").args(["/C","echo Hello World >> log1.txt"]).output().expect("Failed to execute command.");
-    // }
 }
