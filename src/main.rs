@@ -48,6 +48,10 @@ fn setup_logger() -> std::io::Result<()> {
     Ok(())
 }
 
+/**
+ * Curates filepaths to properly be able to link to files in a user-friendly way
+ * Example: path/nested_dir -> path/nested_dir/
+ */
 fn curate_filepath(path: &str, filename: &str) -> String{
     let filepath = {
         if !path.is_empty() {

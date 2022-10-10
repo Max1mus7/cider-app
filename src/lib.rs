@@ -1,10 +1,16 @@
 pub mod executor;
+/**
+ * 
+ */
 pub mod config {
     use std::collections::HashMap;
     use log::{info,warn};
 
     #[derive(Debug, Clone)]
     #[derive(PartialEq, Eq)]
+    /**
+     * 
+     */
     pub struct ShareableConfiguration {
         //metadata not required at runtime
         //defaulted to None
@@ -43,6 +49,9 @@ pub mod config {
     }
     impl ShareableConfiguration {
 
+        /**
+         * 
+         */
         pub fn new(metadata: Option<HashMap<String, String>>, title: Option<String>, tags: Option<HashMap<String, String>>, language: String, 
         image: Option<String>, backend: String, output: String, source: String) -> Self {
             let image = {
@@ -56,6 +65,9 @@ pub mod config {
             Self { metadata, title, tags, language, image, backend, output, source }
         }
 
+        /**
+         * 
+         */
         pub fn get_metadata(&self) -> Option<HashMap<String, String>> {
             match &self.metadata {
                 Some(metadata) => {
@@ -69,12 +81,14 @@ pub mod config {
                 }
             }
         }
-
         pub fn set_metadata(&mut self, new_metadata: HashMap<String, String>) {
             info!("New metadata set: {:#?}", new_metadata);
             self.metadata = Some(new_metadata);
         }
 
+        /**
+         * 
+         */
         pub fn get_title(&self) -> Option<String> {
             match &self.title {
                 Some(title) => {
@@ -88,12 +102,14 @@ pub mod config {
                 }
             }
         }
-
         pub fn set_title(&mut self, new_title: String)  {
             info!("New title set: {}", new_title);
             self.title = Some(new_title);
         }
 
+        /**
+         * 
+         */
         pub fn get_tags(&self) -> Option<HashMap<String, String>> {
             match &self.tags {
                 Some(tags) => {
@@ -107,11 +123,13 @@ pub mod config {
                 }
             }
         }
-
         pub fn set_tags(&mut self, new_tags: HashMap<String, String>)  {
             self.tags = Some(new_tags);
         }
 
+        /**
+         * 
+         */
         pub fn get_language(&self) -> &str {
             &self.language
         }
@@ -120,6 +138,9 @@ pub mod config {
             self.language = new_language;
         }
 
+        /**
+         * 
+         */
         pub fn get_image(&self) -> Option<String> {
             match &self.image {
                 Some(image) => {
@@ -142,6 +163,9 @@ pub mod config {
             self.image = Some(new_image);
         }
 
+        /**
+         * 
+         */
         pub fn get_backend(&self) -> &str {
             &self.backend
         }
@@ -150,8 +174,9 @@ pub mod config {
             self.backend = new_backend;
         }
 
-        
-
+        /**
+         * 
+         */
         pub fn get_output(&self) -> &str {
             info!("Output directory successfully retrieved: {:?}", &self.output);
             &self.output
@@ -161,6 +186,9 @@ pub mod config {
             self.output = new_output;
         }
 
+        /**
+         * 
+         */
         pub fn get_source(&self) -> &str {
             info!("Source directory successfully retrieved: {:?}", &self.source);
             &self.source
@@ -169,9 +197,13 @@ pub mod config {
             info!("New source directory set: {}", new_source);
             self.backend = new_source;
         }
+
     }
     #[derive(Debug)]
     #[derive(PartialEq, Eq)]
+    /**
+     * 
+     */
     pub struct TopLevelConfiguration {
         //ShareableConfiguration data required to perform top-level tasks
         pub s_config: ShareableConfiguration,
@@ -192,12 +224,22 @@ pub mod config {
         actions: Vec<Action>
         
     }
+    
+    /**
+     * 
+     */
     impl TopLevelConfiguration {
 
+        /**
+         * 
+         */
         pub fn new(s_config: ShareableConfiguration, pipeline_defs: Vec<String>, pipelines: Vec<Pipeline>, action_defs: Vec<String>, actions: Vec<Action>) -> Self {
             Self { s_config, pipeline_defs, pipelines, action_defs, actions }
         }
 
+        /**
+         * 
+         */
         pub fn get_shared_config(&self) -> &ShareableConfiguration {
             // info!("Shareable configuration successfully retrieved from top-level configuration: \n{:#?}", &self.s_config);
             &self.s_config
@@ -207,6 +249,9 @@ pub mod config {
             self.s_config = new_s_config;
         }
 
+        /**
+         * 
+         */
         pub fn get_pipeline_defs(&self) -> &Vec<String> {
             info!("Pipelines successfully retrieved from configuration: {:#?}", &self.pipeline_defs);
             &self.pipeline_defs
@@ -216,6 +261,9 @@ pub mod config {
             self.pipeline_defs = new_pipeline_defs;
         }
 
+        /**
+         * 
+         */
         pub fn get_pipelines(&self) -> &Vec<Pipeline> {
             // info!("Pipelines successfully retrieved: \n{:#?}", &self.pipelines);
             &self.pipelines
@@ -225,6 +273,9 @@ pub mod config {
             self.pipelines = new_pipelines;
         }
 
+        /**
+         * 
+         */
         pub fn get_action_defs(&self) -> &Vec<String> {
             info!("Actions successfully retrieved from configuration: {:#?}", &self.action_defs);
             &self.action_defs
@@ -234,6 +285,9 @@ pub mod config {
             self.action_defs = new_action_defs;
         }
 
+        /**
+         * 
+         */
         pub fn get_actions(&self) -> &Vec<Action> {
             // info!("Actions successfully retrieved: {:#?}", &self.actions);
             &self.actions
@@ -243,6 +297,9 @@ pub mod config {
             self.actions = new_actions;
         }
 
+        /**
+         * 
+         */
         pub fn get_all_actions(&self) -> Vec<Action> {
             let mut actions: Vec<Action> = vec![];
             for action in self.get_actions() {
@@ -262,15 +319,29 @@ pub mod config {
     //holds action-specific configuration information
     #[derive(Debug, Clone)]
     #[derive(PartialEq, Eq)]
+    /**
+     * 
+     */
     pub struct Action {
         shared_config: ShareableConfiguration,
         action_config: ActionConfig
     }
+
+    /**
+     * 
+     */
     impl Action {
+
+        /**
+         * 
+         */
         pub fn new(shared_config: ShareableConfiguration, action_config: ActionConfig) -> Action {
             Action { shared_config , action_config }
         }
 
+        /**
+         * 
+         */
         pub fn get_shared_config(&self) -> &ShareableConfiguration {
             &self.shared_config
         }
@@ -278,16 +349,23 @@ pub mod config {
             self.shared_config = new_shared_config;
         }
 
+        /**
+         * 
+         */
         pub fn get_action_config(&self) -> &ActionConfig {
             &self.action_config
         }
         pub fn set_action_config(&mut self, action_config: ActionConfig)  {
             self.action_config = action_config;
         }
+
     }
     
     #[derive(Debug, Clone)]
     #[derive(PartialEq, Eq)]
+    /**
+     * 
+     */
     pub struct ActionConfig {
         //Not required at runtime, can be None
         //default = None
@@ -303,7 +381,15 @@ pub mod config {
         //default = Step {"step1": "echo \"hello world!\""}
         manual: Vec<Step>
     }
+    
+    /**
+     * 
+     */
     impl ActionConfig {
+
+        /**
+         * 
+         */
         pub fn new(conditions: Option<Vec<Condition>>, retries: Option<i8>, allowed_failure: Option<bool>, manual: Vec<Step>) -> Self {
             let retries = match retries {
                 Some(retries) => {
@@ -326,6 +412,9 @@ pub mod config {
             ActionConfig { conditions, retries, allowed_failure, manual }
         }
 
+        /**
+         * 
+         */
         pub fn get_conditions(&self) -> Option<Vec<Condition>> {
             self.conditions.clone()
         }
@@ -334,6 +423,9 @@ pub mod config {
             self.conditions = Some(new_conditions);
         }
 
+        /**
+         * 
+         */
         pub fn get_retries(&self) -> &i8 {
             info!("Retry count successfully acquired: {} ", &self.retries);
             &self.retries
@@ -343,6 +435,9 @@ pub mod config {
             self.retries = new_retries
         }
 
+        /**
+         * 
+         */
         pub fn get_allowed_failure(&self) -> &bool {
             info!("Failure allowance successfully acquired: {} ", &self.allowed_failure);
             &self.allowed_failure
@@ -352,6 +447,9 @@ pub mod config {
             self.allowed_failure = new_allowed_failure;
         }
 
+        /**
+         * 
+         */
         pub fn get_manual(&self) -> &Vec<Step> {
             info!("Manual successfully retrieved: {:#?}", &self.manual);
             &self.manual
@@ -360,36 +458,66 @@ pub mod config {
             info!("New manual set: {:#?}", new_manual);
             self.manual = new_manual;
         }
+
     }
 
     #[derive(Debug)]
     #[derive(PartialEq, Eq)]
+    /**
+     * 
+     */
     pub struct Pipeline {
         shared_config: ShareableConfiguration,
         pipeline_config: PipelineConfig
     }
+
+    /**
+     * 
+     */
     impl Pipeline {
+
+        /**
+         * 
+         */
         pub fn new(shared_config: ShareableConfiguration, pipeline_config: PipelineConfig) -> Pipeline {
             Pipeline { shared_config , pipeline_config }
         }
 
+        /**
+         * 
+         */
         pub fn get_shared_config(&self) -> &ShareableConfiguration {
             &self.shared_config
         }
+
+        /**
+         * 
+         */
         pub fn set_shared_config(&mut self, new_shared_config: ShareableConfiguration) {
             self.shared_config = new_shared_config;
         }
 
+        /**
+         * 
+         */
         pub fn get_pipeline_config(&self) -> &PipelineConfig {
             &self.pipeline_config
         }
+
+        /**
+         * 
+         */
         pub fn set_action_config(&mut self, new_pipeline_config: PipelineConfig)  {
             self.pipeline_config = new_pipeline_config;
         }
+
     }
 
     #[derive(Debug)]
     #[derive(PartialEq, Eq)]
+    /**
+     * 
+     */
     pub struct PipelineConfig { 
         //Not required at runtime, can be None
         //default = None
@@ -414,7 +542,15 @@ pub mod config {
         requires: Vec<String>
 
     }
+    
+    /**
+     * 
+     */
     impl PipelineConfig {
+
+        /**
+         * 
+         */
         pub fn new(conditions: Option<Vec<Condition>>, action_defs: Vec<String>, actions: Vec<Action>, requires: Option<Vec<String>>) -> Self {
             let has_run = false;
             let requires = match requires {
@@ -426,6 +562,10 @@ pub mod config {
             };
             Self{ conditions, action_defs, actions, has_run, requires }
         }
+
+        /**
+         * 
+         */
         pub fn get_conditions(&self) -> Result<&Vec<Condition>, &'static str> {
             match &self.conditions {
                 Some(conditions) => {
@@ -438,18 +578,29 @@ pub mod config {
                 }
             }
         }
+
+        /**
+         * 
+         */
         pub fn set_conditions(&mut self, new_conditions: Vec<Condition>)  {
             info!("New conditions set: {:#?}", new_conditions);
             self.conditions = Some(new_conditions);
         }
 
+        /**
+         * 
+         */
         pub fn get_action_defs(&self) -> &Vec<String> {
             &self.action_defs
         }
 
+        /**
+         * 
+         */
         pub fn get_actions(&self) -> &Vec<Action> {
             &self.actions
         }
+
     }
     
     //Holds information with conditions that will resolve to either true or false
@@ -463,6 +614,7 @@ pub mod config {
         //There cannot be a default condition for a condition struct, as it would be forced to default to true
         condition: String
     }
+
     impl Condition {
         pub fn new(name: String, condition: String) -> Condition {
             Condition { name, condition }
@@ -490,6 +642,7 @@ pub mod config {
         name: String,
         script: String
     }
+    
     impl Step {
         pub fn new(name: String, script: String) -> Self {
             Self {name, script}
@@ -508,6 +661,9 @@ pub mod config {
 
 }
 
+/**
+ * 
+ */
 pub mod parsing {
     use std::{fs, collections::HashMap};
     use json::JsonValue;
@@ -521,8 +677,9 @@ pub mod parsing {
 
     impl Parser {
 
-        
-
+        /**
+         * 
+         */
         fn parse_json_map(json: &JsonValue) -> HashMap<String, String>{
             // println!("{:#?}", json);
             let mut map = HashMap::new();
@@ -537,6 +694,9 @@ pub mod parsing {
             map
         } 
 
+        /**
+         * 
+         */
         fn parse_json_to_conditions(json: &JsonValue) -> Vec<Condition> {
             // info!("{:#?}", json);
             let mut conditions = vec![];
@@ -546,6 +706,9 @@ pub mod parsing {
             conditions
         }
 
+        /**
+         * 
+         */
         fn parse_json_to_steps( json: &JsonValue) -> Vec<Step> {
             // info!("{:#?}", json);
             let mut steps = vec![];
@@ -555,6 +718,9 @@ pub mod parsing {
             steps
         }
 
+        /**
+         * 
+         */
         fn parse_json_vector(json: &JsonValue) -> Vec<String> {
             // println!("{:#?}", json);
             let mut vec = vec![];
@@ -569,6 +735,9 @@ pub mod parsing {
             vec
         }
 
+        /**
+         * 
+         */
         fn parse_action_defs(shared_config: &ShareableConfiguration, action_defs: &Vec<String>, data: &JsonValue) -> Vec<Action> {
             let mut actions = vec![];
             for str in action_defs {
@@ -577,6 +746,9 @@ pub mod parsing {
             actions
         }
 
+        /**
+         * 
+         */
         fn parse_action(shared_config: &ShareableConfiguration, json: &JsonValue, name: &str) -> Action {
             let root = current_dir().unwrap();
             if json.is_null(){
@@ -684,6 +856,9 @@ pub mod parsing {
 
         }
 
+        /**
+         * 
+         */
         fn parse_pipeline_defs(shared_config: &ShareableConfiguration, json: &JsonValue, pipeline_defs: &Vec<String>) -> Vec<Pipeline> {
             let mut pipelines = vec![];
             for str in pipeline_defs {
@@ -692,6 +867,10 @@ pub mod parsing {
             pipelines
         }
 
+        /** 
+         *
+         *
+         */  
         fn parse_pipeline(shared_config: &ShareableConfiguration, json: &JsonValue, name: &str) -> Pipeline {
             let root = current_dir().unwrap();
             if json.is_null() {
@@ -783,6 +962,9 @@ pub mod parsing {
             Pipeline::new( new_shared_config, pipeline_config ) 
         }
 
+        /**
+         * 
+         */
         fn parse_shared_config(json: &JsonValue) -> ShareableConfiguration {
             let root = current_dir().unwrap();
             let backend = {
@@ -850,6 +1032,9 @@ pub mod parsing {
             new_shared_config
         }
 
+        /**
+         * 
+         */
         pub fn new_top_level(filename: &str) -> TopLevelConfiguration {
             let file_contents = fs::read_to_string(filename).unwrap_or_else(|err| {
                 eprintln!("{}", err);
@@ -882,7 +1067,10 @@ pub mod parsing {
             let actions = Self::parse_action_defs(&s_config, &action_defs, &parsed_data);
             TopLevelConfiguration::new(s_config, pipeline_defs, pipelines, action_defs, actions)
         }
-
+        
+        /**
+         * 
+         */
         pub fn overwrite_top_level(mut config: TopLevelConfiguration, filename: &str) -> TopLevelConfiguration {
             let file_contents = fs::read_to_string(filename).unwrap_or_else(|err| {
                 eprintln!("{}", err);
@@ -920,21 +1108,23 @@ pub mod parsing {
             config
         }
 
-        //Created strictly for testing purposes.
+        ///Created strictly for testing purposes.
         pub fn parse_json_string(filename: &str) -> JsonValue {
             let contents = fs::read_to_string(filename).unwrap();
             let parsed_data = json::parse(&contents);
             // println!("{:#?}", parsed_data.as_ref().unwrap().clone());
             parsed_data.unwrap()
         }
+    
     }
 }
 
 #[cfg(test)]
 mod tests {
-
-    use crate::{parsing::*};
+    use crate::parsing::*;
     use log::info;
+
+
     #[test]
     fn print_file_name(){
         // let config = Configuration::new(None).unwrap();
