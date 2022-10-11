@@ -1124,16 +1124,8 @@ mod tests {
     use crate::parsing::*;
     use log::info;
 
-
     #[test]
-    fn print_file_name(){
-        // let config = Configuration::new(None).unwrap();
-        println!();
-        assert!(true);
-    }
-
-    #[test]
-    fn parse_string() {
+    fn parse_json_from_file() {
         info!("{}", Parser::parse_json_string("example_docker_config.json"));
         assert!(true);
     }
