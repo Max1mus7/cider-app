@@ -1,22 +1,51 @@
 use std::fs::File;
 use std::fs;
+use std::env;
+use std::process::exit;
+use std::path::Path;
 use cider::parsing::*;
+use log::{warn, error};
 use std::io::prelude::*;
 use cider::executor::*;
 use simplelog::*;
+use clap::Parser;
+
+#[derive(Parser, Default, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Arguments {
+    #[arg(short, long)]
+    config: String
+}
 
 fn main() -> std::io::Result<()> {
     setup_logger().unwrap_or_else(|err| {
         panic!("Logs could not be properly set up due to the following error:\n{}", err);
     });
 
-    let conf = Parser::new_top_level("example_docker_config.json");
+    let args: Vec<String> = clean_args(env::args().collect());
+    
+    let filename = get_config_file(args).unwrap_or_else(|err| {
+        error!("The configuration file was either not specified or does not exist.");
+        println!("The configuration file was either not specified or does not exist.\n{}", err);
+        exit(2);
+    });
+
+    let conf = JsonParser::new_top_level(&filename);
     let mut file = File::create(curate_filepath(conf.get_shared_config().get_output(), "main_test.txt"))?;
-    file.write_fmt(format_args!("{:#?}", executor::exec_actions(&conf.get_all_actions())))?;
+    file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
     let mut file = File::create("./dist/output/config_output.txt")?;
     file.write_fmt(format_args!("{:#?}", conf))?;
 
     Ok(())
+}
+
+
+fn clean_args(args: Vec<String>) -> Vec<String> {
+    if args.len() > 1 {
+        args[1..].to_vec()
+    } else {
+        vec![]
+    }
 }
 
 /**
@@ -72,6 +101,38 @@ fn curate_filepath(path: &str, filename: &str) -> String{
     }
 }
 
+fn get_config_file(args: Vec<String>) -> Result<String, &'static str> {
+    if !args.is_empty() && args[0].contains(".json") {
+        Ok(args[0].clone())
+    } else if Path::new("config.json").exists() {
+        Ok("config.json".to_string())
+    } else {
+        for i in 0..args.len() {
+            if i > (args.len() - 2) {
+                return Err(display_help());
+            }
+            if args[i].eq("-c") {
+                warn!("It is better to define the config file as the first argument passed to the application upon invoking it.");
+                return Ok(args[i+1].clone())
+            }
+        }
+        Err(display_help())
+    }
+}
+
+fn display_help() -> &'static str {
+    r#"
+    
+    The correct usage of this application is as follows:
+
+    cider.exe CONFIG [OPTIONS]
+    
+    OPTIONS include:
+
+    -c <filename>: Allows you to specify the location of the config file without having it as the first argument.
+    "#
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -94,5 +155,24 @@ mod tests {
         } else {
             assert_eq!("test/log1.txt".to_owned(), curate_filepath("test/", "log1.txt"));
         }
+    }
+
+    #[test]
+    fn test_arg_cleaning_with_args() {
+        let args = vec!["test1".to_string(), "test2".to_string(), "test3".to_string()];
+        assert_eq!(vec!["test2".to_string(), "test3".to_string()], clean_args(args));
+    }
+
+    //There will always be at least 1 arg.
+    #[test]
+    fn test_arg_cleaning_without_args() {
+        let args = vec!["test1".to_string()];
+        assert_eq!(Vec::<String>::new(), clean_args(args));
+    }
+
+    #[test]
+    fn test_parsing_input_file() {
+        let args = clean_args(vec!["test1".to_string(), "test_config.json".to_string()]);
+        JsonParser::parse_json_string(&args[0]);
     }
 }

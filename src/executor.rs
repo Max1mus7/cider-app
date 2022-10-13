@@ -3,7 +3,6 @@
  * Eventually, this module will also be used to separate pipeline executions and handle conditional logic
  * May also be split into modules on an action/pipeline level in the future
  */
-pub mod executor {
     use std::{collections::HashMap, env::current_dir};
     use std::process::Command;
     use crate::config::{Action, Condition, Step};
@@ -137,7 +136,7 @@ pub mod executor {
     }
 
     /// Contains data necessary to perform specific actions in a configurable manner 
-    struct ExecInfo {
+    pub struct ExecInfo {
         pub backend: String, 
         pub image: Option<String>,
         pub title: Option<String>,
@@ -171,9 +170,19 @@ pub mod executor {
             }
         }
     }
-}
 
 #[cfg(test)]
 mod tests {
-    
+
+    // use crate::parsing::Parser;
+
+    // use crate::executor::executor;
+
+    // #[test]
+    // fn prove_exec_info() {
+    //     let test_config = Parser::new_top_level("example_docker_config.json");
+    //     let actions = test_config.get_all_actions();
+    //     let exec_info = executor::ExecInfo {}
+    // }
+
 }

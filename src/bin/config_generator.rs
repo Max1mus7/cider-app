@@ -24,6 +24,7 @@ pub mod config_generator {
 
 }
 
-pub fn main() -> std::io::Result<()> {
-    Ok(())
+pub fn main() -> () {
+    
 }
+
