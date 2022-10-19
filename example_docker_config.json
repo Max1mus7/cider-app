@@ -2,7 +2,7 @@
     "title": "CIder 0.1 Example Docker Config",
     "operating_system": "Windows",
     "backend": "Docker",
-    "image": "Python 3.10",
+    "image": "python:3.10",
     "metadata": {
         "o_VeR43C_vIeW": "This file shows what configuration settings may be used to set up a group of docker pipelines.",
         "Note_1": "Backend can be changed at a pipeline level. If a pipeline backend is set to the same value as the top-level backend, no ill behavior will occur, and the same backend will be used regardless.",
@@ -13,9 +13,9 @@
         "Note_6": "actions can all use the same environment, or be separated into different pipelines or top-level actions in order to use unique environments."
     },
     "pipelines": [
-        "Test_Ruby",
+        "Test_ruby",
         "Test_Rust", 
-        "Test_Python",
+        "Test_python",
         "Deploy",
         "Build",
         "System_Test",
@@ -37,7 +37,7 @@
         "allowed_failure": false,
         "output_directory": "./tests/scripts/logs/"
     },
-    "Test_Ruby": {
+    "Test_ruby": {
         "name": "This name will be listed separately.",
         "metadata": {
             "note_1": "actions are executed in the order which they are defined.",
@@ -45,7 +45,7 @@
             "note_3": "Allowed_Failure will default to false."
         },
         "backend": "Docker",
-        "image": "Ruby 3.2",
+        "image": "ruby:3.2",
         "actions": ["Setup_Environment", "Verify_Environment", "Run_Tests", "Send_Results"],
         "Setup_Environment": {
             "metadata": {
@@ -59,7 +59,7 @@
             },
             "retries": 0,
             "tags": {
-                "tag_list": ["Ruby", "Environment Setup", "Setup", "Continuous Integration"]
+                "tag_list": ["ruby", "Environment Setup", "Setup", "Continuous Integration"]
             },
             "output_directory": "./tests/ruby"
         },
@@ -72,7 +72,7 @@
             },
             "retries": 0,
             "tags": {
-                "Tag_List": ["Ruby", "Environment Setup", "Setup", "Continuous Integration"]
+                "Tag_List": ["ruby", "Environment Setup", "Setup", "Continuous Integration"]
             },
             "output_directory": "./tests/ruby"
         },
@@ -84,7 +84,7 @@
                 "SOURCE_DIRECTORY": "./src/ruby"
             },
             "tags": {
-                "Tag_List": ["Ruby", "Testing", "Logging", "Continuous Integration"]
+                "Tag_List": ["ruby", "Testing", "Logging", "Continuous Integration"]
             },
             "output_directory": "./tests/ruby",
             "allowed_failure": true,
@@ -98,7 +98,7 @@
                 "SOURCE_DIRECTORY": "./src/ruby"
             },
             "tags": {
-                "Tag_List": ["Ruby", "Consolidation", "Reporting", "Continuous Integration"]
+                "Tag_List": ["ruby", "Consolidation", "Reporting", "Continuous Integration"]
             },
             "output_directory": "./tests/ruby/logs/",
             "retries": 0
@@ -108,7 +108,7 @@
         "metadata": {
             "Note_1": "If using the same backend as specified at the top-level, the Backend tag is optional."
         },
-        "image": "Rust 1.63.0",
+        "image": "Rust:1.63.0",
         "actions": ["Some_Action"],
         "Some_Action": {
             "manual": {
@@ -119,7 +119,7 @@
         "source_directory": "./src/rust",
         "output_directory": "./tests/rust/logs/"
     },
-    "Test_Python": {
+    "Test_python": {
         "actions": ["Some_Other_Action"],
         "Some_Other_Action": {
             "manual": {
@@ -129,7 +129,7 @@
     },
     "Deploy": {
         "Backend": "Docker",
-        "image":"Python 3.10",
+        "image":"python:3.10",
         "Requires": ["Build"],
         "source_directory": "./dist",
         "actions": ["Deploy", "Confirm_Deployment"],
@@ -176,11 +176,13 @@
         }
     },
     "Full_Logging": {
+        "image" : "rust:1.64.0",
         "actions": ["Consolidate_Reports"],
         "Consolidate_Reports": {
-            "image": "Ruby 3.2",
             "manual": {
-                "step_1": "ruby report.rs -d ./tests/*/logs/"
+                "debug_step": "ls -R /",
+                "step_2": "rustc --version",
+                "step_1": "cargo test"
             }
         }
     },

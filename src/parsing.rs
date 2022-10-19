@@ -355,7 +355,7 @@
                 },
                 { 
                     if json["source_directory"].is_null() {
-                        RelativePath::new("./src").to_path(&root).to_str().unwrap().to_string()
+                        RelativePath::new("./").to_path(&root).to_str().unwrap().to_string()
                     }
                     else {
                         RelativePath::new(&json["source_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
