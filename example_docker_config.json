@@ -45,7 +45,7 @@
             "note_3": "Allowed_Failure will default to false."
         },
         "backend": "Docker",
-        "image": "ruby:3.2",
+        "image": "ruby:3",
         "actions": ["Setup_Environment", "Verify_Environment", "Run_Tests", "Send_Results"],
         "Setup_Environment": {
             "metadata": {
@@ -108,7 +108,7 @@
         "metadata": {
             "Note_1": "If using the same backend as specified at the top-level, the Backend tag is optional."
         },
-        "image": "Rust:1.63.0",
+        "image": "rust:1.63.0",
         "actions": ["Some_Action"],
         "Some_Action": {
             "manual": {
