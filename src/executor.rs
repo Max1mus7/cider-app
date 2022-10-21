@@ -72,47 +72,93 @@ fn generate_dockerfile(info: &ExecInfo) -> File {
 fn run_with_docker(setup: ExecInfo) -> Vec<String> {
     let mut setup = setup;
     let mut outputs = vec![];
-    if setup.image.is_none() {
-        setup.image = Some("alpine:latest".to_string());
-        warn!("There was no image detected in a configured action.");
-        outputs.push("There was no docker image found to build off of. Using Alpine Linux by default.".to_string());
-    } 
-    generate_dockerfile(&setup);
+    if cfg!(windows) {
 
-    let output = Command::new("cmd").args(["/C", "docker", "pull", &setup.image.unwrap()]).current_dir(current_dir().unwrap()).output().expect("There was an error building your docker environment.");
-    let stdout = String::from_utf8(output.stdout).expect("Could not parse command output as a String.");
-    let stderr = String::from_utf8(output.stderr).expect("Could not parse command output as a String.");
-    outputs.push(if stdout.is_empty() {
-        if stderr.is_empty() {
-            "No standard output detected. Check to see if it was piped to another file.".to_string()
+        if setup.image.is_none() {
+            setup.image = Some("alpine:latest".to_string());
+            warn!("There was no image detected in a configured action.");
+            outputs.push("There was no docker image found to build off of. Using Alpine Linux by default.".to_string());
+        } 
+        generate_dockerfile(&setup);
+
+        let output = Command::new("cmd").args(["/C", "docker", "pull", &setup.image.unwrap()]).current_dir(current_dir().unwrap()).output().expect("There was an error building your docker environment.");
+        let stdout = String::from_utf8(output.stdout).expect("Could not parse command output as a String.");
+        let stderr = String::from_utf8(output.stderr).expect("Could not parse command output as a String.");
+        outputs.push(if stdout.is_empty() {
+            if stderr.is_empty() {
+                "No standard output detected. Check to see if it was piped to another file.".to_string()
+            } else {
+                error!("Standard error from dockerfile creation: {}", stderr);
+                stderr
+            }
         } else {
-            error!("Standard error from dockerfile creation: {}", stderr);
-            stderr
-        }
-    } else {
-        info!("Standard output from step : {}", stdout);
-        stdout
-    });
+            info!("Standard output from step : {}", stdout);
+            stdout
+        });
 
-    let rmout = Command::new("cmd").args(["/C", "docker", "image", "rm", "-f", "cider-image"]).current_dir(current_dir().unwrap()).output().expect("There was an issue removing an old image.");
-    if String::from_utf8(rmout.stderr.clone()).unwrap().ne("") {
-        warn!("{}", String::from_utf8(rmout.stderr).unwrap());
+        let rmout = Command::new("cmd").args(["/C", "docker", "image", "rm", "-f", "cider-image"]).current_dir(current_dir().unwrap()).output().expect("There was an issue removing an old image.");
+        if String::from_utf8(rmout.stderr.clone()).unwrap().ne("") {
+            warn!("{}", String::from_utf8(rmout.stderr).unwrap());
+        }
+        info!("{}", String::from_utf8(rmout.stdout).unwrap());
+        let output = Command::new("cmd").args(["/C", "docker", "build", "-t", "cider-image", "."]).current_dir(current_dir().unwrap()).output().expect("There was an error building your docker environment.");
+        let stdout = String::from_utf8(output.stdout).expect("Could not parse command output as a String.");
+        let stderr = String::from_utf8(output.stderr).expect("Could not parse command output as a String.");
+        outputs.push(if stdout.is_empty() {
+            if stderr.is_empty() {
+                "No standard output detected. Check to see if it was piped to another file.".to_string()
+            } else {
+                error!("Standard output from dockerfile creation: {}", stderr);
+                stderr
+            }
+        } else {
+            info!("Standard output from step : {}", stdout);
+            stdout
+        });
+    } else {
+
+        if setup.image.is_none() {
+            setup.image = Some("alpine:latest".to_string());
+            warn!("There was no image detected in a configured action.");
+            outputs.push("There was no docker image found to build off of. Using Alpine Linux by default.".to_string());
+        } 
+        generate_dockerfile(&setup);
+        let output = Command::new("sh").arg("-c").arg(format_args!("docker pull {}",&setup.image.unwrap()).to_string()).current_dir(current_dir().unwrap()).output().expect("There was an error building your docker environment.");
+        let stdout = String::from_utf8(output.stdout).expect("Could not parse command output as a String.");
+        let stderr = String::from_utf8(output.stderr).expect("Could not parse command output as a String.");
+        outputs.push(if stdout.is_empty() {
+            if stderr.is_empty() {
+                "No standard output detected. Check to see if it was piped to another file.".to_string()
+            } else {
+                error!("Standard error from dockerfile creation: {}", stderr);
+                stderr
+            }
+        } else {
+            info!("Standard output from step : {}", stdout);
+            stdout
+        });
+
+        let rmout = Command::new("sh").arg("-c").arg("docker image rm -f cider-image").current_dir(current_dir().unwrap()).output().expect("There was an issue removing an old image.");
+        if String::from_utf8(rmout.stderr.clone()).unwrap().ne("") {
+            warn!("{}", String::from_utf8(rmout.stderr).unwrap());
+        }
+        info!("{}", String::from_utf8(rmout.stdout).unwrap());
+        let output = Command::new("sh").arg("-c").arg("docker build -t cider-image .").current_dir(current_dir().unwrap()).output().expect("There was an error building your docker environment.");
+        let stdout = String::from_utf8(output.stdout).expect("Could not parse command output as a String.");
+        let stderr = String::from_utf8(output.stderr).expect("Could not parse command output as a String.");
+        outputs.push(if stdout.is_empty() {
+            if stderr.is_empty() {
+                "No standard output detected. Check to see if it was piped to another file.".to_string()
+            } else {
+                error!("Standard output from dockerfile creation: {}", stderr);
+                stderr
+            }
+        } else {
+            info!("Standard output from step : {}", stdout);
+            stdout
+        });
     }
-    info!("{}", String::from_utf8(rmout.stdout).unwrap());
-    let output = Command::new("cmd").args(["/C", "docker", "build", "-t", "cider-image", "."]).current_dir(current_dir().unwrap()).output().expect("There was an error building your docker environment.");
-    let stdout = String::from_utf8(output.stdout).expect("Could not parse command output as a String.");
-    let stderr = String::from_utf8(output.stderr).expect("Could not parse command output as a String.");
-    outputs.push(if stdout.is_empty() {
-        if stderr.is_empty() {
-            "No standard output detected. Check to see if it was piped to another file.".to_string()
-        } else {
-            error!("Standard output from dockerfile creation: {}", stderr);
-            stderr
-        }
-    } else {
-        info!("Standard output from step : {}", stdout);
-        stdout
-    });
+    
 
     // let output = Command::new("cmd").args(["/C", "docker", "run", "--rm", "--name", "cider-container", "-d", "cider-image"]).current_dir(current_dir().unwrap()).output().expect("There was an error building your docker environment.");
     // let stdout = String::from_utf8(output.stdout).expect("Could not parse command output as a String.");
