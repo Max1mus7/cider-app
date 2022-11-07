@@ -1,7 +1,7 @@
 {
     "title": "CIder 0.1 Example Docker Config",
     "operating_system": "Windows",
-    "backend": "Docker",
+    "backend": "batch",
     "image": "python:3.10",
     "pipelines": ["Test_Docker"],
     "Test_Docker": {

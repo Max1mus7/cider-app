@@ -1,31 +1,37 @@
-pub mod executor;
-pub mod config;
-pub mod parsing;
+pub mod utils;
+pub use utils::config;
+pub use utils::config_generator;
+pub use utils::executor;
+pub use utils::parsing;
 
 #[cfg(test)]
 mod tests {
-    use crate::parsing::*;
+    use super::*;
     use log::info;
+    use crate::parsing::JsonParser;
 
     #[test]
     fn parse_json_from_file() {
-        info!("{}", JsonParser::parse_json_string("example_docker_config.json"));
+        info!(
+            "{}",
+            JsonParser::parse_json_string("example_docker_config.json")
+        );
         assert!(true);
     }
 
     #[test]
     fn test_parse_top_level_actions() {
         let config = JsonParser::new_top_level("example_docker_config.json");
-        for action in config.get_actions(){
+        for action in config.get_actions() {
             info!("{:#?}", action);
         }
-        assert!(true);
+        assert!(false);
     }
 
     #[test]
     fn test_parse_pipeline_actions() {
         let config = JsonParser::new_top_level("example_docker_config.json");
-        for pipeline in config.get_pipelines(){
+        for pipeline in config.get_pipelines() {
             for action in pipeline.get_pipeline_config().get_actions() {
                 info!("{:#?}", action);
             }
@@ -47,8 +53,4 @@ mod tests {
             info!("{:#?}", pipeline);
         }
     }
-
-    
-
-
 }

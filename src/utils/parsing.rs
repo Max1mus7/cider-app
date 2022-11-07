@@ -1,19 +1,17 @@
-    use std::{fs, collections::HashMap};
-    use json::JsonValue;
-    use log::{warn, error};
-    use std::env::current_dir;
-    use relative_path::RelativePath;
-    use crate::config::*;
 
-    pub struct JsonParser {
-    }
+    use json::JsonValue;
+    use log::{error, warn};
+    use relative_path::RelativePath;
+    use std::env::current_dir;
+    use std::{collections::HashMap, fs};
+    use crate::utils::config::*;
+    pub struct JsonParser {}
 
     impl JsonParser {
-
         /**
-         * 
+         *
          */
-        fn parse_json_map(json: &JsonValue) -> HashMap<String, String>{
+        fn parse_json_map(json: &JsonValue) -> HashMap<String, String> {
             // println!("{:#?}", json);
             let mut map = HashMap::new();
             for key_value in json.entries() {
@@ -25,24 +23,27 @@
                 return map;
             }
             map
-        } 
+        }
 
         /**
-         * 
+         *
          */
         fn parse_json_to_conditions(json: &JsonValue) -> Vec<Condition> {
             // info!("{:#?}", json);
             let mut conditions = vec![];
             for key_value in json.entries() {
-                conditions.push(Condition::new(key_value.0.to_string(), key_value.1.to_string()));
+                conditions.push(Condition::new(
+                    key_value.0.to_string(),
+                    key_value.1.to_string(),
+                ));
             }
             conditions
         }
 
         /**
-         * 
+         *
          */
-        fn parse_json_to_steps( json: &JsonValue) -> Vec<Step> {
+        fn parse_json_to_steps(json: &JsonValue) -> Vec<Step> {
             // info!("{:#?}", json);
             let mut steps = vec![];
             for key_value in json.entries() {
@@ -52,7 +53,7 @@
         }
 
         /**
-         * 
+         *
          */
         fn parse_json_vector(json: &JsonValue) -> Vec<String> {
             // println!("{:#?}", json);
@@ -69,9 +70,13 @@
         }
 
         /**
-         * 
+         *
          */
-        fn parse_action_defs(shared_config: &ShareableConfiguration, action_defs: &Vec<String>, data: &JsonValue) -> Vec<Action> {
+        fn parse_action_defs(
+            shared_config: &ShareableConfiguration,
+            action_defs: &Vec<String>,
+            data: &JsonValue,
+        ) -> Vec<Action> {
             let mut actions = vec![];
             for str in action_defs {
                 actions.push(Self::parse_action(shared_config, &data[str], str));
@@ -80,12 +85,19 @@
         }
 
         /**
-         * 
+         *
          */
-        fn parse_action(shared_config: &ShareableConfiguration, json: &JsonValue, name: &str) -> Action {
+        fn parse_action(
+            shared_config: &ShareableConfiguration,
+            json: &JsonValue,
+            name: &str,
+        ) -> Action {
             let root = current_dir().unwrap();
-            if json.is_null(){
-                panic!("Could not find action defined with appropriate tag: {}", name)
+            if json.is_null() {
+                panic!(
+                    "Could not find action defined with appropriate tag: {}",
+                    name
+                )
             }
             let backend = {
                 if json["backend"].is_null() {
@@ -94,7 +106,7 @@
                     json["backend"].to_string()
                 }
             };
-            
+
             let new_shared_config = ShareableConfiguration::new(
                 {
                     if json["metadata"].is_null() {
@@ -111,7 +123,7 @@
                         Some(Self::parse_json_map(&json["tags"]))
                     }
                 },
-                { 
+                {
                     if json["language"].is_null() {
                         shared_config.get_language().to_string()
                     } else {
@@ -122,26 +134,33 @@
                     if !backend.to_lowercase().eq("docker") {
                         warn!("Image cannot be set if docker is not the backend.");
                         None
-                    }
-                    else if json["image"].is_null() {
+                    } else if json["image"].is_null() {
                         Some(shared_config.get_image().unwrap())
                     } else {
                         Some(json["image"].to_string())
                     }
                 },
                 backend,
-                { 
+                {
                     if json["output_directory"].is_null() {
                         shared_config.get_output().to_string()
                     } else {
-                        RelativePath::new(&json["output_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
+                        RelativePath::new(&json["output_directory"].to_string())
+                            .to_path(&root)
+                            .to_str()
+                            .unwrap()
+                            .to_string()
                     }
                 },
-                { 
+                {
                     if json["source_directory"].is_null() {
                         shared_config.get_source().to_string()
                     } else {
-                        RelativePath::new(&json["source_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
+                        RelativePath::new(&json["source_directory"].to_string())
+                            .to_path(&root)
+                            .to_str()
+                            .unwrap()
+                            .to_string()
                     }
                 },
             );
@@ -183,16 +202,19 @@
                         panic!("Actions require at least one step in their manual. Error occured in Action: {}", name);
                     }
                     manual
-                }
+                },
             );
-            Action::new( new_shared_config, action_config)
-
+            Action::new(new_shared_config, action_config)
         }
 
         /**
-         * 
+         *
          */
-        fn parse_pipeline_defs(shared_config: &ShareableConfiguration, json: &JsonValue, pipeline_defs: &Vec<String>) -> Vec<Pipeline> {
+        fn parse_pipeline_defs(
+            shared_config: &ShareableConfiguration,
+            json: &JsonValue,
+            pipeline_defs: &Vec<String>,
+        ) -> Vec<Pipeline> {
             let mut pipelines = vec![];
             for str in pipeline_defs {
                 pipelines.push(Self::parse_pipeline(shared_config, &json[str], str));
@@ -200,11 +222,15 @@
             pipelines
         }
 
-        /** 
+        /**
          *
          *
-         */  
-        fn parse_pipeline(shared_config: &ShareableConfiguration, json: &JsonValue, name: &str) -> Pipeline {
+         */
+        fn parse_pipeline(
+            shared_config: &ShareableConfiguration,
+            json: &JsonValue,
+            name: &str,
+        ) -> Pipeline {
             let root = current_dir().unwrap();
             if json.is_null() {
                 panic!("No pipeline found with the name: {}", name);
@@ -216,7 +242,7 @@
                     json["backend"].to_string()
                 }
             };
-            
+
             let new_shared_config = ShareableConfiguration::new(
                 {
                     if json["metadata"].is_null() {
@@ -233,7 +259,7 @@
                         Some(Self::parse_json_map(&json["tags"]))
                     }
                 },
-                { 
+                {
                     if json["language"].is_null() {
                         shared_config.get_language().to_string()
                     } else {
@@ -251,18 +277,26 @@
                     }
                 },
                 backend,
-                { 
+                {
                     if json["output_directory"].is_null() {
                         shared_config.get_output().to_string()
                     } else {
-                        RelativePath::new(&json["output_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
+                        RelativePath::new(&json["output_directory"].to_string())
+                            .to_path(&root)
+                            .to_str()
+                            .unwrap()
+                            .to_string()
                     }
                 },
-                { 
+                {
                     if json["source_directory"].is_null() {
                         shared_config.get_source().to_string()
                     } else {
-                        RelativePath::new(&json["source_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
+                        RelativePath::new(&json["source_directory"].to_string())
+                            .to_path(&root)
+                            .to_str()
+                            .unwrap()
+                            .to_string()
                     }
                 },
             );
@@ -276,27 +310,31 @@
                         Some(conditions)
                     }
                 },
-                { 
+                {
                     if json["actions"].is_null() {
                         panic!("No list of action definitions found!");
                     } else {
                         Self::parse_json_vector(&json["actions"])
                     }
                 },
-                Self::parse_action_defs(&new_shared_config, &Self::parse_json_vector(&json["actions"]), json),
-                { 
+                Self::parse_action_defs(
+                    &new_shared_config,
+                    &Self::parse_json_vector(&json["actions"]),
+                    json,
+                ),
+                {
                     if json["requires"].is_null() {
                         None
                     } else {
                         Some(Self::parse_json_vector(&json["requires"]))
                     }
-                }
+                },
             );
-            Pipeline::new( new_shared_config, pipeline_config ) 
+            Pipeline::new(new_shared_config, pipeline_config)
         }
 
         /**
-         * 
+         *
          */
         fn parse_shared_config(json: &JsonValue) -> ShareableConfiguration {
             let root = current_dir().unwrap();
@@ -307,7 +345,7 @@
                     json["backend"].to_string()
                 }
             };
-            
+
             let new_shared_config = ShareableConfiguration::new(
                 {
                     if json["metadata"].is_null() {
@@ -324,7 +362,7 @@
                         Some(Self::parse_json_map(&json["tags"]))
                     }
                 },
-                { 
+                {
                     if json["language"].is_null() {
                         "Python".to_string()
                     } else {
@@ -340,25 +378,36 @@
                     } else {
                         Some(json["image"].to_string())
                     }
-                    
                 },
                 backend,
-                { 
+                {
                     if json["output_directory"].is_null() {
-                        RelativePath::new("./dist/cider/").to_path(&root).to_str().unwrap().to_string()
-
-                    }
-                    else {
-                        RelativePath::new(&json["output_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
-
+                        RelativePath::new("./dist/cider/")
+                            .to_path(&root)
+                            .to_str()
+                            .unwrap()
+                            .to_string()
+                    } else {
+                        RelativePath::new(&json["output_directory"].to_string())
+                            .to_path(&root)
+                            .to_str()
+                            .unwrap()
+                            .to_string()
                     }
                 },
-                { 
+                {
                     if json["source_directory"].is_null() {
-                        RelativePath::new("./").to_path(&root).to_str().unwrap().to_string()
-                    }
-                    else {
-                        RelativePath::new(&json["source_directory"].to_string()).to_path(&root).to_str().unwrap().to_string()
+                        RelativePath::new("./")
+                            .to_path(&root)
+                            .to_str()
+                            .unwrap()
+                            .to_string()
+                    } else {
+                        RelativePath::new(&json["source_directory"].to_string())
+                            .to_path(&root)
+                            .to_str()
+                            .unwrap()
+                            .to_string()
                     }
                 },
             );
@@ -366,25 +415,30 @@
         }
 
         /**
-         * 
+         *
          */
         pub fn new_top_level(filename: &str) -> TopLevelConfiguration {
             let file_contents = fs::read_to_string(filename).unwrap_or_else(|err| {
                 eprintln!("{}", err);
-                error!("There was an error locating your configuration file: {}", err);
-                panic!("{}",err.to_string());
+                error!(
+                    "There was an error locating your configuration file: {}",
+                    err
+                );
+                panic!("{}", err.to_string());
             });
             let parsed_data = json::parse(&file_contents).unwrap_or_else(|err| {
                 eprintln!();
-                error!("There was an error parsing your configuration file: {}", err);
+                error!(
+                    "There was an error parsing your configuration file: {}",
+                    err
+                );
                 panic!("{}", err.to_string());
             });
             let s_config = Self::parse_shared_config(&parsed_data);
             let pipeline_defs = {
                 if (parsed_data["pipelines"]).is_null() {
                     vec![]
-                }
-                else {
+                } else {
                     Self::parse_json_vector(&parsed_data["pipelines"])
                 }
             };
@@ -392,52 +446,62 @@
             let action_defs = {
                 if (parsed_data["actions"]).is_null() {
                     vec![]
-                }
-                else {
+                } else {
                     Self::parse_json_vector(&parsed_data["actions"])
                 }
             };
             let actions = Self::parse_action_defs(&s_config, &action_defs, &parsed_data);
             TopLevelConfiguration::new(s_config, pipeline_defs, pipelines, action_defs, actions)
         }
-        
+
         /**
-         * 
+         *
          */
-        pub fn overwrite_top_level(mut config: TopLevelConfiguration, filename: &str) -> TopLevelConfiguration {
+        pub fn overwrite_top_level(
+            mut config: TopLevelConfiguration,
+            filename: &str,
+        ) -> TopLevelConfiguration {
             let file_contents = fs::read_to_string(filename).unwrap_or_else(|err| {
                 eprintln!("{}", err);
-                error!("There was an error locating your configuration file: {}", err);
-                panic!("{}",err.to_string());
+                error!(
+                    "There was an error locating your configuration file: {}",
+                    err
+                );
+                panic!("{}", err.to_string());
             });
             let parsed_data = json::parse(&file_contents).unwrap_or_else(|err| {
                 eprintln!();
-                error!("There was an error parsing your configuration file: {}", err);
+                error!(
+                    "There was an error parsing your configuration file: {}",
+                    err
+                );
                 panic!("{}", err.to_string());
             });
             config.set_shared_config(Self::parse_shared_config(&parsed_data));
-            config.set_pipeline_defs(
-                {
-                    if (parsed_data["pipelines"]).is_null() {
-                        vec![]
-                    }
-                    else {
-                        Self::parse_json_vector(&parsed_data["pipelines"])
-                    }
+            config.set_pipeline_defs({
+                if (parsed_data["pipelines"]).is_null() {
+                    vec![]
+                } else {
+                    Self::parse_json_vector(&parsed_data["pipelines"])
                 }
-            );
-            config.set_pipelines(Self::parse_pipeline_defs(config.get_shared_config(), &parsed_data, config.get_pipeline_defs()));
-            config.set_action_defs(
-                {
-                    if (parsed_data["actions"]).is_null() {
-                        vec![]
-                    }
-                    else {
-                        Self::parse_json_vector(&parsed_data["actions"])
-                    }
+            });
+            config.set_pipelines(Self::parse_pipeline_defs(
+                config.get_shared_config(),
+                &parsed_data,
+                config.get_pipeline_defs(),
+            ));
+            config.set_action_defs({
+                if (parsed_data["actions"]).is_null() {
+                    vec![]
+                } else {
+                    Self::parse_json_vector(&parsed_data["actions"])
                 }
-            );
-            config.set_actions(Self::parse_action_defs(config.get_shared_config(), config.get_action_defs(), &parsed_data));
+            });
+            config.set_actions(Self::parse_action_defs(
+                config.get_shared_config(),
+                config.get_action_defs(),
+                &parsed_data,
+            ));
             config
         }
 
@@ -448,5 +512,4 @@
             // println!("{:#?}", parsed_data.as_ref().unwrap().clone());
             parsed_data.unwrap()
         }
-    
     }
