@@ -266,17 +266,9 @@ fn run_bash_scripts(manual: Vec<Step>) -> Vec<String> {
         for step in manual {
             let mut command = Command::new("cmd");
             let mut script = script_setup(&mut outputs, &step);
-            // // println!("{:#?}", &script);
             let output = command_setup_windows(&mut command, &mut script, false)
                 .output()
                 .expect(&("Failed to execute: ".to_string() + &script.concat()));
-            //     [vec!["/c"],
-            //     script.iter().map(String::as_str).collect()
-            //     ].concat()).current_dir(
-            //         current_dir().unwrap()
-            //     ).output().expect(
-            //         &("Failed to execute: ".to_string() + &script.concat())
-            // );
             collect_piped_output(&step, &output, &mut outputs);
         }
         outputs

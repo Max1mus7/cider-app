@@ -9,8 +9,8 @@
         "Consolidate_Reports": {
             "image": "rust:1.64.0",
             "manual": {
-                "step_2": "rustc --version",
-                "step_1": "cargo build",
+                "step_1": "rustc --version",
+                "step_2": "cargo build",
                 "step_3": "cargo test"
             }
         }
