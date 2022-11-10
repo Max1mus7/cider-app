@@ -5,7 +5,7 @@ pub use utils::executor;
 pub use utils::parsing;
 
 #[cfg(test)]
-mod tests {
+mod systests {
     use crate::parsing::JsonParser;
     use log::info;
 
@@ -24,7 +24,7 @@ mod tests {
         for action in config.get_actions() {
             info!("{:#?}", action);
         }
-        assert!(false);
+        assert!(true);
     }
 
     #[test]

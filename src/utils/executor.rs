@@ -377,7 +377,9 @@ fn command_setup_unix<'a>(
     return set_output_piped(cmd.arg("-c").arg(arg_string));
 }
 
-fn collect_piped_output(step: &Step, output: &Output, outputs: &mut Vec<String>) -> () {
+/// Potential issues:
+/// Some success outputs may be read as failures on Linux environments. Look into this more.
+fn collect_piped_output(step: &Step, output: &Output, outputs: &mut Vec<String>) {
     let stdout = String::from_utf8(output.stdout.clone())
         .expect("Could not parse command output as a String.");
     let stderr = String::from_utf8(output.stderr.clone())
