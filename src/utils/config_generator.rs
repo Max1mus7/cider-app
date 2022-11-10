@@ -25,4 +25,4 @@ pub mod config_generator {
     }
 }
 
-pub fn main() -> () {}
+pub fn main() {}

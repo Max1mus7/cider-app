@@ -6,9 +6,8 @@ pub use utils::parsing;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use log::info;
     use crate::parsing::JsonParser;
+    use log::info;
 
     #[test]
     fn parse_json_from_file() {
