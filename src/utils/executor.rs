@@ -9,7 +9,7 @@ use relative_path::RelativePath;
  */
 use std::fs::File;
 use std::io::Write;
-use std::process::{Command, Stdio, Output};
+use std::process::{Command, Output, Stdio};
 use std::{collections::HashMap, env::current_dir};
 
 /// Small wrapper used to gather output of multiple actions and run actions programatically
@@ -281,36 +281,14 @@ fn run_bash_scripts(manual: Vec<Step>) -> Vec<String> {
         }
         outputs
     } else {
-        /**
-         * Performs bash actions in a Linux environment.
-         * Prototype: NEEDS TESTING
-         */
-        // for step in manual {
-        //     let mut command = Command::new("sh");
-        //     let output_str = format_args!("Running {}", step.get_name()).to_string();
-
-        //     let output = command
-        //         .current_dir(current_dir().unwrap())
-        //         .output()
-        //         .expect(&("Failed to execute: ".to_string() + &script.concat()));
-        //     let stdout = String::from_utf8(output.stdout)
-        //         .expect("Could not parse command output as a String.");
-        //     let stderr = String::from_utf8(output.stderr)
-        //         .expect("Could not parse command output as a String.");
-
-        //     outputs.push(if stdout.is_empty() {
-        //         if stderr.is_empty() {
-        //             "No standard output detected. Check to see if it was piped to another file."
-        //                 .to_string()
-        //         } else {
-        //             error!("Standard output from step {}:\n{}", step.get_name(), stderr);
-        //             stderr
-        //         }
-        //     } else {
-        //         info!("Standard output from step {}:\n{}", step.get_name(), stdout);
-        //         stdout
-        //     });
-        // }
+        for step in manual {
+            let mut command = Command::new("sh");
+            let mut script = script_setup(&mut outputs, &step);
+            let output = command_setup_unix(&mut command, &mut script, false)
+                .output()
+                .expect(&("Failed to execute: ".to_string() + &script.concat()));
+            collect_piped_output(&step, &output, &mut outputs)
+        }
         outputs
     }
 }
@@ -374,7 +352,11 @@ impl ExecInfo {
     }
 }
 
-fn command_setup_windows<'a>(cmd: &'a mut Command, args: &mut Vec<String>, inherit: bool) -> &'a mut Command {
+fn command_setup_windows<'a>(
+    cmd: &'a mut Command,
+    args: &mut Vec<String>,
+    inherit: bool,
+) -> &'a mut Command {
     //pass command first?
 
     args.insert(0, "/C".to_string());
@@ -384,11 +366,15 @@ fn command_setup_windows<'a>(cmd: &'a mut Command, args: &mut Vec<String>, inher
     set_output_piped(cmd.args(args).current_dir(current_dir().unwrap()))
 }
 
-fn command_setup_unix(cmd: &mut Command, args: Vec<String>, inherit: bool) -> &mut Command {
+fn command_setup_unix<'a>(
+    cmd: &'a mut Command,
+    args: &mut Vec<String>,
+    inherit: bool,
+) -> &'a mut Command {
     let mut arg_string = String::new();
 
     for arg in args {
-        arg_string += &(arg + " ");
+        arg_string += &(arg.to_owned() + " ");
     }
 
     arg_string = arg_string.trim().to_string();
@@ -400,10 +386,10 @@ fn command_setup_unix(cmd: &mut Command, args: Vec<String>, inherit: bool) -> &m
 }
 
 fn collect_piped_output(step: &Step, output: &Output, outputs: &mut Vec<String>) -> () {
-    let stdout =
-        String::from_utf8(output.stdout.clone()).expect("Could not parse command output as a String.");
-    let stderr =
-        String::from_utf8(output.stderr.clone()).expect("Could not parse command output as a String.");
+    let stdout = String::from_utf8(output.stdout.clone())
+        .expect("Could not parse command output as a String.");
+    let stderr = String::from_utf8(output.stderr.clone())
+        .expect("Could not parse command output as a String.");
 
     println!("stdout from {}: {stdout}", step.get_name());
     println!("stderr from {}: {stderr}", step.get_name());
