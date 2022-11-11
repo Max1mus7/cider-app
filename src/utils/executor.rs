@@ -2,7 +2,7 @@ use crate::utils::config::{Action, Condition, Step};
 
 use log::{error, info, warn};
 use relative_path::RelativePath;
-use std::fmt::format;
+
 /**
  * Module used to clean input and execute actions
  * Eventually, this module will also be used to separate pipeline executions and handle conditional logic
@@ -119,44 +119,44 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
-            panic!("{:#?}",err);
+            panic!("{:#?}", err);
         });
         let mut cmd = Command::new("cmd");
         let mut process = docker_clean_windows(&mut cmd, true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
-            panic!("{:#?}",err);
+            panic!("{:#?}", err);
         });
         let mut cmd = Command::new("cmd");
         let mut process = docker_build_windows(&mut cmd, true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
-            panic!("{:#?}",err);
+            panic!("{:#?}", err);
         });
-        } else {
-            let mut cmd = Command::new("cmd");
-            let mut process = docker_setup_unix(&mut cmd, &setup.image.unwrap(), true)
-                .spawn()
-                .expect("There was an error building your docker environment.");
-            process.wait().unwrap_or_else(|err| {
-                panic!("{:#?}",err);
-            });
-            let mut cmd = Command::new("cmd");
-            let mut process = docker_clean_unix(&mut cmd, true)
-                .spawn()
-                .expect("There was an error building your docker environment.");
-            process.wait().unwrap_or_else(|err| {
-                panic!("{:#?}",err);
-            });
-            let mut cmd = Command::new("cmd");
-            let mut process = docker_build_unix(&mut cmd, true)
-                .spawn()
-                .expect("There was an error building your docker environment.");
-            process.wait().unwrap_or_else(|err| {
-                panic!("{:#?}",err);
-            });
+    } else {
+        let mut cmd = Command::new("cmd");
+        let mut process = docker_setup_unix(&mut cmd, &setup.image.unwrap(), true)
+            .spawn()
+            .expect("There was an error building your docker environment.");
+        process.wait().unwrap_or_else(|err| {
+            panic!("{:#?}", err);
+        });
+        let mut cmd = Command::new("cmd");
+        let mut process = docker_clean_unix(&mut cmd, true)
+            .spawn()
+            .expect("There was an error building your docker environment.");
+        process.wait().unwrap_or_else(|err| {
+            panic!("{:#?}", err);
+        });
+        let mut cmd = Command::new("cmd");
+        let mut process = docker_build_unix(&mut cmd, true)
+            .spawn()
+            .expect("There was an error building your docker environment.");
+        process.wait().unwrap_or_else(|err| {
+            panic!("{:#?}", err);
+        });
     }
 
     outputs
@@ -279,20 +279,21 @@ fn image_setup(setup: &mut ExecInfo, outputs: &mut Vec<String>) {
 }
 
 fn docker_setup_unix<'a>(cmd: &'a mut Command, image: &str, inherit: bool) -> &'a mut Command {
-    cmd.arg("-c").arg(format_args!("docker pull {}", image).to_string().as_str());
+    cmd.arg("-c")
+        .arg(format_args!("docker pull {}", image).to_string().as_str());
     if inherit {
         return set_output_inherit(cmd);
     }
-    return set_output_piped(cmd);
-
+    set_output_piped(cmd)
 }
 
 fn docker_setup_windows<'a>(cmd: &'a mut Command, image: &str, inherit: bool) -> &'a mut Command {
-    cmd.args(vec!["/C", "docker", "pull", image]).current_dir(current_dir().unwrap());
+    cmd.args(vec!["/C", "docker", "pull", image])
+        .current_dir(current_dir().unwrap());
     if inherit {
         return set_output_inherit(cmd);
     }
-    return set_output_piped(cmd);
+    set_output_piped(cmd)
 }
 
 fn docker_clean_unix<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command {
@@ -300,15 +301,16 @@ fn docker_clean_unix<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command
     if inherit {
         return set_output_inherit(cmd);
     }
-    return set_output_piped(cmd);
+    set_output_piped(cmd)
 }
 
 fn docker_clean_windows<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command {
-    cmd.args(vec!["/C", "docker", "image", "rm", "-f", "cider-image"]).current_dir(current_dir().unwrap());
+    cmd.args(vec!["/C", "docker", "image", "rm", "-f", "cider-image"])
+        .current_dir(current_dir().unwrap());
     if inherit {
         return set_output_inherit(cmd);
     }
-    return set_output_piped(cmd);
+    set_output_piped(cmd)
 }
 
 fn docker_build_unix<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command {
@@ -316,7 +318,7 @@ fn docker_build_unix<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command
     if inherit {
         return set_output_inherit(cmd);
     }
-    return set_output_piped(cmd);
+    set_output_piped(cmd)
 }
 
 fn docker_build_windows<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command {
@@ -324,7 +326,7 @@ fn docker_build_windows<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Comm
     if inherit {
         return set_output_inherit(cmd);
     }
-    return set_output_piped(cmd);
+    set_output_piped(cmd)
 }
 
 fn command_setup_unix<'a>(
@@ -332,7 +334,6 @@ fn command_setup_unix<'a>(
     args: &mut Vec<String>,
     inherit: bool,
 ) -> &'a mut Command {
-
     let mut arg_string = String::new();
     for arg in args {
         arg_string += &(arg.to_owned() + " ");
