@@ -1,14 +1,17 @@
 use crate::utils::config::{Action, Condition, Step};
-
 use log::{error, info, warn};
 use relative_path::RelativePath;
+use std::time::{SystemTime};
+use simplelog::*;
+use chrono::{DateTime, Utc};
+
 
 /**
  * Module used to clean input and execute actions
  * Eventually, this module will also be used to separate pipeline executions and handle conditional logic
  * May also be split into modules on an action/pipeline level in the future
  */
-use std::fs::File;
+use std::fs::{File, self};
 use std::io::Write;
 use std::process::{Command, Output, Stdio};
 use std::{collections::HashMap, env::current_dir};
@@ -84,37 +87,70 @@ fn run_batch_script(manual: Vec<Step>) -> Vec<String> {
                 .to_string(),
         );
     }
-
     outputs
 }
 
 fn run_with_docker(setup: ExecInfo) -> Vec<String> {
+
+
+    
     let mut setup = setup;
     let mut outputs = vec![];
     image_setup(&mut setup, &mut outputs);
     generate_dockerfile(&setup);
     if cfg!(windows) {
+        let log_time = Utc::now().format("%d-%m_%H%M%S");
+        let log_file = "./metrics/win/".to_string() + log_time.to_string().as_str() + ".txt";
+        let mut metrics_file = File::create(log_file).unwrap_or_else(|err| {
+            error!("{}", err);
+            panic!("{}", err);
+        });
+        let image_pull_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
         let mut process = docker_setup_windows(&mut cmd, &setup.image.unwrap(), true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
+            error!("{:#?}", err);
             panic!("{:#?}", err);
         });
+        info!("{:#?}", image_pull_time.elapsed().unwrap());
+        metrics_file.write(format!("Image pull time: {:#?}\n", image_pull_time.elapsed().unwrap()).as_bytes()).unwrap_or_else(|err| {
+            error!("There was an issue writing the image pull time to a file.");
+            0
+        });
+        metrics_file.flush().unwrap();
+        let image_rm_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
         let mut process = docker_clean_windows(&mut cmd, true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
+            error!("{:#?}", err);
             panic!("{:#?}", err);
         });
+        info!("{:#?}", image_rm_time.elapsed().unwrap());
+        metrics_file.write(format!("Image remove time: {:#?}\n", image_rm_time.elapsed().unwrap()).as_bytes()).unwrap_or_else(|err| {
+            error!("There was an issue writing the image removal time to a file: {}", err);
+            0
+        });
+        metrics_file.flush().unwrap();
+        let image_build_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
         let mut process = docker_build_windows(&mut cmd, true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
+            error!("{:#?}", err);
             panic!("{:#?}", err);
         });
+        info!("{:#?}", image_build_time.elapsed().unwrap());
+        metrics_file.write(format!("Image build time: {:#?}\n", image_build_time.elapsed().unwrap()).as_bytes()).unwrap_or_else(|err| {
+            error!("There was an issue writing the image build time to a file: {}", err);
+            0
+        });
+        metrics_file.flush().unwrap();
+
     } else {
         let mut cmd = Command::new("sh");
         let mut process = docker_setup_unix(&mut cmd, &setup.image.unwrap(), true)

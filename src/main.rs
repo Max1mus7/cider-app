@@ -65,6 +65,11 @@ fn clean_args(args: Vec<String>) -> Vec<String> {
  */
 fn setup_logger() -> std::io::Result<()> {
     fs::create_dir_all("dist/logs")?;
+    fs::create_dir_all("metrics/win").unwrap();
+    fs::create_dir_all("metrics/deb").unwrap();
+    fs::create_dir_all("metrics/rhel").unwrap();
+    
+
     CombinedLogger::init(vec![
         TermLogger::new(
             LevelFilter::Warn,
