@@ -67,34 +67,14 @@ fn run_batch_script(manual: Vec<Step>) -> Vec<String> {
     let mut outputs = vec![];
 
     if cfg!(windows) {
+        warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
         for step in manual {
             let mut command = Command::new("cmd");
-            let script = script_setup(&mut outputs, &step);
-            // println!("{:#?}", &script);
-            let output = command
-                .args([vec!["/c"], script.iter().map(String::as_str).collect()].concat())
-                .current_dir(current_dir().unwrap())
+            let mut script = script_setup(&mut outputs, &step);
+            let output = command_setup_windows(&mut command, &mut script, false)
                 .output()
                 .expect(&("Failed to execute: ".to_string() + &script.concat()));
-            let _stdout = String::from_utf8(output.stdout)
-                .expect("Could not parse command output as a String.");
-            let _stderr = String::from_utf8(output.stderr)
-                .expect("Could not parse command output as a String.");
-
-            // println!("stdout from {}: {stdout}", step.get_name());
-            // println!("stderr from {}: {stderr}", step.get_name());
-
-            // outputs.push(if stdout.is_empty() {
-            //     if stderr.is_empty() {
-            //         "No standard output detected. Check to see if it was piped to another file.".to_string()
-            //     } else {
-            //         error!("Standard output from step {}: {}", step.get_name(), stderr);
-            //         stderr
-            //     }
-            // } else {
-            //     info!("Standard output from step {}: {}", step.get_name(), stdout);
-            //     stdout
-            // });
+            collect_piped_output(&step, &output, &mut outputs);
         }
         return outputs;
     } else {
@@ -136,21 +116,21 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
             panic!("{:#?}", err);
         });
     } else {
-        let mut cmd = Command::new("cmd");
+        let mut cmd = Command::new("sh");
         let mut process = docker_setup_unix(&mut cmd, &setup.image.unwrap(), true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
             panic!("{:#?}", err);
         });
-        let mut cmd = Command::new("cmd");
+        let mut cmd = Command::new("sh");
         let mut process = docker_clean_unix(&mut cmd, true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
             panic!("{:#?}", err);
         });
-        let mut cmd = Command::new("cmd");
+        let mut cmd = Command::new("sh");
         let mut process = docker_build_unix(&mut cmd, true)
             .spawn()
             .expect("There was an error building your docker environment.");
@@ -165,13 +145,9 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
 ///Runs bash scripts defined in an Action's Manual
 fn run_bash_scripts(manual: Vec<Step>) -> Vec<String> {
     let mut outputs = vec![];
-
-    /*
-     * Performs action using windows-specific configuration.
-     */
+    
     if cfg!(windows) {
         warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
-
         for step in manual {
             let mut command = Command::new("cmd");
             let mut script = script_setup(&mut outputs, &step);
