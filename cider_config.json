@@ -1,0 +1,19 @@
+{
+    "title": "CIder 0.1 Example Docker Config",
+    "operating_system": "Windows",
+    "backend": "bash",
+    "image": "python:3.10",
+    "pipelines": ["Test_Docker"],
+    "Test_Docker": {
+        "actions": ["Consolidate_Reports"],
+        "Consolidate_Reports": {
+            "image": "rust:1.64.0",
+            "manual": {
+                "step_1": "rustc --version",
+                "step_2": "cargo build",
+                "step_3": "cargo test"
+            }
+        }
+    },
+    "source_directory": "./src"
+}

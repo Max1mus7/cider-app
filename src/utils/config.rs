@@ -218,7 +218,7 @@ impl ShareableConfiguration {
         self.backend = new_source;
     }
 }
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 /**
  *
  */
@@ -489,7 +489,7 @@ impl ActionConfig {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 /**
  *
  */
@@ -541,7 +541,7 @@ impl Pipeline {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 /**
  *
  */

@@ -417,6 +417,7 @@ impl JsonParser {
      *
      */
     pub fn new_top_level(filename: &str) -> TopLevelConfiguration {
+        println!("{}",filename);
         let file_contents = fs::read_to_string(filename).unwrap_or_else(|err| {
             eprintln!("{}", err);
             error!(

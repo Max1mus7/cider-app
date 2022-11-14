@@ -2,7 +2,6 @@ use crate::utils::config::{Action, Condition, Step};
 use log::{error, info, warn};
 use relative_path::RelativePath;
 use std::time::{SystemTime};
-use simplelog::*;
 use chrono::{DateTime, Utc};
 
 
@@ -11,7 +10,7 @@ use chrono::{DateTime, Utc};
  * Eventually, this module will also be used to separate pipeline executions and handle conditional logic
  * May also be split into modules on an action/pipeline level in the future
  */
-use std::fs::{File, self};
+use std::fs::{File};
 use std::io::Write;
 use std::process::{Command, Output, Stdio};
 use std::{collections::HashMap, env::current_dir};
@@ -91,9 +90,6 @@ fn run_batch_script(manual: Vec<Step>) -> Vec<String> {
 }
 
 fn run_with_docker(setup: ExecInfo) -> Vec<String> {
-
-
-    
     let mut setup = setup;
     let mut outputs = vec![];
     image_setup(&mut setup, &mut outputs);
