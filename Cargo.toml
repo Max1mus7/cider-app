@@ -11,3 +11,6 @@ json = "0.12.4"
 log = "0.4.17"
 relative-path = "1.7.2"
 simplelog = "0.12.0"
+chrono = "0.4.22"
+tokio = { version = "1.21.2", features = ["full"]}
+notify = "5.0.0"

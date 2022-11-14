@@ -1,14 +1,16 @@
 use crate::utils::config::{Action, Condition, Step};
-
 use log::{error, info, warn};
 use relative_path::RelativePath;
+use std::time::{SystemTime};
+use chrono::{DateTime, Utc};
+
 
 /**
  * Module used to clean input and execute actions
  * Eventually, this module will also be used to separate pipeline executions and handle conditional logic
  * May also be split into modules on an action/pipeline level in the future
  */
-use std::fs::File;
+use std::fs::{File};
 use std::io::Write;
 use std::process::{Command, Output, Stdio};
 use std::{collections::HashMap, env::current_dir};
@@ -67,34 +69,14 @@ fn run_batch_script(manual: Vec<Step>) -> Vec<String> {
     let mut outputs = vec![];
 
     if cfg!(windows) {
+        warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
         for step in manual {
             let mut command = Command::new("cmd");
-            let script = script_setup(&mut outputs, &step);
-            // println!("{:#?}", &script);
-            let output = command
-                .args([vec!["/c"], script.iter().map(String::as_str).collect()].concat())
-                .current_dir(current_dir().unwrap())
+            let mut script = script_setup(&mut outputs, &step);
+            let output = command_setup_windows(&mut command, &mut script, false)
                 .output()
                 .expect(&("Failed to execute: ".to_string() + &script.concat()));
-            let _stdout = String::from_utf8(output.stdout)
-                .expect("Could not parse command output as a String.");
-            let _stderr = String::from_utf8(output.stderr)
-                .expect("Could not parse command output as a String.");
-
-            // println!("stdout from {}: {stdout}", step.get_name());
-            // println!("stderr from {}: {stderr}", step.get_name());
-
-            // outputs.push(if stdout.is_empty() {
-            //     if stderr.is_empty() {
-            //         "No standard output detected. Check to see if it was piped to another file.".to_string()
-            //     } else {
-            //         error!("Standard output from step {}: {}", step.get_name(), stderr);
-            //         stderr
-            //     }
-            // } else {
-            //     info!("Standard output from step {}: {}", step.get_name(), stdout);
-            //     stdout
-            // });
+            collect_piped_output(&step, &output, &mut outputs);
         }
         return outputs;
     } else {
@@ -104,7 +86,6 @@ fn run_batch_script(manual: Vec<Step>) -> Vec<String> {
                 .to_string(),
         );
     }
-
     outputs
 }
 
@@ -114,43 +95,74 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
     image_setup(&mut setup, &mut outputs);
     generate_dockerfile(&setup);
     if cfg!(windows) {
+        let log_time = Utc::now().format("%d-%m_%H%M%S");
+        let log_file = "./metrics/win/".to_string() + log_time.to_string().as_str() + ".txt";
+        let mut metrics_file = File::create(log_file).unwrap_or_else(|err| {
+            error!("{}", err);
+            panic!("{}", err);
+        });
+        let image_pull_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
         let mut process = docker_setup_windows(&mut cmd, &setup.image.unwrap(), true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
+            error!("{:#?}", err);
             panic!("{:#?}", err);
         });
+        info!("{:#?}", image_pull_time.elapsed().unwrap());
+        metrics_file.write(format!("Image pull time: {:#?}\n", image_pull_time.elapsed().unwrap()).as_bytes()).unwrap_or_else(|err| {
+            error!("There was an issue writing the image pull time to a file.");
+            0
+        });
+        metrics_file.flush().unwrap();
+        let image_rm_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
         let mut process = docker_clean_windows(&mut cmd, true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
+            error!("{:#?}", err);
             panic!("{:#?}", err);
         });
+        info!("{:#?}", image_rm_time.elapsed().unwrap());
+        metrics_file.write(format!("Image remove time: {:#?}\n", image_rm_time.elapsed().unwrap()).as_bytes()).unwrap_or_else(|err| {
+            error!("There was an issue writing the image removal time to a file: {}", err);
+            0
+        });
+        metrics_file.flush().unwrap();
+        let image_build_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
         let mut process = docker_build_windows(&mut cmd, true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
+            error!("{:#?}", err);
             panic!("{:#?}", err);
         });
+        info!("{:#?}", image_build_time.elapsed().unwrap());
+        metrics_file.write(format!("Image build time: {:#?}\n", image_build_time.elapsed().unwrap()).as_bytes()).unwrap_or_else(|err| {
+            error!("There was an issue writing the image build time to a file: {}", err);
+            0
+        });
+        metrics_file.flush().unwrap();
+
     } else {
-        let mut cmd = Command::new("cmd");
+        let mut cmd = Command::new("sh");
         let mut process = docker_setup_unix(&mut cmd, &setup.image.unwrap(), true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
             panic!("{:#?}", err);
         });
-        let mut cmd = Command::new("cmd");
+        let mut cmd = Command::new("sh");
         let mut process = docker_clean_unix(&mut cmd, true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
             panic!("{:#?}", err);
         });
-        let mut cmd = Command::new("cmd");
+        let mut cmd = Command::new("sh");
         let mut process = docker_build_unix(&mut cmd, true)
             .spawn()
             .expect("There was an error building your docker environment.");
@@ -165,13 +177,9 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
 ///Runs bash scripts defined in an Action's Manual
 fn run_bash_scripts(manual: Vec<Step>) -> Vec<String> {
     let mut outputs = vec![];
-
-    /*
-     * Performs action using windows-specific configuration.
-     */
+    
     if cfg!(windows) {
         warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
-
         for step in manual {
             let mut command = Command::new("cmd");
             let mut script = script_setup(&mut outputs, &step);
