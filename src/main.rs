@@ -5,16 +5,16 @@ use cider::parsing::*;
 use cider::watcher::*;
 use clap::Parser;
 
+use log::error;
 use simplelog::*;
-use log::{error};
 use tokio::fs as tfs;
 
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
-use std::{thread, time};
 use std::time::SystemTime;
+use std::{thread, time};
 
 #[derive(Parser, Default, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -23,7 +23,7 @@ struct Arguments {
     config: Option<String>,
 
     #[arg(short, long, default_value_t = false)]
-    watch: bool
+    watch: bool,
 }
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -48,17 +48,26 @@ async fn main() -> std::io::Result<()> {
         "main_test.txt",
     ))?;
 
-    let mut start_mod_time = tfs::metadata(conf.get_shared_config().get_source()).await?.modified().unwrap().duration_since(SystemTime::UNIX_EPOCH).unwrap();
+    let mut start_mod_time = tfs::metadata(conf.get_shared_config().get_source())
+        .await?
+        .modified()
+        .unwrap()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap();
     loop {
         if args.watch {
             thread::sleep(time::Duration::from_millis(2000));
-            let now_mod_time = tfs::metadata(conf.get_shared_config().get_source()).await?.modified().unwrap().duration_since(SystemTime::UNIX_EPOCH).unwrap();
+            let now_mod_time = tfs::metadata(conf.get_shared_config().get_source())
+                .await?
+                .modified()
+                .unwrap()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap();
             if start_mod_time < now_mod_time {
                 start_mod_time = now_mod_time.clone();
                 println!("Changes detected in source directory.");
                 file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
-            }
-            else {
+            } else {
                 error!("{:#?}, {:#?}", start_mod_time, now_mod_time);
                 println!("Waiting for changes to be made to source directory.");
             }
@@ -68,7 +77,13 @@ async fn main() -> std::io::Result<()> {
         }
     }
 
-    error!("{:#?}", tfs::metadata(conf.get_shared_config().get_source()).await?.modified().unwrap());
+    error!(
+        "{:#?}",
+        tfs::metadata(conf.get_shared_config().get_source())
+            .await?
+            .modified()
+            .unwrap()
+    );
 
     let mut file = File::create("./dist/output/config_output.txt")?;
     file.write_fmt(format_args!("{:#?}", conf))?;
@@ -86,7 +101,6 @@ fn setup_logger() -> std::io::Result<()> {
     fs::create_dir_all("metrics/win").unwrap();
     fs::create_dir_all("metrics/deb").unwrap();
     fs::create_dir_all("metrics/rhel").unwrap();
-    
 
     CombinedLogger::init(vec![
         TermLogger::new(
@@ -191,5 +205,4 @@ mod tests {
             );
         }
     }
-
 }

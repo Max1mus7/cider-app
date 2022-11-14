@@ -53,5 +53,4 @@ mod systests {
             info!("{:#?}", pipeline);
         }
     }
-
 }
