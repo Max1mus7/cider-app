@@ -638,7 +638,9 @@ impl PipelineConfig {
     }
 }
 
-//Holds information with conditions that will resolve to either true or false
+/**
+ * Holds information with conditions that will resolve to either true or false
+ */
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Condition {
     //A name is necessary for a condition to exist.

@@ -3,8 +3,8 @@ pub mod utils;
 use cider::executor::*;
 use cider::parsing::*;
 use cider::watcher::*;
-use clap::Parser;
 
+use clap::Parser;
 use log::error;
 use simplelog::*;
 use tokio::fs as tfs;

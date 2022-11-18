@@ -4,7 +4,8 @@ logs
 /tests/scripts/output/*
 dist
 /target
-!/target/doc/cider
+metrics/*
+
 # Added by cargo
 #
 # already existing elements were commented out
@@ -12,3 +13,6 @@ dist
 #/target
 Dockerfile
 .dockerignore
+
+# Remove config files, create seperate repository(?) for example configurations.
+*.json
