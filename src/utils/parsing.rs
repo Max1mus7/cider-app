@@ -473,7 +473,7 @@ pub mod json_parser {
             );
             panic!("{}", err.to_string());
         });
-        config.set_shared_config(parse_shared_config(&parsed_data));
+        config.s_config =  parse_shared_config(&parsed_data);
         config.set_pipeline_defs({
             if (parsed_data["pipelines"]).is_null() {
                 vec![]
@@ -482,7 +482,7 @@ pub mod json_parser {
             }
         });
         config.set_pipelines(parse_pipeline_defs(
-            config.get_shared_config(),
+            &config.s_config,
             &parsed_data,
             config.get_pipeline_defs(),
         ));
@@ -494,7 +494,7 @@ pub mod json_parser {
             }
         });
         config.set_actions(parse_action_defs(
-            config.get_shared_config(),
+            &config.s_config,
             config.get_action_defs(),
             &parsed_data,
         ));

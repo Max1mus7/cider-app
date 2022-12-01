@@ -465,30 +465,46 @@ impl ShareableConfiguration {
     }
 }
 
-/// Contains information pertinent to 
+/// Contains information pertinent to a CIder configuration as a whole.
+/// 
+/// A [`TopLevelConfiguration`] is meant to contain information relevant to multiple pipelines, or actions, or metadata/information relevant
+/// to the entire configuraiton.
+/// 
+/// [`TopLevelConfiguration`]s are the highest level of configuration possible, and they allow the user to define actions and pipelines
+/// to be used by the program and allow for better-organized configuration structures.
+/// 
+/// 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TopLevelConfiguration {
 
-    /// ShareableConfiguration data required to perform top-level tasks. See [`ShareableConfiguration`]
+    /// ShareableConfiguration data required to perform top-level tasks and pass on to lower-level tasks. See [`ShareableConfiguration`]
     pub s_config: ShareableConfiguration,
 
-    //pipeline definitions required at runtime, even if it is an empty Vector
-    //defaulted to an empty vector
+    ///pipeline definitions required at runtime, even if it is an empty Vector
     pipeline_defs: Vec<String>,
 
-    //No pipelines required at runtime, but Vector will exist prepared.
+    /// The data used to run pipelines
+    /// 
+    /// Pipelines require certain information in order to not only be valid but also in order to function.
+    /// Pipelines are meant to hold actions, but actions can still be defined at the top level.
     pipelines: Vec<Pipeline>,
 
-    //Top-level action definitions not required at runtime
-    //defaulted to empty Vector
+    ///Top-level action definitions 
+    /// 
+    /// Action definitions are an array of strings that contain the names of actions to be invoked by CIder.
     action_defs: Vec<String>,
 
-    //Top-level actions not required for a TopLevelConfiguration implementation to be valid
-    //defaulted to empty Vectory
+    ///Top-level actions not required for a TopLevelConfiguration implementation to be valid
     actions: Vec<Action>,
 }
 
 impl TopLevelConfiguration {
+    /// Creates a new [`TopLevelConfiguration`].
+    /// 
+    /// Creates a new [`TopLevelConfiguration`]. Information that is not provided via a configuration file is defaulted when
+    /// a configuration file is parsed in [`crate::utils::parsing`]. 
+    /// 
+    /// For more information, see new_top_level() in [`crate::utils::parsing`]
     pub fn new(
         s_config: ShareableConfiguration,
         pipeline_defs: Vec<String>,
@@ -505,15 +521,19 @@ impl TopLevelConfiguration {
         }
     }
 
-    pub fn get_shared_config(&self) -> &ShareableConfiguration {
-        // info!("Shareable configuration successfully retrieved from top-level configuration: \n{:#?}", &self.s_config);
-        &self.s_config
-    }
-    pub fn set_shared_config(&mut self, new_s_config: ShareableConfiguration) {
-        info!("New shareable configuration set: \n{:#?}", new_s_config);
-        self.s_config = new_s_config;
-    }
-
+    /// Returns pipeline definitions
+    /// 
+    /// Returns the pipelines associated with a [`TopLevelConfiguration`]
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// 
+    /// let m = s.s_config.get_pipeline_defs();
+    /// ```
     pub fn get_pipeline_defs(&self) -> &Vec<String> {
         info!(
             "Pipelines successfully retrieved from configuration: {:#?}",
