@@ -1,54 +1,75 @@
 use log::{info, warn};
 use std::collections::HashMap;
 
+/// Contains information that can be shared between levels of a configuration
+/// 
+/// Contains information to be shared from a higher-level of configuration to a lower-level of a configuration.
+/// This contains some "aesthetic" data, like metadata and tags, but also can contain some useful information like 
+/// the source directory you would like as your root, your output directory, and more. 
+/// 
+/// [`ShareableConfiguration`]s also contain program-critical information like the backend, image, and the language you would
+/// like to use in order to run your [`Action`] steps.
+/// 
+/// Configuration levels are as follows:
+/// | Level | Priority |
+/// |-------|----------|
+/// | Top   |     1    |
+/// | Pipeline |  2    |
+/// | Action|     3    |
 #[derive(Debug, Clone, PartialEq, Eq)]
-/**
- *
- */
 pub struct ShareableConfiguration {
-    //metadata not required at runtime
-    //defaulted to None
+    /// metadata not required 
+    /// 
+    /// defaulted to None
     metadata: Option<HashMap<String, String>>,
 
-    //title not required at runtime
-    //defaulted to None
+    /// title not required
+    /// title can be used to name different configuration sections, but is completely optional, unlike action_defs or pipeline_defs 
+    /// in [`TopLevelConfiguration`]
+    /// defaulted to None
     title: Option<String>,
 
-    //tags not required at runtime
-    //defaulted to None
+    /// tags not required
+    /// tags do nothing functionally at the moment, but may be used in a later release.
+    /// defaulted to None
     tags: Option<HashMap<String, String>>,
 
-    //language required at runtime, so it is non-optional
-    //defaulted to bash
+    ///language required at runtime
+    ///defaulted to bash
     language: String,
 
-    //image not required at runtime
-    //defaulted to None
-    //if "docker" is specified as a backend, this will default to ubuntu:latest
-    //IMAGE IS A DOCKER-SPECIFIC FEATURE. IF BACKEND IS NOT DOCKER, IMAGE SHOULD BE NONE
+    /// image not required
+    /// defaulted to None
+    /// if "docker" is specified as a backend, this will default to alpine:latest
+    /// IMAGE IS A DOCKER-SPECIFIC FEATURE. IF BACKEND IS NOT DOCKER, IMAGE SHOULD NOT BE DEFINED
     image: Option<String>,
 
-    //backend required at runtime, so it is non-optional
-    //defaulted to local(Windows in this case)
-    //TODO: upon implementing Docker functionality, make this default to Docker
+    /// backend required
+    /// defaulted to local(Windows in this case)
     backend: String,
 
-    //Output directory required at runtime, so it is not optional
-    //defaulted to dist/cider/
+    /// Output directory required
+    /// defaulted to ./dist/cider/
     output: String,
 
-    //Source directory required at runtime, so it is not optional
-    //defaulted to ./src
+    /// Source directory required
+    /// defaulted to ./src
     source: String,
 }
 
-/**
- *
- */
 impl ShareableConfiguration {
-    /**
-     *
-     */
+    /// Creates a new [`ShareableConfiguration`]
+    /// 
+    /// Some values are completely optional, and will either be defaulted or set as None if not provided. 
+    /// Note that some required information is set by default in [`crate::parsing::json_parser`] if it is not explicitly defaulted here.
+    /// Specifically, output, and source are defaulted to ./dist/cider and ./src, respectively.
+    /// 
+    /// # Examples:
+    /// Basic usage:
+    /// ```
+    /// let s = ShareableConfiguration::new(None, None, None, "Rust".to_string(), None, "bash".to_string(), "./dist/cider", "./src");
+    /// ```
+    /// 
     pub fn new(
         metadata: Option<HashMap<String, String>>,
         title: Option<String>,
@@ -79,9 +100,23 @@ impl ShareableConfiguration {
         }
     }
 
-    /**
-     *
-     */
+    /// Returns metadata
+    /// 
+    /// Returns the metadata associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
+    /// or of a None type. 
+    /// 
+    /// # Warnings
+    /// Will provide the user with a warning if metadata obtained returns a None type.
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// 
+    /// let m = s.s_config.get_metadata();
+    /// ```
     pub fn get_metadata(&self) -> Option<HashMap<String, String>> {
         match &self.metadata {
             Some(metadata) => {
@@ -95,14 +130,44 @@ impl ShareableConfiguration {
             }
         }
     }
+
+    ///Allows the metadata of a [`ShareableConfiguration`] to be changed
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// let mut hm = HashMap::new();
+    /// hm.insert("some metadata tag", "some metadata data");
+    /// 
+    /// let m = s.s_config.set_metadata(hm);
+    /// 
+    /// assert_eq!(s.s_config.get_metadata(), hm);
+    /// ```
     pub fn set_metadata(&mut self, new_metadata: HashMap<String, String>) {
         info!("New metadata set: {:#?}", new_metadata);
         self.metadata = Some(new_metadata);
     }
 
-    /**
-     *
-     */
+    /// Returns the title
+    /// 
+    /// Returns the title associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
+    /// or of a None type. 
+    /// 
+    /// # Warnings
+    /// Will provide the user with a warning if metadata obtained returns a None type.
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// 
+    /// let m = s.s_config.get_title();
+    /// ```
     pub fn get_title(&self) -> Option<String> {
         match &self.title {
             Some(title) => {
@@ -116,14 +181,43 @@ impl ShareableConfiguration {
             }
         }
     }
+
+    ///Allows the title of a [`ShareableConfiguration`] to be changed
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// let t = "Cider".to_string();
+    /// 
+    /// let m = s.s_config.set_title(t);
+    /// 
+    /// assert_eq!(s.s_config.get_title(), t);
+    /// ```
     pub fn set_title(&mut self, new_title: String) {
         info!("New title set: {}", new_title);
         self.title = Some(new_title);
     }
 
-    /**
-     *
-     */
+    /// Returns tags
+    /// 
+    /// Returns the tags associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
+    /// or of a None type. 
+    /// 
+    /// # Warnings
+    /// Will provide the user with a warning if metadata obtained returns a None type.
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// 
+    /// let m = s.s_config.get_tags();
+    /// ```
     pub fn get_tags(&self) -> Option<HashMap<String, String>> {
         match &self.tags {
             Some(tags) => {
@@ -137,24 +231,84 @@ impl ShareableConfiguration {
             }
         }
     }
+
+    ///Allows the tags of a [`ShareableConfiguration`] to be changed
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// let mut hm = HashMap::new();
+    /// hm.insert("some tag", "some data");
+    /// 
+    /// let m = s.s_config.set_tags(hm);
+    /// 
+    /// assert_eq!(s.s_config.get_tags(), hm);
+    /// ```
     pub fn set_tags(&mut self, new_tags: HashMap<String, String>) {
         self.tags = Some(new_tags);
     }
 
-    /**
-     *
-     */
+    /// Returns language
+    /// 
+    /// Returns the language associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
+    /// or of a None type. 
+    /// 
+    /// # Warnings
+    /// Will provide the user with a warning if metadata obtained returns a None type.
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// 
+    /// let m = s.s_config.get_language();
+    /// println!("{}", m);
+    /// ```
     pub fn get_language(&self) -> &str {
         &self.language
     }
+
+    /// Allows the language of a [`ShareableConfiguration`] to be changed
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// let l = "Rust".to_string();
+    /// 
+    /// s.s_config.set_language(l);
+    /// 
+    /// assert_eq!(s.s_config.get_language(), l);
+    /// ```
     pub fn set_language(&mut self, new_language: String) {
         info!("New language set: {}", new_language);
         self.language = new_language;
     }
 
-    /**
-     *
-     */
+    /// Returns configured image
+    /// 
+    /// Returns the image associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
+    /// or of a None type. 
+    /// 
+    /// # Warnings
+    /// Will provide the user with a warning if image obtained returns a None type.
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// 
+    /// let m = s.s_config.get_image();
+    /// ```
     pub fn get_image(&self) -> Option<String> {
         match &self.image {
             Some(image) => {
@@ -168,6 +322,21 @@ impl ShareableConfiguration {
             }
         }
     }
+
+    /// Allows the image of a [`ShareableConfiguration`] to be changed
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// let i = "rust:1.65.0".to_string();
+    /// 
+    /// let m = s.s_config.set_image(i);
+    /// 
+    /// assert_eq!(s.s_config.get_image(), i);
+    /// ```
     pub fn set_image(&mut self, new_image: String) {
         if !self.get_backend().to_lowercase().eq("docker") {
             warn!("image can only be set on configurations with a docker backend");
@@ -177,20 +346,57 @@ impl ShareableConfiguration {
         self.image = Some(new_image);
     }
 
-    /**
-     *
-     */
+    /// Returns backend
+    /// 
+    /// Returns the backend associated with a [`ShareableConfiguration`]
+    /// 
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// 
+    /// let m = s.s_config.get_backend();
+    /// ```
     pub fn get_backend(&self) -> &str {
         &self.backend
     }
+    
+    ///Allows the backend of a [`ShareableConfiguration`] to be changed
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// let b = "bash".to_string();
+    /// 
+    /// s.s_config.set_backend(b);
+    /// 
+    /// assert_eq!(s.s_config.get_backend(), b);
+    /// ```
     pub fn set_backend(&mut self, new_backend: String) {
         info!("New backend set: {}", new_backend);
         self.backend = new_backend;
     }
 
-    /**
-     *
-     */
+    /// Returns output directory
+    /// 
+    /// Returns the output directory associated with a [`ShareableConfiguration`]
+    /// 
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// 
+    /// let m = s.s_config.get_output();
+    /// ```
     pub fn get_output(&self) -> &str {
         info!(
             "Output directory successfully retrieved: {:?}",
@@ -198,14 +404,39 @@ impl ShareableConfiguration {
         );
         &self.output
     }
+
+    ///Allows the output directory of a [`ShareableConfiguration`] to be changed
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// let o = "./dist/cider".to_string();
+    /// 
+    /// s.s_config.set_output(o);
+    /// 
+    /// assert_eq!(s.s_config.get_output(), o);
+    /// ```
     pub fn set_output(&mut self, new_output: String) {
         info!("New output directory set: {}", new_output);
         self.output = new_output;
     }
 
-    /**
-     *
-     */
+    /// Returns source directory
+    /// 
+    /// Returns the source directory associated with a [`ShareableConfiguration`]
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// 
+    /// let m = s.s_config.get_source();
+    /// ```
     pub fn get_source(&self) -> &str {
         info!(
             "Source directory successfully retrieved: {:?}",
@@ -213,17 +444,32 @@ impl ShareableConfiguration {
         );
         &self.source
     }
+
+    ///Allows the source directory of a [`ShareableConfiguration`] to be changed
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// let src = "./src".to_string();
+    /// 
+    /// s.s_config.set_source(src);
+    /// 
+    /// assert_eq!(s.s_config.get_source(), src);
+    /// ```
     pub fn set_source(&mut self, new_source: String) {
         info!("New source directory set: {}", new_source);
         self.backend = new_source;
     }
 }
+
+/// Contains information pertinent to 
 #[derive(Debug, Clone, PartialEq, Eq)]
-/**
- *
- */
 pub struct TopLevelConfiguration {
-    //ShareableConfiguration data required to perform top-level tasks
+
+    /// ShareableConfiguration data required to perform top-level tasks. See [`ShareableConfiguration`]
     pub s_config: ShareableConfiguration,
 
     //pipeline definitions required at runtime, even if it is an empty Vector
@@ -242,13 +488,7 @@ pub struct TopLevelConfiguration {
     actions: Vec<Action>,
 }
 
-/**
- *
- */
 impl TopLevelConfiguration {
-    /**
-     *
-     */
     pub fn new(
         s_config: ShareableConfiguration,
         pipeline_defs: Vec<String>,
@@ -265,9 +505,6 @@ impl TopLevelConfiguration {
         }
     }
 
-    /**
-     *
-     */
     pub fn get_shared_config(&self) -> &ShareableConfiguration {
         // info!("Shareable configuration successfully retrieved from top-level configuration: \n{:#?}", &self.s_config);
         &self.s_config
@@ -277,9 +514,6 @@ impl TopLevelConfiguration {
         self.s_config = new_s_config;
     }
 
-    /**
-     *
-     */
     pub fn get_pipeline_defs(&self) -> &Vec<String> {
         info!(
             "Pipelines successfully retrieved from configuration: {:#?}",
@@ -292,9 +526,6 @@ impl TopLevelConfiguration {
         self.pipeline_defs = new_pipeline_defs;
     }
 
-    /**
-     *
-     */
     pub fn get_pipelines(&self) -> &Vec<Pipeline> {
         // info!("Pipelines successfully retrieved: \n{:#?}", &self.pipelines);
         &self.pipelines
@@ -304,9 +535,6 @@ impl TopLevelConfiguration {
         self.pipelines = new_pipelines;
     }
 
-    /**
-     *
-     */
     pub fn get_action_defs(&self) -> &Vec<String> {
         info!(
             "Actions successfully retrieved from configuration: {:#?}",
@@ -319,9 +547,6 @@ impl TopLevelConfiguration {
         self.action_defs = new_action_defs;
     }
 
-    /**
-     *
-     */
     pub fn get_actions(&self) -> &Vec<Action> {
         // info!("Actions successfully retrieved: {:#?}", &self.actions);
         &self.actions
@@ -331,9 +556,6 @@ impl TopLevelConfiguration {
         self.actions = new_actions;
     }
 
-    /**
-     *
-     */
     pub fn get_all_actions(&self) -> Vec<Action> {
         let mut actions: Vec<Action> = vec![];
         for action in self.get_actions() {
@@ -350,21 +572,13 @@ impl TopLevelConfiguration {
 
 //holds action-specific configuration information
 #[derive(Debug, Clone, PartialEq, Eq)]
-/**
- *
- */
+
 pub struct Action {
     shared_config: ShareableConfiguration,
     action_config: ActionConfig,
 }
 
-/**
- *
- */
 impl Action {
-    /**
-     *
-     */
     pub fn new(shared_config: ShareableConfiguration, action_config: ActionConfig) -> Action {
         Action {
             shared_config,
@@ -372,9 +586,6 @@ impl Action {
         }
     }
 
-    /**
-     *
-     */
     pub fn get_shared_config(&self) -> &ShareableConfiguration {
         &self.shared_config
     }
@@ -382,9 +593,6 @@ impl Action {
         self.shared_config = new_shared_config;
     }
 
-    /**
-     *
-     */
     pub fn get_action_config(&self) -> &ActionConfig {
         &self.action_config
     }
@@ -394,9 +602,7 @@ impl Action {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-/**
- *
- */
+
 pub struct ActionConfig {
     //Not required at runtime, can be None
     //default = None
@@ -413,13 +619,7 @@ pub struct ActionConfig {
     manual: Vec<Step>,
 }
 
-/**
- *
- */
 impl ActionConfig {
-    /**
-     *
-     */
     pub fn new(
         conditions: Option<Vec<Condition>>,
         retries: Option<i8>,
@@ -438,9 +638,6 @@ impl ActionConfig {
         }
     }
 
-    /**
-     *
-     */
     pub fn get_conditions(&self) -> Option<Vec<Condition>> {
         self.conditions.clone()
     }
@@ -449,9 +646,6 @@ impl ActionConfig {
         self.conditions = Some(new_conditions);
     }
 
-    /**
-     *
-     */
     pub fn get_retries(&self) -> &i8 {
         info!("Retry count successfully acquired: {} ", &self.retries);
         &self.retries
@@ -461,9 +655,6 @@ impl ActionConfig {
         self.retries = new_retries
     }
 
-    /**
-     *
-     */
     pub fn get_allowed_failure(&self) -> &bool {
         info!(
             "Failure allowance successfully acquired: {} ",
@@ -471,14 +662,12 @@ impl ActionConfig {
         );
         &self.allowed_failure
     }
+
     pub fn set_allowed_failure(&mut self, new_allowed_failure: bool) {
         info!("New failure allowance set: {:?}", &new_allowed_failure);
         self.allowed_failure = new_allowed_failure;
     }
 
-    /**
-     *
-     */
     pub fn get_manual(&self) -> &Vec<Step> {
         info!("Manual successfully retrieved: {:#?}", &self.manual);
         &self.manual
@@ -490,21 +679,13 @@ impl ActionConfig {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-/**
- *
- */
+
 pub struct Pipeline {
     shared_config: ShareableConfiguration,
     pipeline_config: PipelineConfig,
 }
 
-/**
- *
- */
 impl Pipeline {
-    /**
-     *
-     */
     pub fn new(shared_config: ShareableConfiguration, pipeline_config: PipelineConfig) -> Pipeline {
         Pipeline {
             shared_config,
@@ -512,39 +693,25 @@ impl Pipeline {
         }
     }
 
-    /**
-     *
-     */
     pub fn get_shared_config(&self) -> &ShareableConfiguration {
         &self.shared_config
     }
 
-    /**
-     *
-     */
     pub fn set_shared_config(&mut self, new_shared_config: ShareableConfiguration) {
         self.shared_config = new_shared_config;
     }
 
-    /**
-     *
-     */
     pub fn get_pipeline_config(&self) -> &PipelineConfig {
         &self.pipeline_config
     }
 
-    /**
-     *
-     */
     pub fn set_action_config(&mut self, new_pipeline_config: PipelineConfig) {
         self.pipeline_config = new_pipeline_config;
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-/**
- *
- */
+
 pub struct PipelineConfig {
     //Not required at runtime, can be None
     //default = None
@@ -569,13 +736,7 @@ pub struct PipelineConfig {
     requires: Vec<String>,
 }
 
-/**
- *
- */
 impl PipelineConfig {
-    /**
-     *
-     */
     pub fn new(
         conditions: Option<Vec<Condition>>,
         action_defs: Vec<String>,
@@ -598,9 +759,6 @@ impl PipelineConfig {
         }
     }
 
-    /**
-     *
-     */
     pub fn get_conditions(&self) -> Result<&Vec<Condition>, &'static str> {
         match &self.conditions {
             Some(conditions) => {
@@ -615,32 +773,22 @@ impl PipelineConfig {
         }
     }
 
-    /**
-     *
-     */
     pub fn set_conditions(&mut self, new_conditions: Vec<Condition>) {
         info!("New conditions set: {:#?}", new_conditions);
         self.conditions = Some(new_conditions);
     }
 
-    /**
-     *
-     */
     pub fn get_action_defs(&self) -> &Vec<String> {
         &self.action_defs
     }
 
-    /**
-     *
-     */
     pub fn get_actions(&self) -> &Vec<Action> {
         &self.actions
     }
 }
 
-/**
- * Holds information with conditions that will resolve to either true or false
- */
+/// Holds information with conditions that will resolve to either true or false
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Condition {
     //A name is necessary for a condition to exist.

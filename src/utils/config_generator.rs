@@ -1,5 +1,6 @@
 use crate::utils::config::TopLevelConfiguration;
 use std::fs::File;
+
 struct OutputConfig {
     pub configuration: TopLevelConfiguration,
 }
@@ -20,5 +21,3 @@ impl OutputFile for OutputConfig {
         })
     }
 }
-
-pub fn main() {}

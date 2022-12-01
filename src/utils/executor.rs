@@ -61,9 +61,7 @@ fn generate_dockerfile(info: &ExecInfo) -> File {
     file
 }
 
-/**
- * Runs a batch script (WINDOWS ONLY RIGHT NOW)
- */
+//
 fn run_batch_script(manual: Vec<Step>) -> Vec<String> {
     let mut outputs = vec![];
 

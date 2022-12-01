@@ -42,7 +42,7 @@ async fn main() -> std::io::Result<()> {
         args.config.unwrap()
     };
 
-    let conf = JsonParser::new_top_level(&filename);
+    let conf = json_parser::new_top_level(&filename);
     let mut file = File::create(curate_filepath(
         conf.get_shared_config().get_output(),
         "main_test.txt",
