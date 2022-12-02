@@ -523,16 +523,16 @@ impl TopLevelConfiguration {
 
     /// Returns pipeline definitions
     /// 
-    /// Returns the pipelines associated with a [`TopLevelConfiguration`]
+    /// Returns the a reference to the pipeline definitions associated with a [`TopLevelConfiguration`] in a vector form
     /// 
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
     /// 
     /// //returns a TopLevelConfiguration
-    /// let s = json_parser::new_top_level("./cider_config.json");
+    /// let t = json_parser::new_top_level("./cider_config.json");
     /// 
-    /// let m = s.s_config.get_pipeline_defs();
+    /// let m = t.get_pipeline_defs();
     /// ```
     pub fn get_pipeline_defs(&self) -> &Vec<String> {
         info!(
@@ -541,20 +541,77 @@ impl TopLevelConfiguration {
         );
         &self.pipeline_defs
     }
+
+    ///Allows the pipeline definitions of a [`TopLevelConfiguration`] to be changed
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration
+    /// let t = json_parser::new_top_level("./cider_config.json");
+    /// let p = vec!["Pipeline_1", "Pipeline_2", "Pipeline_3"];
+    /// 
+    /// t.set_pipeline_defs(p);
+    /// 
+    /// assert_eq!(t.get_pipeline_defs(), p);
+    /// ```
     pub fn set_pipeline_defs(&mut self, new_pipeline_defs: Vec<String>) {
         info!("New pipeline definitions set: {:#?}", new_pipeline_defs);
         self.pipeline_defs = new_pipeline_defs;
     }
 
+    /// Returns all [`Pipeline`]s contained by a TopLevelConfiguration
+    /// 
+    /// Returns the a reference to the [`Pipeline`]s associated with a [`TopLevelConfiguration`] in a vector form
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration
+    /// let t = json_parser::new_top_level("./cider_config.json");
+    /// 
+    /// let m = t.get_pipelines();
+    /// ```
     pub fn get_pipelines(&self) -> &Vec<Pipeline> {
         // info!("Pipelines successfully retrieved: \n{:#?}", &self.pipelines);
         &self.pipelines
     }
+
+    ///Allows the [`Pipeline`]s of a [`TopLevelConfiguration`] to be changed
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration
+    /// let t = json_parser::new_top_level("./cider_config.json");
+    /// let mut p = *(t.get_pipelines()).clone();
+    /// p.pop()
+    /// 
+    /// t.set_pipeline_defs(p);
+    /// 
+    /// assert_eq!(t.get_pipelines(), p);
+    /// ```
     pub fn set_pipelines(&mut self, new_pipelines: Vec<Pipeline>) {
         info!("New pipelines set: \n{:#?}", new_pipelines);
         self.pipelines = new_pipelines;
     }
 
+    /// Returns action definitions
+    /// 
+    /// Returns the a reference to the [`Action`] definitions associated with a [`TopLevelConfiguration`] in a vector form
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration
+    /// let t = json_parser::new_top_level("./cider_config.json");
+    /// 
+    /// let m = t.get_action_defs();
+    /// ```
     pub fn get_action_defs(&self) -> &Vec<String> {
         info!(
             "Actions successfully retrieved from configuration: {:#?}",
@@ -562,20 +619,74 @@ impl TopLevelConfiguration {
         );
         &self.action_defs
     }
+
+    ///Allows the action definitions of a [`TopLevelConfiguration`] to be changed
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration
+    /// let t = json_parser::new_top_level("./cider_config.json");
+    /// let p = vec!["Action_1", "Action_2", "Action_3"];
+    /// 
+    /// t.set_action_defs(p);
+    /// 
+    /// assert_eq!(t.get_action_defs(), p);
+    /// ```
     pub fn set_action_defs(&mut self, new_action_defs: Vec<String>) {
         info!("New action definitions set: {:#?}", new_action_defs);
         self.action_defs = new_action_defs;
     }
 
+    /// Returns [`Action`] information
+    /// 
+    /// Returns the a reference to the [`Action`]s associated with a [`TopLevelConfiguration`] in a vector form
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration
+    /// let t = json_parser::new_top_level("./cider_config.json");
+    /// 
+    /// let m = t.get_action_defs();
     pub fn get_actions(&self) -> &Vec<Action> {
         // info!("Actions successfully retrieved: {:#?}", &self.actions);
         &self.actions
     }
+
+    ///Allows the [`Action`]s of a [`TopLevelConfiguration`] to be changed
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration
+    /// let t = json_parser::new_top_level("./cider_config.json");
+    /// let p = *(t.get_actions())clone();
+    /// 
+    /// t.set_actions(p);
+    /// 
+    /// assert_eq!(t.get_actions(), p);
+    /// ```
     pub fn set_actions(&mut self, new_actions: Vec<Action>) {
         info!("New actions set: \n{:#?}", new_actions);
         self.actions = new_actions;
     }
 
+    /// Returns every action in the configuration
+    /// 
+    /// Returns the a reference to the [`Action`] definitions associated with a [`TopLevelConfiguration`] and all underlying [`Pipeline`]s in a vector form
+    /// 
+    /// # Examples:
+    /// ```
+    /// use crate::parsing::json_parser;
+    /// 
+    /// //returns a TopLevelConfiguration
+    /// let t = json_parser::new_top_level("./cider_config.json");
+    /// 
+    /// let m = t.get_all_actions();
     pub fn get_all_actions(&self) -> Vec<Action> {
         let mut actions: Vec<Action> = vec![];
         for action in self.get_actions() {
@@ -590,15 +701,23 @@ impl TopLevelConfiguration {
     }
 }
 
-//holds action-specific configuration information
-#[derive(Debug, Clone, PartialEq, Eq)]
 
+///holds action-specific configuration information
+/// 
+/// Actions are designed to hold the necessary information to run scripts, as well as any specific configuration pieces that may be necessary.
+/// 
+/// It is important to note that action-specific configuration overrides [`ShareableConfiguration`] information provided from any other level.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Action {
-    shared_config: ShareableConfiguration,
-    action_config: ActionConfig,
+    /// ShareableConfiguration data required to perform bottom-level tasks. See [`ShareableConfiguration`]
+    pub shared_config: ShareableConfiguration,
+
+    /// Contains configuration information relevant only to [`Action`]s
+    pub action_config: ActionConfig,
 }
 
 impl Action {
+    ///Creates a new [`Action`]
     pub fn new(shared_config: ShareableConfiguration, action_config: ActionConfig) -> Action {
         Action {
             shared_config,
@@ -606,40 +725,34 @@ impl Action {
         }
     }
 
-    pub fn get_shared_config(&self) -> &ShareableConfiguration {
-        &self.shared_config
-    }
-    pub fn set_shared_config(&mut self, new_shared_config: ShareableConfiguration) {
-        self.shared_config = new_shared_config;
-    }
-
-    pub fn get_action_config(&self) -> &ActionConfig {
-        &self.action_config
-    }
-    pub fn set_action_config(&mut self, action_config: ActionConfig) {
-        self.action_config = action_config;
-    }
 }
 
+/// Contains information required to run defined [`Action`]s
 #[derive(Debug, Clone, PartialEq, Eq)]
-
 pub struct ActionConfig {
-    //Not required at runtime, can be None
-    //default = None
+    ///The conditions which are required to be true in order for the program to run an action
+    /// Currently not implemented.
     conditions: Option<Vec<Condition>>,
-    //required for runtime, will be defaulted if not included
-    //default = 0
+
+    /// Specifies how many times the program will a given action in the event that the result is a failure.
+    /// Currently not implemented.
     retries: i8,
-    //required for runtime, will be defaulted if not included
-    //default = false
+    
+    ///Specifies whether the action is allowed to fail and the result is still able to be considered a success
     allowed_failure: bool,
-    //required for runtime, no defaults included other than in default method
-    //Note: NOT DEFAULTED IN new() METHOD
-    //default = Step {"step1": "echo \"hello world!\""}
+
+    ///The actual steps required for program execution
+    /// # Examples:
+    /// ```
+    /// let step_1 = Step {"step1": "echo \"hello world!\""};
+    /// let step_2 = Step {"step1": "echo \"hello world!\""};
+    /// manual = vec![step_1, step_2];
+    /// ```
     manual: Vec<Step>,
 }
 
 impl ActionConfig {
+    /// Creates a new [`ActionConfig`]
     pub fn new(
         conditions: Option<Vec<Condition>>,
         retries: Option<i8>,
@@ -658,23 +771,30 @@ impl ActionConfig {
         }
     }
 
+    /// Gets all [`Condition`]s within an [`ActionConfig`]
     pub fn get_conditions(&self) -> Option<Vec<Condition>> {
         self.conditions.clone()
     }
+
+    /// Changes the conditions within an [`ActionConfig`]
     pub fn set_conditions(&mut self, new_conditions: Vec<Condition>) {
         info!("New conditions set: {:#?}", new_conditions);
         self.conditions = Some(new_conditions);
     }
 
+    /// Gets the retries within an [`ActionConfig`]
     pub fn get_retries(&self) -> &i8 {
         info!("Retry count successfully acquired: {} ", &self.retries);
         &self.retries
     }
+
+    /// Changes the retries of an [`ActionConfig`]
     pub fn set_retries(&mut self, new_retries: i8) {
         info!("New retry count set: {:?}", &new_retries);
         self.retries = new_retries
     }
 
+    /// Returns whether or not the [`Action`] is allowed to fail.
     pub fn get_allowed_failure(&self) -> &bool {
         info!(
             "Failure allowance successfully acquired: {} ",
@@ -683,15 +803,19 @@ impl ActionConfig {
         &self.allowed_failure
     }
 
+    /// Changes the conditions within an [`ActionConfig`]
     pub fn set_allowed_failure(&mut self, new_allowed_failure: bool) {
         info!("New failure allowance set: {:?}", &new_allowed_failure);
         self.allowed_failure = new_allowed_failure;
     }
 
+    /// Returns the [`Step`]s to be executed by the program.
     pub fn get_manual(&self) -> &Vec<Step> {
         info!("Manual successfully retrieved: {:#?}", &self.manual);
         &self.manual
     }
+
+    /// Changes the execution of [`Step`]s within an [`ActionConfig`]
     pub fn set_manual(&mut self, new_manual: Vec<Step>) {
         info!("New manual set: {:#?}", new_manual);
         self.manual = new_manual;

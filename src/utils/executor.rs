@@ -272,17 +272,17 @@ pub struct ExecInfo {
 impl ExecInfo {
     fn new(action: &Action) -> Self {
         ExecInfo {
-            backend: action.get_shared_config().get_backend().to_string(),
-            image: action.get_shared_config().get_image(),
-            title: action.get_shared_config().get_title(),
-            tags: action.get_shared_config().get_tags(),
-            metadata: action.get_shared_config().get_metadata(),
-            output: action.get_shared_config().get_output().to_string(),
-            source: action.get_shared_config().get_source().to_string(),
-            conditions: action.get_action_config().get_conditions(),
-            manual: action.get_action_config().get_manual().to_vec(),
-            retries: *action.get_action_config().get_retries(),
-            allowed_failure: *action.get_action_config().get_allowed_failure(),
+            backend: action.shared_config.get_backend().to_string(),
+            image: action.shared_config.get_image(),
+            title: action.shared_config.get_title(),
+            tags: action.shared_config.get_tags(),
+            metadata: action.shared_config.get_metadata(),
+            output: action.shared_config.get_output().to_string(),
+            source: action.shared_config.get_source().to_string(),
+            conditions: action.action_config.get_conditions(),
+            manual: action.action_config.get_manual().to_vec(),
+            retries: *action.action_config.get_retries(),
+            allowed_failure: *action.action_config.get_allowed_failure(),
         }
     }
 }
