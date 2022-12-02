@@ -822,23 +822,30 @@ impl ActionConfig {
     }
 }
 
+/// Contains information relevant to pipelines
+/// 
+/// Pipelines are meant to "own" multiple [`Action`]s.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Pipeline {
+
+    /// ShareableConfiguration data required to perform bottom-level tasks. See [`ShareableConfiguration`]
     pub shared_config: ShareableConfiguration,
+
+    /// Contains configuration information relevant only to [`Action`]s
     pub pipeline_config: PipelineConfig,
 }
 impl Pipeline {
+    /// Creates a nwe [`Pipeline`]
     pub fn new(shared_config: ShareableConfiguration, pipeline_config: PipelineConfig) -> Pipeline {
         Pipeline {
             shared_config,
             pipeline_config,
         }
     }
-
 }
 
+/// Holds information that is specific to the functionality of [`Pipeline`]s
 #[derive(Debug, Clone, PartialEq, Eq)]
-
 pub struct PipelineConfig {
     //Not required at runtime, can be None
     //default = None
@@ -864,6 +871,7 @@ pub struct PipelineConfig {
 }
 
 impl PipelineConfig {
+    ///Creates a new [`PipelineConfig`]
     pub fn new(
         conditions: Option<Vec<Condition>>,
         action_defs: Vec<String>,
@@ -886,6 +894,7 @@ impl PipelineConfig {
         }
     }
 
+    /// Gets all [`Condition`]s within a [`PipelineConfig`]
     pub fn get_conditions(&self) -> Result<&Vec<Condition>, &'static str> {
         match &self.conditions {
             Some(conditions) => {
@@ -900,22 +909,24 @@ impl PipelineConfig {
         }
     }
 
+    /// Allows the [`Condition`]s for a [`PipelineConfig`] to be changed.
     pub fn set_conditions(&mut self, new_conditions: Vec<Condition>) {
         info!("New conditions set: {:#?}", new_conditions);
         self.conditions = Some(new_conditions);
     }
 
+    /// Gets all action definitions within a [`PipelineConfig`]
     pub fn get_action_defs(&self) -> &Vec<String> {
         &self.action_defs
     }
 
+    /// Returns the [`Action`]s of a [`Pipeline`].
     pub fn get_actions(&self) -> &Vec<Action> {
         &self.actions
     }
 }
 
 /// Holds information with conditions that will resolve to either true or false
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Condition {
     //A name is necessary for a condition to exist.
@@ -927,25 +938,29 @@ pub struct Condition {
 }
 
 impl Condition {
+    /// Creates a new [`Condition`]
     pub fn new(name: String, condition: String) -> Condition {
         Condition { name, condition }
     }
 
+    /// Returns the [`Condition`] name
     pub fn get_name(&self) -> &str {
         &self.name
     }
 
+    /// Returns a reference to the [`Condition`]
     pub fn get_condition(&self) -> &str {
         &self.condition
     }
 
+    /// Updates the [`Condition`] with the given information.
     pub fn update_condition(&mut self, name: String, condition: String) {
         self.name = name;
         self.condition = condition;
     }
 }
 
-//Holds hashmap information with data necessary to run scripts
+/// Holds hashmap information with data necessary to run scripts
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Step {
     name: String,
@@ -953,15 +968,22 @@ pub struct Step {
 }
 
 impl Step {
+    /// Creates a new [`Step`]
     pub fn new(name: String, script: String) -> Self {
         Self { name, script }
     }
+
+    /// Returns the name of the [`Step`]
     pub fn get_name(&self) -> &str {
         &self.name
     }
+
+    /// Returns the script to be executed in this [`Step`]
     pub fn get_script(&self) -> &str {
         &self.script
     }
+
+    /// Changes the information held by the [`Step`]
     pub fn update_script(&mut self, name: String, script: String) {
         self.name = name;
         self.script = script;

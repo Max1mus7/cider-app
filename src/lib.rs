@@ -9,7 +9,7 @@
 
 //! Contains all necessary functions.
 //!
-//! Contains functions that allow CIder to create docker images, parse JSON, and more.
+/// Contains functions that allow CIder to create docker images, parse JSON, and more.
 pub mod utils;
 pub use utils::config;
 pub use utils::config_generator;

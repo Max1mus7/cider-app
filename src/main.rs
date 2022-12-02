@@ -2,7 +2,7 @@ pub mod utils;
 
 use cider::executor::*;
 use cider::parsing::*;
-use cider::watcher::*;
+// use cider::watcher::*;
 
 use clap::Parser;
 use log::error;
@@ -12,7 +12,7 @@ use tokio::fs as tfs;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::PathBuf;
+// use std::path::PathBuf;
 use std::time::SystemTime;
 use std::{thread, time};
 
@@ -44,11 +44,11 @@ async fn main() -> std::io::Result<()> {
 
     let conf = json_parser::new_top_level(&filename);
     let mut file = File::create(curate_filepath(
-        conf.get_shared_config().get_output(),
+        conf.s_config.get_output(),
         "main_test.txt",
     ))?;
 
-    let mut start_mod_time = tfs::metadata(conf.get_shared_config().get_source())
+    let mut start_mod_time = tfs::metadata(conf.s_config.get_source())
         .await?
         .modified()
         .unwrap()
@@ -57,7 +57,7 @@ async fn main() -> std::io::Result<()> {
     loop {
         if args.watch {
             thread::sleep(time::Duration::from_millis(2000));
-            let now_mod_time = tfs::metadata(conf.get_shared_config().get_source())
+            let now_mod_time = tfs::metadata(conf.s_config.get_source())
                 .await?
                 .modified()
                 .unwrap()
@@ -79,7 +79,7 @@ async fn main() -> std::io::Result<()> {
 
     error!(
         "{:#?}",
-        tfs::metadata(conf.get_shared_config().get_source())
+        tfs::metadata(conf.s_config.get_source())
             .await?
             .modified()
             .unwrap()
