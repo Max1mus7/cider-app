@@ -473,7 +473,7 @@ pub mod json_parser {
             );
             panic!("{}", err.to_string());
         });
-        config.s_config =  parse_shared_config(&parsed_data);
+        config.s_config = parse_shared_config(&parsed_data);
         config.set_pipeline_defs({
             if (parsed_data["pipelines"]).is_null() {
                 vec![]

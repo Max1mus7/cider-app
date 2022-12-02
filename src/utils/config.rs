@@ -2,14 +2,14 @@ use log::{info, warn};
 use std::collections::HashMap;
 
 /// Contains information that can be shared between levels of a configuration
-/// 
+///
 /// Contains information to be shared from a higher-level of configuration to a lower-level of a configuration.
-/// This contains some "aesthetic" data, like metadata and tags, but also can contain some useful information like 
-/// the source directory you would like as your root, your output directory, and more. 
-/// 
+/// This contains some "aesthetic" data, like metadata and tags, but also can contain some useful information like
+/// the source directory you would like as your root, your output directory, and more.
+///
 /// [`ShareableConfiguration`]s also contain program-critical information like the backend, image, and the language you would
 /// like to use in order to run your [`Action`] steps.
-/// 
+///
 /// Configuration levels are as follows:
 /// | Level | Priority |
 /// |-------|----------|
@@ -18,13 +18,13 @@ use std::collections::HashMap;
 /// | Action|     3    |
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ShareableConfiguration {
-    /// metadata not required 
-    /// 
+    /// metadata not required
+    ///
     /// defaulted to None
     metadata: Option<HashMap<String, String>>,
 
     /// title not required
-    /// title can be used to name different configuration sections, but is completely optional, unlike action_defs or pipeline_defs 
+    /// title can be used to name different configuration sections, but is completely optional, unlike action_defs or pipeline_defs
     /// in [`TopLevelConfiguration`]
     /// defaulted to None
     title: Option<String>,
@@ -59,17 +59,17 @@ pub struct ShareableConfiguration {
 
 impl ShareableConfiguration {
     /// Creates a new [`ShareableConfiguration`]
-    /// 
-    /// Some values are completely optional, and will either be defaulted or set as None if not provided. 
+    ///
+    /// Some values are completely optional, and will either be defaulted or set as None if not provided.
     /// Note that some required information is set by default in [`crate::parsing::json_parser`] if it is not explicitly defaulted here.
     /// Specifically, output, and source are defaulted to ./dist/cider and ./src, respectively.
-    /// 
+    ///
     /// # Examples:
     /// Basic usage:
     /// ```
     /// let s = ShareableConfiguration::new(None, None, None, "Rust".to_string(), None, "bash".to_string(), "./dist/cider", "./src");
     /// ```
-    /// 
+    ///
     pub fn new(
         metadata: Option<HashMap<String, String>>,
         title: Option<String>,
@@ -101,20 +101,20 @@ impl ShareableConfiguration {
     }
 
     /// Returns metadata
-    /// 
+    ///
     /// Returns the metadata associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
-    /// or of a None type. 
-    /// 
+    /// or of a None type.
+    ///
     /// # Warnings
     /// Will provide the user with a warning if metadata obtained returns a None type.
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
-    /// 
+    ///
     /// let m = s.s_config.get_metadata();
     /// ```
     pub fn get_metadata(&self) -> Option<HashMap<String, String>> {
@@ -132,18 +132,18 @@ impl ShareableConfiguration {
     }
 
     ///Allows the metadata of a [`ShareableConfiguration`] to be changed
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
     /// let mut hm = HashMap::new();
     /// hm.insert("some metadata tag", "some metadata data");
-    /// 
+    ///
     /// let m = s.s_config.set_metadata(hm);
-    /// 
+    ///
     /// assert_eq!(s.s_config.get_metadata(), hm);
     /// ```
     pub fn set_metadata(&mut self, new_metadata: HashMap<String, String>) {
@@ -152,20 +152,20 @@ impl ShareableConfiguration {
     }
 
     /// Returns the title
-    /// 
+    ///
     /// Returns the title associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
-    /// or of a None type. 
-    /// 
+    /// or of a None type.
+    ///
     /// # Warnings
     /// Will provide the user with a warning if metadata obtained returns a None type.
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
-    /// 
+    ///
     /// let m = s.s_config.get_title();
     /// ```
     pub fn get_title(&self) -> Option<String> {
@@ -183,17 +183,17 @@ impl ShareableConfiguration {
     }
 
     ///Allows the title of a [`ShareableConfiguration`] to be changed
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
     /// let t = "Cider".to_string();
-    /// 
+    ///
     /// let m = s.s_config.set_title(t);
-    /// 
+    ///
     /// assert_eq!(s.s_config.get_title(), t);
     /// ```
     pub fn set_title(&mut self, new_title: String) {
@@ -202,20 +202,20 @@ impl ShareableConfiguration {
     }
 
     /// Returns tags
-    /// 
+    ///
     /// Returns the tags associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
-    /// or of a None type. 
-    /// 
+    /// or of a None type.
+    ///
     /// # Warnings
     /// Will provide the user with a warning if metadata obtained returns a None type.
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
-    /// 
+    ///
     /// let m = s.s_config.get_tags();
     /// ```
     pub fn get_tags(&self) -> Option<HashMap<String, String>> {
@@ -233,18 +233,18 @@ impl ShareableConfiguration {
     }
 
     ///Allows the tags of a [`ShareableConfiguration`] to be changed
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
     /// let mut hm = HashMap::new();
     /// hm.insert("some tag", "some data");
-    /// 
+    ///
     /// let m = s.s_config.set_tags(hm);
-    /// 
+    ///
     /// assert_eq!(s.s_config.get_tags(), hm);
     /// ```
     pub fn set_tags(&mut self, new_tags: HashMap<String, String>) {
@@ -252,20 +252,20 @@ impl ShareableConfiguration {
     }
 
     /// Returns language
-    /// 
+    ///
     /// Returns the language associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
-    /// or of a None type. 
-    /// 
+    /// or of a None type.
+    ///
     /// # Warnings
     /// Will provide the user with a warning if metadata obtained returns a None type.
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
-    /// 
+    ///
     /// let m = s.s_config.get_language();
     /// println!("{}", m);
     /// ```
@@ -274,17 +274,17 @@ impl ShareableConfiguration {
     }
 
     /// Allows the language of a [`ShareableConfiguration`] to be changed
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
     /// let l = "Rust".to_string();
-    /// 
+    ///
     /// s.s_config.set_language(l);
-    /// 
+    ///
     /// assert_eq!(s.s_config.get_language(), l);
     /// ```
     pub fn set_language(&mut self, new_language: String) {
@@ -293,20 +293,20 @@ impl ShareableConfiguration {
     }
 
     /// Returns configured image
-    /// 
+    ///
     /// Returns the image associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
-    /// or of a None type. 
-    /// 
+    /// or of a None type.
+    ///
     /// # Warnings
     /// Will provide the user with a warning if image obtained returns a None type.
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
-    /// 
+    ///
     /// let m = s.s_config.get_image();
     /// ```
     pub fn get_image(&self) -> Option<String> {
@@ -324,17 +324,17 @@ impl ShareableConfiguration {
     }
 
     /// Allows the image of a [`ShareableConfiguration`] to be changed
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
     /// let i = "rust:1.65.0".to_string();
-    /// 
+    ///
     /// let m = s.s_config.set_image(i);
-    /// 
+    ///
     /// assert_eq!(s.s_config.get_image(), i);
     /// ```
     pub fn set_image(&mut self, new_image: String) {
@@ -347,35 +347,35 @@ impl ShareableConfiguration {
     }
 
     /// Returns backend
-    /// 
+    ///
     /// Returns the backend associated with a [`ShareableConfiguration`]
-    /// 
-    /// 
+    ///
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
-    /// 
+    ///
     /// let m = s.s_config.get_backend();
     /// ```
     pub fn get_backend(&self) -> &str {
         &self.backend
     }
-    
+
     ///Allows the backend of a [`ShareableConfiguration`] to be changed
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
     /// let b = "bash".to_string();
-    /// 
+    ///
     /// s.s_config.set_backend(b);
-    /// 
+    ///
     /// assert_eq!(s.s_config.get_backend(), b);
     /// ```
     pub fn set_backend(&mut self, new_backend: String) {
@@ -384,17 +384,17 @@ impl ShareableConfiguration {
     }
 
     /// Returns output directory
-    /// 
+    ///
     /// Returns the output directory associated with a [`ShareableConfiguration`]
-    /// 
-    /// 
+    ///
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
-    /// 
+    ///
     /// let m = s.s_config.get_output();
     /// ```
     pub fn get_output(&self) -> &str {
@@ -406,17 +406,17 @@ impl ShareableConfiguration {
     }
 
     ///Allows the output directory of a [`ShareableConfiguration`] to be changed
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
     /// let o = "./dist/cider".to_string();
-    /// 
+    ///
     /// s.s_config.set_output(o);
-    /// 
+    ///
     /// assert_eq!(s.s_config.get_output(), o);
     /// ```
     pub fn set_output(&mut self, new_output: String) {
@@ -425,16 +425,16 @@ impl ShareableConfiguration {
     }
 
     /// Returns source directory
-    /// 
+    ///
     /// Returns the source directory associated with a [`ShareableConfiguration`]
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
-    /// 
+    ///
     /// let m = s.s_config.get_source();
     /// ```
     pub fn get_source(&self) -> &str {
@@ -446,17 +446,17 @@ impl ShareableConfiguration {
     }
 
     ///Allows the source directory of a [`ShareableConfiguration`] to be changed
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
     /// let src = "./src".to_string();
-    /// 
+    ///
     /// s.s_config.set_source(src);
-    /// 
+    ///
     /// assert_eq!(s.s_config.get_source(), src);
     /// ```
     pub fn set_source(&mut self, new_source: String) {
@@ -466,17 +466,16 @@ impl ShareableConfiguration {
 }
 
 /// Contains information pertinent to a CIder configuration as a whole.
-/// 
+///
 /// A [`TopLevelConfiguration`] is meant to contain information relevant to multiple pipelines, or actions, or metadata/information relevant
 /// to the entire configuraiton.
-/// 
+///
 /// [`TopLevelConfiguration`]s are the highest level of configuration possible, and they allow the user to define actions and pipelines
 /// to be used by the program and allow for better-organized configuration structures.
-/// 
-/// 
+///
+///
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TopLevelConfiguration {
-
     /// ShareableConfiguration data required to perform top-level tasks and pass on to lower-level tasks. See [`ShareableConfiguration`]
     pub s_config: ShareableConfiguration,
 
@@ -484,13 +483,13 @@ pub struct TopLevelConfiguration {
     pipeline_defs: Vec<String>,
 
     /// The data used to run pipelines
-    /// 
+    ///
     /// Pipelines require certain information in order to not only be valid but also in order to function.
     /// Pipelines are meant to hold actions, but actions can still be defined at the top level.
     pipelines: Vec<Pipeline>,
 
-    ///Top-level action definitions 
-    /// 
+    ///Top-level action definitions
+    ///
     /// Action definitions are an array of strings that contain the names of actions to be invoked by CIder.
     action_defs: Vec<String>,
 
@@ -500,10 +499,10 @@ pub struct TopLevelConfiguration {
 
 impl TopLevelConfiguration {
     /// Creates a new [`TopLevelConfiguration`].
-    /// 
+    ///
     /// Creates a new [`TopLevelConfiguration`]. Information that is not provided via a configuration file is defaulted when
-    /// a configuration file is parsed in [`crate::utils::parsing`]. 
-    /// 
+    /// a configuration file is parsed in [`crate::utils::parsing`].
+    ///
     /// For more information, see new_top_level() in [`crate::utils::parsing`]
     pub fn new(
         s_config: ShareableConfiguration,
@@ -522,16 +521,16 @@ impl TopLevelConfiguration {
     }
 
     /// Returns pipeline definitions
-    /// 
+    ///
     /// Returns the a reference to the pipeline definitions associated with a [`TopLevelConfiguration`] in a vector form
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
-    /// 
+    ///
     /// let m = t.get_pipeline_defs();
     /// ```
     pub fn get_pipeline_defs(&self) -> &Vec<String> {
@@ -543,17 +542,17 @@ impl TopLevelConfiguration {
     }
 
     ///Allows the pipeline definitions of a [`TopLevelConfiguration`] to be changed
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
     /// let p = vec!["Pipeline_1", "Pipeline_2", "Pipeline_3"];
-    /// 
+    ///
     /// t.set_pipeline_defs(p);
-    /// 
+    ///
     /// assert_eq!(t.get_pipeline_defs(), p);
     /// ```
     pub fn set_pipeline_defs(&mut self, new_pipeline_defs: Vec<String>) {
@@ -562,16 +561,16 @@ impl TopLevelConfiguration {
     }
 
     /// Returns all [`Pipeline`]s contained by a TopLevelConfiguration
-    /// 
+    ///
     /// Returns the a reference to the [`Pipeline`]s associated with a [`TopLevelConfiguration`] in a vector form
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
-    /// 
+    ///
     /// let m = t.get_pipelines();
     /// ```
     pub fn get_pipelines(&self) -> &Vec<Pipeline> {
@@ -580,18 +579,18 @@ impl TopLevelConfiguration {
     }
 
     ///Allows the [`Pipeline`]s of a [`TopLevelConfiguration`] to be changed
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
     /// let mut p = *(t.get_pipelines()).clone();
     /// p.pop()
-    /// 
+    ///
     /// t.set_pipeline_defs(p);
-    /// 
+    ///
     /// assert_eq!(t.get_pipelines(), p);
     /// ```
     pub fn set_pipelines(&mut self, new_pipelines: Vec<Pipeline>) {
@@ -600,16 +599,16 @@ impl TopLevelConfiguration {
     }
 
     /// Returns action definitions
-    /// 
+    ///
     /// Returns the a reference to the [`Action`] definitions associated with a [`TopLevelConfiguration`] in a vector form
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
-    /// 
+    ///
     /// let m = t.get_action_defs();
     /// ```
     pub fn get_action_defs(&self) -> &Vec<String> {
@@ -621,17 +620,17 @@ impl TopLevelConfiguration {
     }
 
     ///Allows the action definitions of a [`TopLevelConfiguration`] to be changed
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
     /// let p = vec!["Action_1", "Action_2", "Action_3"];
-    /// 
+    ///
     /// t.set_action_defs(p);
-    /// 
+    ///
     /// assert_eq!(t.get_action_defs(), p);
     /// ```
     pub fn set_action_defs(&mut self, new_action_defs: Vec<String>) {
@@ -640,16 +639,16 @@ impl TopLevelConfiguration {
     }
 
     /// Returns [`Action`] information
-    /// 
+    ///
     /// Returns the a reference to the [`Action`]s associated with a [`TopLevelConfiguration`] in a vector form
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
-    /// 
+    ///
     /// let m = t.get_action_defs();
     pub fn get_actions(&self) -> &Vec<Action> {
         // info!("Actions successfully retrieved: {:#?}", &self.actions);
@@ -657,17 +656,17 @@ impl TopLevelConfiguration {
     }
 
     ///Allows the [`Action`]s of a [`TopLevelConfiguration`] to be changed
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
     /// let p = *(t.get_actions())clone();
-    /// 
+    ///
     /// t.set_actions(p);
-    /// 
+    ///
     /// assert_eq!(t.get_actions(), p);
     /// ```
     pub fn set_actions(&mut self, new_actions: Vec<Action>) {
@@ -676,16 +675,16 @@ impl TopLevelConfiguration {
     }
 
     /// Returns every action in the configuration
-    /// 
+    ///
     /// Returns the a reference to the [`Action`] definitions associated with a [`TopLevelConfiguration`] and all underlying [`Pipeline`]s in a vector form
-    /// 
+    ///
     /// # Examples:
     /// ```
     /// use crate::parsing::json_parser;
-    /// 
+    ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
-    /// 
+    ///
     /// let m = t.get_all_actions();
     pub fn get_all_actions(&self) -> Vec<Action> {
         let mut actions: Vec<Action> = vec![];
@@ -701,11 +700,10 @@ impl TopLevelConfiguration {
     }
 }
 
-
 ///holds action-specific configuration information
-/// 
+///
 /// Actions are designed to hold the necessary information to run scripts, as well as any specific configuration pieces that may be necessary.
-/// 
+///
 /// It is important to note that action-specific configuration overrides [`ShareableConfiguration`] information provided from any other level.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Action {
@@ -724,7 +722,6 @@ impl Action {
             action_config,
         }
     }
-
 }
 
 /// Contains information required to run defined [`Action`]s
@@ -737,7 +734,7 @@ pub struct ActionConfig {
     /// Specifies how many times the program will a given action in the event that the result is a failure.
     /// Currently not implemented.
     retries: i8,
-    
+
     ///Specifies whether the action is allowed to fail and the result is still able to be considered a success
     allowed_failure: bool,
 
@@ -823,11 +820,10 @@ impl ActionConfig {
 }
 
 /// Contains information relevant to pipelines
-/// 
+///
 /// Pipelines are meant to "own" multiple [`Action`]s.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Pipeline {
-
     /// ShareableConfiguration data required to perform bottom-level tasks. See [`ShareableConfiguration`]
     pub shared_config: ShareableConfiguration,
 

@@ -43,10 +43,7 @@ async fn main() -> std::io::Result<()> {
     };
 
     let conf = json_parser::new_top_level(&filename);
-    let mut file = File::create(curate_filepath(
-        conf.s_config.get_output(),
-        "main_test.txt",
-    ))?;
+    let mut file = File::create(curate_filepath(conf.s_config.get_output(), "main_test.txt"))?;
 
     let mut start_mod_time = tfs::metadata(conf.s_config.get_source())
         .await?

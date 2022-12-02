@@ -276,7 +276,6 @@ pub struct ExecInfo {
     pub retries: i8,
     /// See [`crate::utils::config::ActionConfig`] for more information.
     pub allowed_failure: bool,
-    
 }
 
 /**
