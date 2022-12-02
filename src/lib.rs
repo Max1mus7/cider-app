@@ -44,7 +44,7 @@ mod systests {
     fn test_parse_pipeline_actions() {
         let config = json_parser::new_top_level("example_docker_config.json");
         for pipeline in config.get_pipelines() {
-            for action in pipeline.get_pipeline_config().get_actions() {
+            for action in pipeline.pipeline_config.get_actions() {
                 info!("{:#?}", action);
             }
         }

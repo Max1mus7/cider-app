@@ -251,18 +251,32 @@ fn clean_script_pathing(script: &str) -> Vec<String> {
 }
 
 /// Contains data necessary to perform specific actions in a configurable manner
+/// Combines information from both [`crate::utils::config::ShareableConfiguration`] and [`crate::utils::config::ActionConfig`]
+/// See [`crate::utils::config`] for more information.
 pub struct ExecInfo {
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub backend: String,
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub image: Option<String>,
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub title: Option<String>,
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub tags: Option<HashMap<String, String>>,
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub metadata: Option<HashMap<String, String>>,
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub output: String,
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub source: String,
+    /// See [`crate::utils::config::ActionConfig`] for more information.
     pub conditions: Option<Vec<Condition>>,
+    /// See [`crate::utils::config::ActionConfig`] for more information.
     pub manual: Vec<Step>,
+    /// See [`crate::utils::config::ActionConfig`] for more information.
     pub retries: i8,
+    /// See [`crate::utils::config::ActionConfig`] for more information.
     pub allowed_failure: bool,
+    
 }
 
 /**

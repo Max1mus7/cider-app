@@ -693,7 +693,7 @@ impl TopLevelConfiguration {
             actions.push(action.to_owned());
         }
         for pipeline in self.get_pipelines() {
-            for action in pipeline.get_pipeline_config().get_actions() {
+            for action in pipeline.pipeline_config.get_actions() {
                 actions.push(action.to_owned());
             }
         }
@@ -823,12 +823,10 @@ impl ActionConfig {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-
 pub struct Pipeline {
-    shared_config: ShareableConfiguration,
-    pipeline_config: PipelineConfig,
+    pub shared_config: ShareableConfiguration,
+    pub pipeline_config: PipelineConfig,
 }
-
 impl Pipeline {
     pub fn new(shared_config: ShareableConfiguration, pipeline_config: PipelineConfig) -> Pipeline {
         Pipeline {
@@ -837,21 +835,6 @@ impl Pipeline {
         }
     }
 
-    pub fn get_shared_config(&self) -> &ShareableConfiguration {
-        &self.shared_config
-    }
-
-    pub fn set_shared_config(&mut self, new_shared_config: ShareableConfiguration) {
-        self.shared_config = new_shared_config;
-    }
-
-    pub fn get_pipeline_config(&self) -> &PipelineConfig {
-        &self.pipeline_config
-    }
-
-    pub fn set_action_config(&mut self, new_pipeline_config: PipelineConfig) {
-        self.pipeline_config = new_pipeline_config;
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
