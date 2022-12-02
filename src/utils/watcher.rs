@@ -1,16 +1,11 @@
-use std::path::{PathBuf};
+use std::path::{Path, PathBuf};
 
 /// Contains path information needed to watch directory.
 ///
 /// Watcher is a struct design to hold a path, as well as an enum that contains the necessary information/tools required
 /// in order to watch a directory for changes being made to it.
 ///
-/// ```
-/// use std::path::Path;
-/// 
-/// let watcher = Watcher::new(WatchMode::Default, true, Path::new("./example.txt").to_path_buf());
-/// ```
-///
+#[derive(Debug, Clone)]
 pub struct Watcher {
     mode: WatchMode,
     watching: bool,
@@ -22,10 +17,7 @@ impl Watcher {
     ///
     /// The point of a watcher struct as see at [`Watcher`] is to contain path information and perform actions based on its
     /// [`WatchMode`]
-    /// 
-    /// ```
-    /// let watcher = Watcher::new(WatchMode::Default, true, Path::new("./example.txt").to_path_buf())
-    /// ```
+    ///`
     ///
     pub fn new(mode: Option<WatchMode>, watching: bool, watch_dir: PathBuf) -> Self {
         Watcher {
@@ -40,9 +32,10 @@ impl Watcher {
 }
 
 /// Will be used to define multiple types of watchers with differing functionality
+#[derive(Debug, Clone)]
 pub enum WatchMode {
     /// The default mode for Watcher structs
-    /// 
-    /// 
+    ///
+    ///
     Default,
 }
