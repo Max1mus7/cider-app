@@ -1,5 +1,6 @@
 use crate::utils::config::TopLevelConfiguration;
 use std::fs::File;
+
 struct OutputConfig {
     pub configuration: TopLevelConfiguration,
 }
@@ -14,11 +15,9 @@ trait OutputFile {
 
 impl OutputFile for OutputConfig {
     fn default(&self) -> File {
-        File::create(self.configuration.get_shared_config().get_output()).unwrap_or_else(|err| {
+        File::create(self.configuration.s_config.get_output()).unwrap_or_else(|err| {
             eprintln!("No directory found at that location. {}", err);
             panic!("No directory found at that location. {}", err);
         })
     }
 }
-
-pub fn main() {}
