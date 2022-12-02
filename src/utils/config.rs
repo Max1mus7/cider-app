@@ -61,7 +61,7 @@ impl ShareableConfiguration {
     /// Creates a new [`ShareableConfiguration`]
     ///
     /// Some values are completely optional, and will either be defaulted or set as None if not provided.
-    /// Note that some required information is set by default in [`crate::parsing::json_parser`] if it is not explicitly defaulted here.
+    /// Note that some required information is set by default in [`cider::parsing::json_parser`] if it is not explicitly defaulted here.
     /// Specifically, output, and source are defaulted to ./dist/cider and ./src, respectively.
     ///
     /// # Examples:
@@ -110,7 +110,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -135,7 +135,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -161,7 +161,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -186,7 +186,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -211,7 +211,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -236,7 +236,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -261,7 +261,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -277,7 +277,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -302,7 +302,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -327,7 +327,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -353,7 +353,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -368,7 +368,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -390,7 +390,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -409,7 +409,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -430,7 +430,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -449,7 +449,7 @@ impl ShareableConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let s = json_parser::new_top_level("./cider_config.json");
@@ -526,7 +526,7 @@ impl TopLevelConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
@@ -545,7 +545,7 @@ impl TopLevelConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
@@ -566,7 +566,7 @@ impl TopLevelConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
@@ -582,7 +582,7 @@ impl TopLevelConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
@@ -591,7 +591,7 @@ impl TopLevelConfiguration {
     ///
     /// t.set_pipeline_defs(p);
     ///
-    /// assert_eq!(t.get_pipelines(), p);
+    /// assert_eq!(t.get_pipelines(), &p);
     /// ```
     pub fn set_pipelines(&mut self, new_pipelines: Vec<Pipeline>) {
         info!("New pipelines set: \n{:#?}", new_pipelines);
@@ -604,7 +604,7 @@ impl TopLevelConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
@@ -623,7 +623,7 @@ impl TopLevelConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
@@ -644,7 +644,7 @@ impl TopLevelConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
@@ -659,11 +659,11 @@ impl TopLevelConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
-    /// let p = *(t.get_actions())clone();
+    /// let p = *(t.get_actions()).clone();
     ///
     /// t.set_actions(p);
     ///
@@ -680,7 +680,7 @@ impl TopLevelConfiguration {
     ///
     /// # Examples:
     /// ```
-    /// use crate::parsing::json_parser;
+    /// use cider::parsing::json_parser;
     ///
     /// //returns a TopLevelConfiguration
     /// let t = json_parser::new_top_level("./cider_config.json");
@@ -741,6 +741,7 @@ pub struct ActionConfig {
     ///The actual steps required for program execution
     /// # Examples:
     /// ```
+    /// use cider::config::*;
     /// let step_1 = Step {"step1": "echo \"hello world!\""};
     /// let step_2 = Step {"step1": "echo \"hello world!\""};
     /// manual = vec![step_1, step_2];

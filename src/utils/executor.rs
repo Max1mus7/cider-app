@@ -253,6 +253,7 @@ fn clean_script_pathing(script: &str) -> Vec<String> {
 /// Contains data necessary to perform specific actions in a configurable manner
 /// Combines information from both [`crate::utils::config::ShareableConfiguration`] and [`crate::utils::config::ActionConfig`]
 /// See [`crate::utils::config`] for more information.
+#[derive(Debug)]
 pub struct ExecInfo {
     /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub backend: String,

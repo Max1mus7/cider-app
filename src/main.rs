@@ -2,7 +2,7 @@ pub mod utils;
 
 use cider::executor::*;
 use cider::parsing::*;
-// use cider::watcher::*;
+use cider::watcher::*;
 
 use clap::Parser;
 use log::error;
@@ -12,7 +12,7 @@ use tokio::fs as tfs;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
-// use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use std::{thread, time};
 
