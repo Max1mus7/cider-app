@@ -14,3 +14,7 @@ simplelog = "0.12.0"
 chrono = "0.4.22"
 tokio = { version = "1.21.2", features = ["full"]}
 notify = "5.0.0"
+thiserror = "1"
+
+[dev-dependencies]
+anyhow = "1"

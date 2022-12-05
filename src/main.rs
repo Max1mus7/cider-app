@@ -26,7 +26,7 @@ struct Arguments {
     config: Option<String>,
 
     #[arg(short, long, default_value_t = false)]
-    watch: bool
+    watch: bool,
 }
 
 fn main() -> std::io::Result<()> {
@@ -230,5 +230,4 @@ mod tests {
             );
         }
     }
-
 }

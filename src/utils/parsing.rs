@@ -1,15 +1,18 @@
-use crate::utils::config::*;
-use json::JsonValue;
-use log::{error, warn};
-use relative_path::RelativePath;
-use std::env::current_dir;
-use std::{collections::HashMap, fs};
-pub struct JsonParser {}
+/// Parses Json information into a program-readable configuration
 
-impl JsonParser {
-    /**
-     *
-     */
+pub mod json_parser {
+
+    use crate::utils::config::*;
+    use json::JsonValue;
+    use log::{error, warn};
+    use relative_path::RelativePath;
+    use std::env::current_dir;
+    use std::{collections::HashMap, fs};
+
+    /// Parses a map of JSON information into a HashMap<String,String>
+    ///
+    /// Iterates through a JSON hashmap and parses its data into a HashMap<String,String>
+    ///
     fn parse_json_map(json: &JsonValue) -> HashMap<String, String> {
         // println!("{:#?}", json);
         let mut map = HashMap::new();
@@ -24,9 +27,6 @@ impl JsonParser {
         map
     }
 
-    /**
-     *
-     */
     fn parse_json_to_conditions(json: &JsonValue) -> Vec<Condition> {
         // info!("{:#?}", json);
         let mut conditions = vec![];
@@ -39,9 +39,6 @@ impl JsonParser {
         conditions
     }
 
-    /**
-     *
-     */
     fn parse_json_to_steps(json: &JsonValue) -> Vec<Step> {
         // info!("{:#?}", json);
         let mut steps = vec![];
@@ -51,9 +48,6 @@ impl JsonParser {
         steps
     }
 
-    /**
-     *
-     */
     fn parse_json_vector(json: &JsonValue) -> Vec<String> {
         // println!("{:#?}", json);
         let mut vec = vec![];
@@ -68,9 +62,6 @@ impl JsonParser {
         vec
     }
 
-    /**
-     *
-     */
     fn parse_action_defs(
         shared_config: &ShareableConfiguration,
         action_defs: &Vec<String>,
@@ -78,14 +69,11 @@ impl JsonParser {
     ) -> Vec<Action> {
         let mut actions = vec![];
         for str in action_defs {
-            actions.push(Self::parse_action(shared_config, &data[str], str));
+            actions.push(parse_action(shared_config, &data[str], str));
         }
         actions
     }
 
-    /**
-     *
-     */
     fn parse_action(
         shared_config: &ShareableConfiguration,
         json: &JsonValue,
@@ -111,7 +99,7 @@ impl JsonParser {
                 if json["metadata"].is_null() {
                     None
                 } else {
-                    Some(Self::parse_json_map(&json["metadata"]))
+                    Some(parse_json_map(&json["metadata"]))
                 }
             },
             Some(name.to_string()),
@@ -119,7 +107,7 @@ impl JsonParser {
                 if json["tags"].is_null() {
                     None
                 } else {
-                    Some(Self::parse_json_map(&json["tags"]))
+                    Some(parse_json_map(&json["tags"]))
                 }
             },
             {
@@ -166,7 +154,7 @@ impl JsonParser {
 
         let action_config = ActionConfig::new(
             {
-                let conditions = Self::parse_json_to_conditions(&json["conditions"]);
+                let conditions = parse_json_to_conditions(&json["conditions"]);
                 if conditions.is_empty() {
                     None
                 } else {
@@ -195,7 +183,7 @@ impl JsonParser {
                 }
             },
             {
-                let manual = Self::parse_json_to_steps(&json["manual"]);
+                let manual = parse_json_to_steps(&json["manual"]);
                 if manual.is_empty() {
                     error!("Actions require at least one step in their manual. Error occured in Action: {}", name);
                     panic!("Actions require at least one step in their manual. Error occured in Action: {}", name);
@@ -216,7 +204,7 @@ impl JsonParser {
     ) -> Vec<Pipeline> {
         let mut pipelines = vec![];
         for str in pipeline_defs {
-            pipelines.push(Self::parse_pipeline(shared_config, &json[str], str));
+            pipelines.push(parse_pipeline(shared_config, &json[str], str));
         }
         pipelines
     }
@@ -247,7 +235,7 @@ impl JsonParser {
                 if json["metadata"].is_null() {
                     None
                 } else {
-                    Some(Self::parse_json_map(&json["metadata"]))
+                    Some(parse_json_map(&json["metadata"]))
                 }
             },
             Some(name.to_string()),
@@ -255,7 +243,7 @@ impl JsonParser {
                 if json["tags"].is_null() {
                     None
                 } else {
-                    Some(Self::parse_json_map(&json["tags"]))
+                    Some(parse_json_map(&json["tags"]))
                 }
             },
             {
@@ -302,7 +290,7 @@ impl JsonParser {
 
         let pipeline_config = PipelineConfig::new(
             {
-                let conditions = Self::parse_json_to_conditions(&json["conditions"]);
+                let conditions = parse_json_to_conditions(&json["conditions"]);
                 if conditions.is_empty() {
                     None
                 } else {
@@ -313,19 +301,19 @@ impl JsonParser {
                 if json["actions"].is_null() {
                     panic!("No list of action definitions found!");
                 } else {
-                    Self::parse_json_vector(&json["actions"])
+                    parse_json_vector(&json["actions"])
                 }
             },
-            Self::parse_action_defs(
+            parse_action_defs(
                 &new_shared_config,
-                &Self::parse_json_vector(&json["actions"]),
+                &parse_json_vector(&json["actions"]),
                 json,
             ),
             {
                 if json["requires"].is_null() {
                     None
                 } else {
-                    Some(Self::parse_json_vector(&json["requires"]))
+                    Some(parse_json_vector(&json["requires"]))
                 }
             },
         );
@@ -350,7 +338,7 @@ impl JsonParser {
                 if json["metadata"].is_null() {
                     None
                 } else {
-                    Some(Self::parse_json_map(&json["metadata"]))
+                    Some(parse_json_map(&json["metadata"]))
                 }
             },
             Some(json["title"].to_string()),
@@ -358,7 +346,7 @@ impl JsonParser {
                 if json["tags"].is_null() {
                     None
                 } else {
-                    Some(Self::parse_json_map(&json["tags"]))
+                    Some(parse_json_map(&json["tags"]))
                 }
             },
             {
@@ -413,11 +401,19 @@ impl JsonParser {
         new_shared_config
     }
 
-    /**
-     *
-     */
+    /// Creates a new set of configuration data specific to the top-level of a CIder configuration.
+    ///
+    /// Parses a JSON file's contents into a set of data that is readable by CIder in order to successfully execute
+    /// the instructions provided via said JSON
+    ///
+    /// ```
+    /// let config = new_top_level("./cider_config.json");
+    /// ```
+    /// This function will panic when provided with a configuration file that is not found on the host device.
+    ///  
+
     pub fn new_top_level(filename: &str) -> TopLevelConfiguration {
-        println!("{}",filename);
+        println!("{}", filename);
         let file_contents = fs::read_to_string(filename).unwrap_or_else(|err| {
             eprintln!("{}", err);
             error!(
@@ -434,23 +430,23 @@ impl JsonParser {
             );
             panic!("{}", err.to_string());
         });
-        let s_config = Self::parse_shared_config(&parsed_data);
+        let s_config = parse_shared_config(&parsed_data);
         let pipeline_defs = {
             if (parsed_data["pipelines"]).is_null() {
                 vec![]
             } else {
-                Self::parse_json_vector(&parsed_data["pipelines"])
+                parse_json_vector(&parsed_data["pipelines"])
             }
         };
-        let pipelines = Self::parse_pipeline_defs(&s_config, &parsed_data, &pipeline_defs);
+        let pipelines = parse_pipeline_defs(&s_config, &parsed_data, &pipeline_defs);
         let action_defs = {
             if (parsed_data["actions"]).is_null() {
                 vec![]
             } else {
-                Self::parse_json_vector(&parsed_data["actions"])
+                parse_json_vector(&parsed_data["actions"])
             }
         };
-        let actions = Self::parse_action_defs(&s_config, &action_defs, &parsed_data);
+        let actions = parse_action_defs(&s_config, &action_defs, &parsed_data);
         TopLevelConfiguration::new(s_config, pipeline_defs, pipelines, action_defs, actions)
     }
 
@@ -477,16 +473,16 @@ impl JsonParser {
             );
             panic!("{}", err.to_string());
         });
-        config.set_shared_config(Self::parse_shared_config(&parsed_data));
+        config.s_config = parse_shared_config(&parsed_data);
         config.set_pipeline_defs({
             if (parsed_data["pipelines"]).is_null() {
                 vec![]
             } else {
-                Self::parse_json_vector(&parsed_data["pipelines"])
+                parse_json_vector(&parsed_data["pipelines"])
             }
         });
-        config.set_pipelines(Self::parse_pipeline_defs(
-            config.get_shared_config(),
+        config.set_pipelines(parse_pipeline_defs(
+            &config.s_config,
             &parsed_data,
             config.get_pipeline_defs(),
         ));
@@ -494,11 +490,11 @@ impl JsonParser {
             if (parsed_data["actions"]).is_null() {
                 vec![]
             } else {
-                Self::parse_json_vector(&parsed_data["actions"])
+                parse_json_vector(&parsed_data["actions"])
             }
         });
-        config.set_actions(Self::parse_action_defs(
-            config.get_shared_config(),
+        config.set_actions(parse_action_defs(
+            &config.s_config,
             config.get_action_defs(),
             &parsed_data,
         ));

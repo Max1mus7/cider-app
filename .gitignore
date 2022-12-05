@@ -4,7 +4,8 @@ logs
 /tests/scripts/output/*
 dist
 /target
-!/target/doc/cider
+metrics/*
+
 # Added by cargo
 #
 # already existing elements were commented out
@@ -16,3 +17,6 @@ Dockerfile
 .dist
 
 metrics/*
+# Remove config files, create seperate repository(?) for example configurations.
+*.json
+!cider_config.json

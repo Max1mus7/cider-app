@@ -1,6 +1,5 @@
 {
     "title": "CIder 0.1 Example Docker Config",
-    "operating_system": "Windows",
     "backend": "bash",
     "image": "python:3.10",
     "pipelines": ["Test_Docker"],
@@ -14,6 +13,5 @@
                 "step_3": "cargo test"
             }
         }
-    },
-    "source_directory": "./src"
+    }
 }

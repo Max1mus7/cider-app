@@ -1,16 +1,15 @@
 use crate::utils::config::{Action, Condition, Step};
+use chrono::{DateTime, Utc};
 use log::{error, info, warn};
 use relative_path::RelativePath;
-use std::time::{SystemTime};
-use chrono::{DateTime, Utc};
-
+use std::time::SystemTime;
 
 /**
  * Module used to clean input and execute actions
  * Eventually, this module will also be used to separate pipeline executions and handle conditional logic
  * May also be split into modules on an action/pipeline level in the future
  */
-use std::fs::{File};
+use std::fs::File;
 use std::io::Write;
 use std::process::{Command, Output, Stdio};
 use std::{collections::HashMap, env::current_dir};
@@ -62,9 +61,7 @@ fn generate_dockerfile(info: &ExecInfo) -> File {
     file
 }
 
-/**
- * Runs a batch script (WINDOWS ONLY RIGHT NOW)
- */
+//
 fn run_batch_script(manual: Vec<Step>) -> Vec<String> {
     let mut outputs = vec![];
 
@@ -111,10 +108,18 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
             panic!("{:#?}", err);
         });
         info!("{:#?}", image_pull_time.elapsed().unwrap());
-        metrics_file.write(format!("Image pull time: {:#?}\n", image_pull_time.elapsed().unwrap()).as_bytes()).unwrap_or_else(|err| {
-            error!("There was an issue writing the image pull time to a file.");
-            0
-        });
+        metrics_file
+            .write(
+                format!(
+                    "Image pull time: {:#?}\n",
+                    image_pull_time.elapsed().unwrap()
+                )
+                .as_bytes(),
+            )
+            .unwrap_or_else(|err| {
+                error!("There was an issue writing the image pull time to a file.");
+                0
+            });
         metrics_file.flush().unwrap();
         let image_rm_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
@@ -126,10 +131,21 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
             panic!("{:#?}", err);
         });
         info!("{:#?}", image_rm_time.elapsed().unwrap());
-        metrics_file.write(format!("Image remove time: {:#?}\n", image_rm_time.elapsed().unwrap()).as_bytes()).unwrap_or_else(|err| {
-            error!("There was an issue writing the image removal time to a file: {}", err);
-            0
-        });
+        metrics_file
+            .write(
+                format!(
+                    "Image remove time: {:#?}\n",
+                    image_rm_time.elapsed().unwrap()
+                )
+                .as_bytes(),
+            )
+            .unwrap_or_else(|err| {
+                error!(
+                    "There was an issue writing the image removal time to a file: {}",
+                    err
+                );
+                0
+            });
         metrics_file.flush().unwrap();
         let image_build_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
@@ -141,12 +157,22 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
             panic!("{:#?}", err);
         });
         info!("{:#?}", image_build_time.elapsed().unwrap());
-        metrics_file.write(format!("Image build time: {:#?}\n", image_build_time.elapsed().unwrap()).as_bytes()).unwrap_or_else(|err| {
-            error!("There was an issue writing the image build time to a file: {}", err);
-            0
-        });
+        metrics_file
+            .write(
+                format!(
+                    "Image build time: {:#?}\n",
+                    image_build_time.elapsed().unwrap()
+                )
+                .as_bytes(),
+            )
+            .unwrap_or_else(|err| {
+                error!(
+                    "There was an issue writing the image build time to a file: {}",
+                    err
+                );
+                0
+            });
         metrics_file.flush().unwrap();
-
     } else {
         let mut cmd = Command::new("sh");
         let mut process = docker_setup_unix(&mut cmd, &setup.image.unwrap(), true)
@@ -177,7 +203,7 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
 ///Runs bash scripts defined in an Action's Manual
 fn run_bash_scripts(manual: Vec<Step>) -> Vec<String> {
     let mut outputs = vec![];
-    
+
     if cfg!(windows) {
         warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
         for step in manual {
@@ -225,17 +251,31 @@ fn clean_script_pathing(script: &str) -> Vec<String> {
 }
 
 /// Contains data necessary to perform specific actions in a configurable manner
+/// Combines information from both [`crate::utils::config::ShareableConfiguration`] and [`crate::utils::config::ActionConfig`]
+/// See [`crate::utils::config`] for more information.
+#[derive(Debug)]
 pub struct ExecInfo {
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub backend: String,
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub image: Option<String>,
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub title: Option<String>,
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub tags: Option<HashMap<String, String>>,
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub metadata: Option<HashMap<String, String>>,
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub output: String,
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
     pub source: String,
+    /// See [`crate::utils::config::ActionConfig`] for more information.
     pub conditions: Option<Vec<Condition>>,
+    /// See [`crate::utils::config::ActionConfig`] for more information.
     pub manual: Vec<Step>,
+    /// See [`crate::utils::config::ActionConfig`] for more information.
     pub retries: i8,
+    /// See [`crate::utils::config::ActionConfig`] for more information.
     pub allowed_failure: bool,
 }
 
@@ -246,17 +286,17 @@ pub struct ExecInfo {
 impl ExecInfo {
     fn new(action: &Action) -> Self {
         ExecInfo {
-            backend: action.get_shared_config().get_backend().to_string(),
-            image: action.get_shared_config().get_image(),
-            title: action.get_shared_config().get_title(),
-            tags: action.get_shared_config().get_tags(),
-            metadata: action.get_shared_config().get_metadata(),
-            output: action.get_shared_config().get_output().to_string(),
-            source: action.get_shared_config().get_source().to_string(),
-            conditions: action.get_action_config().get_conditions(),
-            manual: action.get_action_config().get_manual().to_vec(),
-            retries: *action.get_action_config().get_retries(),
-            allowed_failure: *action.get_action_config().get_allowed_failure(),
+            backend: action.shared_config.get_backend().to_string(),
+            image: action.shared_config.get_image(),
+            title: action.shared_config.get_title(),
+            tags: action.shared_config.get_tags(),
+            metadata: action.shared_config.get_metadata(),
+            output: action.shared_config.get_output().to_string(),
+            source: action.shared_config.get_source().to_string(),
+            conditions: action.action_config.get_conditions(),
+            manual: action.action_config.get_manual().to_vec(),
+            retries: *action.action_config.get_retries(),
+            allowed_failure: *action.action_config.get_allowed_failure(),
         }
     }
 }
