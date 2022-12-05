@@ -412,7 +412,7 @@ impl JsonParser {
         );
         new_shared_config
     }
-
+    
     /**
      *
      */
