@@ -7,7 +7,6 @@ use clap::Parser;
 
 use log::info;
 use simplelog::*;
-use log::{error};
 
 use std::collections::HashMap;
 use std::ffi::OsString;
@@ -58,9 +57,8 @@ fn main() -> std::io::Result<()> {
     get_files_elapsed(&mut elapsed_times, source_dir)?;
 
     let mut recent_file_changed = get_least_time(&elapsed_times);
-    println!("{:#?}", &elapsed_times);
-    println!("{:#?}", &recent_file_changed);
-    
+
+    println!("{:#?}", args.watch);
     loop {
         if args.watch {
             thread::sleep(time::Duration::from_millis(2000));
@@ -78,6 +76,7 @@ fn main() -> std::io::Result<()> {
             }
         } else {
             file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
+            println!("test");
             break;
         }
     }

@@ -12,3 +12,7 @@ dist
 #/target
 Dockerfile
 .dockerignore
+
+.dist
+
+metrics/*

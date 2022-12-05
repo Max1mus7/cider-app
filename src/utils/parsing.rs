@@ -396,7 +396,7 @@ impl JsonParser {
             },
             {
                 if json["source_directory"].is_null() {
-                    RelativePath::new("./")
+                    RelativePath::new("./src")
                         .to_path(&root)
                         .to_str()
                         .unwrap()
@@ -412,7 +412,7 @@ impl JsonParser {
         );
         new_shared_config
     }
-    
+
     /**
      *
      */

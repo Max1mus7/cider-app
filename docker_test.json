@@ -14,5 +14,6 @@
                 "step_3": "cargo test"
             }
         }
-    }
+    },
+    "source_directory": "./src"
 }

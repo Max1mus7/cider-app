@@ -1,3 +1,0 @@
-Image pull time: 1.4629098s
-Image remove time: 140.3569ms
-Image build time: 130.3484387s
