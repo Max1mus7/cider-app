@@ -2,18 +2,21 @@ pub mod utils;
 
 use cider::executor::*;
 use cider::parsing::*;
-use cider::watcher::*;
 
 use clap::Parser;
-use log::error;
-use simplelog::*;
-use tokio::fs as tfs;
 
+use log::info;
+use simplelog::*;
+
+use std::collections::HashMap;
+use std::ffi::OsString;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::{Path, PathBuf};
-use std::time::SystemTime;
+use std::path::Path;
+
+use std::time::Duration;
+use std::time::UNIX_EPOCH;
 use std::{thread, time};
 
 #[derive(Parser, Default, Debug)]
@@ -25,8 +28,8 @@ struct Arguments {
     #[arg(short, long, default_value_t = false)]
     watch: bool,
 }
-#[tokio::main]
-async fn main() -> std::io::Result<()> {
+
+fn main() -> std::io::Result<()> {
     setup_logger().unwrap_or_else(|err| {
         panic!(
             "Logs could not be properly set up due to the following error:\n{}",
@@ -43,48 +46,71 @@ async fn main() -> std::io::Result<()> {
     };
 
     let conf = json_parser::new_top_level(&filename);
-    let mut file = File::create(curate_filepath(conf.s_config.get_output(), "main_test.txt"))?;
+    let mut file = File::create(curate_filepath(
+        conf.s_config.get_output(),
+        "main_test.txt",
+    ))?;
+    
+    let mut elapsed_times = HashMap::<OsString, Duration>::new();
 
-    let mut start_mod_time = tfs::metadata(conf.s_config.get_source())
-        .await?
-        .modified()
-        .unwrap()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap();
+    let source_dir = Path::new(conf.s_config.get_source());
+    get_files_elapsed(&mut elapsed_times, source_dir)?;
+
+    let mut recent_file_changed = get_least_time(&elapsed_times);
+
+    println!("{:#?}", args.watch);
     loop {
         if args.watch {
             thread::sleep(time::Duration::from_millis(2000));
-            let now_mod_time = tfs::metadata(conf.s_config.get_source())
-                .await?
-                .modified()
-                .unwrap()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap();
-            if start_mod_time < now_mod_time {
-                start_mod_time = now_mod_time.clone();
+            get_files_elapsed(&mut elapsed_times, source_dir)?;
+            let checked_time = get_least_time(&elapsed_times);
+            if checked_time < recent_file_changed {
+                recent_file_changed = checked_time;
                 println!("Changes detected in source directory.");
                 file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
-            } else {
-                error!("{:#?}, {:#?}", start_mod_time, now_mod_time);
+            }
+            else {
+                recent_file_changed = checked_time;
+                info!("File changed {:#?} ago.", recent_file_changed);
                 println!("Waiting for changes to be made to source directory.");
             }
         } else {
             file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
+            println!("test");
             break;
         }
     }
 
-    error!(
-        "{:#?}",
-        tfs::metadata(conf.s_config.get_source())
-            .await?
-            .modified()
-            .unwrap()
-    );
-
     let mut file = File::create("./dist/output/config_output.txt")?;
     file.write_fmt(format_args!("{:#?}", conf))?;
 
+    Ok(())
+}
+
+fn get_least_time(elapsed_times: &HashMap<OsString, Duration>) -> Duration {
+    let mut least_time = UNIX_EPOCH.elapsed().unwrap();
+    for entry in elapsed_times {
+        if entry.1 < &least_time {
+            least_time = *entry.1;
+        }
+    }
+    info!("Most recent time in a which a file was changed: {:#?}",least_time);
+    least_time
+}
+
+fn get_files_elapsed<'a>(mut elapsed_times: &'a mut HashMap<OsString, Duration>, path: &'a Path) -> std::io::Result<()> {
+    info!("Getting elapsed time for files within {:#?}", path);
+    for entry in fs::read_dir(path)? {
+        if !elapsed_times.contains_key(&entry.as_ref().unwrap().file_name()){
+            elapsed_times.insert(entry.as_ref().unwrap().file_name().to_os_string().clone(), entry.as_ref().unwrap().metadata()?.modified()?.elapsed().unwrap());
+        } else { 
+            elapsed_times.insert(entry.as_ref().unwrap().file_name().clone(), entry.as_ref().unwrap().metadata()?.modified()?.elapsed().unwrap());
+        }
+        if entry.as_ref().unwrap().metadata()?.is_dir() {
+            get_files_elapsed(&mut elapsed_times, entry.as_ref().unwrap().path().as_path()).unwrap();
+        }
+    }
+    info!("Recursive directory info: {:#?}", elapsed_times.clone());
     Ok(())
 }
 
@@ -95,6 +121,8 @@ async fn main() -> std::io::Result<()> {
  */
 fn setup_logger() -> std::io::Result<()> {
     fs::create_dir_all("dist/logs")?;
+    fs::create_dir_all("dist/cider")?;
+    fs::create_dir_all("dist/output")?;
     fs::create_dir_all("metrics/win").unwrap();
     fs::create_dir_all("metrics/deb").unwrap();
     fs::create_dir_all("metrics/rhel").unwrap();

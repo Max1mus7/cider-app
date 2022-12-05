@@ -384,7 +384,7 @@ pub mod json_parser {
             },
             {
                 if json["source_directory"].is_null() {
-                    RelativePath::new("./")
+                    RelativePath::new("./src")
                         .to_path(&root)
                         .to_str()
                         .unwrap()

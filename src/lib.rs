@@ -15,7 +15,7 @@ pub use utils::config;
 pub use utils::config_generator;
 pub use utils::executor;
 pub use utils::parsing;
-pub use utils::watcher;
+// pub use utils::watcher;
 
 #[cfg(test)]
 mod systests {

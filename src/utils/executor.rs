@@ -315,6 +315,7 @@ fn command_setup_windows<'a>(
     set_output_piped(cmd.args(args).current_dir(current_dir().unwrap()))
 }
 
+
 fn image_setup(setup: &mut ExecInfo, outputs: &mut Vec<String>) {
     if setup.image.is_none() {
         setup.image = Some("alpine:latest".to_string());
