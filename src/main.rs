@@ -45,15 +45,15 @@ fn main() -> std::io::Result<()> {
         args.config.unwrap()
     };
 
-    let conf = JsonParser::new_top_level(&filename);
+    let conf = json_parser::new_top_level(&filename);
     let mut file = File::create(curate_filepath(
-        conf.get_shared_config().get_output(),
+        conf.s_config.get_output(),
         "main_test.txt",
     ))?;
     
     let mut elapsed_times = HashMap::<OsString, Duration>::new();
 
-    let source_dir = Path::new(conf.get_shared_config().get_source());
+    let source_dir = Path::new(conf.s_config.get_source());
     get_files_elapsed(&mut elapsed_times, source_dir)?;
 
     let mut recent_file_changed = get_least_time(&elapsed_times);
