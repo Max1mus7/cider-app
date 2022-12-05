@@ -26,14 +26,14 @@ mod systests {
     fn parse_json_from_file() {
         info!(
             "{}",
-            json_parser::parse_json_string("example_docker_config.json")
+            json_parser::parse_json_string("cider_config.json")
         );
         assert!(true);
     }
 
     #[test]
     fn test_parse_top_level_actions() {
-        let config = json_parser::new_top_level("example_docker_config.json");
+        let config = json_parser::new_top_level("cider_config.json");
         for action in config.get_actions() {
             info!("{:#?}", action);
         }
@@ -42,7 +42,7 @@ mod systests {
 
     #[test]
     fn test_parse_pipeline_actions() {
-        let config = json_parser::new_top_level("example_docker_config.json");
+        let config = json_parser::new_top_level("cider_config.json");
         for pipeline in config.get_pipelines() {
             for action in pipeline.pipeline_config.get_actions() {
                 info!("{:#?}", action);
@@ -52,7 +52,7 @@ mod systests {
 
     #[test]
     fn test_all_actions() {
-        let config = json_parser::new_top_level("example_docker_config.json");
+        let config = json_parser::new_top_level("cider_config.json");
         for action in config.get_all_actions() {
             info!("{:#?}", action);
         }
@@ -60,7 +60,7 @@ mod systests {
 
     #[test]
     fn test_parse_pipeline() {
-        let config = json_parser::new_top_level("example_docker_config.json");
+        let config = json_parser::new_top_level("cider_config.json");
         for pipeline in config.get_pipelines() {
             info!("{:#?}", pipeline);
         }

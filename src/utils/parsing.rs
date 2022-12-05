@@ -407,7 +407,8 @@ pub mod json_parser {
     /// the instructions provided via said JSON
     ///
     /// ```
-    /// let config = new_top_level("./cider_config.json");
+    /// use cider::parsing::json_parser;
+    /// let config = json_parser::new_top_level("./cider_config.json");
     /// ```
     /// This function will panic when provided with a configuration file that is not found on the host device.
     ///  
