@@ -66,7 +66,10 @@ fn main() -> std::io::Result<()> {
                 file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
             } else {
                 recent_file_changed = checked_time;
-                info!("File in watched directory most recently changed {:#?} ago.", recent_file_changed);
+                info!(
+                    "File in watched directory most recently changed {:#?} ago.",
+                    recent_file_changed
+                );
                 // println!("Waiting for changes to be made to source directory.");
             }
         } else {
