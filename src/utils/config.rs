@@ -68,7 +68,7 @@ impl ShareableConfiguration {
     /// Basic usage:
     /// ```
     /// use cider::config::ShareableConfiguration;
-    /// 
+    ///
     /// let s = ShareableConfiguration::new(None, None, None, "Rust".to_string(), None, "bash".to_string(), "./dist/cider".to_string(), "./src".to_string());
     /// ```
     ///

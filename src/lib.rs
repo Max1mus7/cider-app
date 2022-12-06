@@ -24,10 +24,7 @@ mod systests {
 
     #[test]
     fn parse_json_from_file() {
-        info!(
-            "{}",
-            json_parser::parse_json_string("cider_config.json")
-        );
+        info!("{}", json_parser::parse_json_string("cider_config.json"));
         assert!(true);
     }
 
