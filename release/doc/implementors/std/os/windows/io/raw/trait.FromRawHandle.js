@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"winapi_util":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.65.0/std/os/windows/io/raw/trait.FromRawHandle.html\" title=\"trait std::os::windows::io::raw::FromRawHandle\">FromRawHandle</a> for <a class=\"struct\" href=\"winapi_util/struct.Handle.html\" title=\"struct winapi_util::Handle\">Handle</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

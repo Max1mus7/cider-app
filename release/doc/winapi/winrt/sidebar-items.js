@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["activation",""],["hstring","This interface definition contains typedefs for Windows Runtime data types."],["inspectable",""],["roapi",""],["winstring",""]]};

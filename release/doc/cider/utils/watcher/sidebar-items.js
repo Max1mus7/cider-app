@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["WatchMode","Will be used to define multiple types of watchers with differing functionality"]],"struct":[["Watcher","Contains path information needed to watch directory."]]};
