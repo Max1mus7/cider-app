@@ -61,7 +61,7 @@ impl ShareableConfiguration {
     /// Creates a new [`ShareableConfiguration`]
     ///
     /// Some values are completely optional, and will either be defaulted or set as None if not provided.
-    /// Note that some required information is set by default in [`cider::parsing::json_parser`] if it is not explicitly defaulted here.
+    /// Note that some required information is set by default in [`crate::utils::parsing::json_parser`] if it is not explicitly defaulted here.
     /// Specifically, output, and source are defaulted to ./dist/cider and ./src, respectively.
     ///
     /// # Examples:
