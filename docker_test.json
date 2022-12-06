@@ -5,13 +5,18 @@
     "image": "python:3.10",
     "pipelines": ["Test_Docker"],
     "Test_Docker": {
-        "actions": ["Consolidate_Reports"],
-        "Consolidate_Reports": {
+        "actions": ["Run_Tests", "Consolidate_Reports"],
+        "Run_Tests": {
             "image": "rust:1.64.0",
             "manual": {
-                "step_2": "rustc --version",
-                "step_1": "cargo build",
-                "step_3": "cargo test"
+                "step_1": "rustc --version",
+                "step_2": "cargo build"
+            }
+        },
+        "Consolidate_Reports": {
+            "backend": "bash",
+            "manual": {
+                "combine_csvs": "python ./tests/pyscripts/accumulate_tests.py"
             }
         }
     },

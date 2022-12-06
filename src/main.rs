@@ -46,11 +46,8 @@ fn main() -> std::io::Result<()> {
     };
 
     let conf = json_parser::new_top_level(&filename);
-    let mut file = File::create(curate_filepath(
-        conf.s_config.get_output(),
-        "main_test.txt",
-    ))?;
-    
+    let mut file = File::create(curate_filepath(conf.s_config.get_output(), "main_test.txt"))?;
+
     let mut elapsed_times = HashMap::<OsString, Duration>::new();
 
     let source_dir = Path::new(conf.s_config.get_source());
@@ -58,7 +55,6 @@ fn main() -> std::io::Result<()> {
 
     let mut recent_file_changed = get_least_time(&elapsed_times);
 
-    println!("{:#?}", args.watch);
     loop {
         if args.watch {
             thread::sleep(time::Duration::from_millis(2000));
@@ -68,11 +64,10 @@ fn main() -> std::io::Result<()> {
                 recent_file_changed = checked_time;
                 println!("Changes detected in source directory.");
                 file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
-            }
-            else {
+            } else {
                 recent_file_changed = checked_time;
-                info!("File changed {:#?} ago.", recent_file_changed);
-                println!("Waiting for changes to be made to source directory.");
+                info!("File in watched directory most recently changed {:#?} ago.", recent_file_changed);
+                // println!("Waiting for changes to be made to source directory.");
             }
         } else {
             file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
@@ -94,20 +89,45 @@ fn get_least_time(elapsed_times: &HashMap<OsString, Duration>) -> Duration {
             least_time = *entry.1;
         }
     }
-    info!("Most recent time in a which a file was changed: {:#?}",least_time);
+    info!(
+        "Most recent time in a which a file was changed: {:#?}",
+        least_time
+    );
     least_time
 }
 
-fn get_files_elapsed<'a>(mut elapsed_times: &'a mut HashMap<OsString, Duration>, path: &'a Path) -> std::io::Result<()> {
+fn get_files_elapsed<'a>(
+    mut elapsed_times: &'a mut HashMap<OsString, Duration>,
+    path: &'a Path,
+) -> std::io::Result<()> {
     info!("Getting elapsed time for files within {:#?}", path);
     for entry in fs::read_dir(path)? {
-        if !elapsed_times.contains_key(&entry.as_ref().unwrap().file_name()){
-            elapsed_times.insert(entry.as_ref().unwrap().file_name().to_os_string().clone(), entry.as_ref().unwrap().metadata()?.modified()?.elapsed().unwrap());
-        } else { 
-            elapsed_times.insert(entry.as_ref().unwrap().file_name().clone(), entry.as_ref().unwrap().metadata()?.modified()?.elapsed().unwrap());
+        if !elapsed_times.contains_key(&entry.as_ref().unwrap().file_name()) {
+            elapsed_times.insert(
+                entry.as_ref().unwrap().file_name().to_os_string().clone(),
+                entry
+                    .as_ref()
+                    .unwrap()
+                    .metadata()?
+                    .modified()?
+                    .elapsed()
+                    .unwrap(),
+            );
+        } else {
+            elapsed_times.insert(
+                entry.as_ref().unwrap().file_name().clone(),
+                entry
+                    .as_ref()
+                    .unwrap()
+                    .metadata()?
+                    .modified()?
+                    .elapsed()
+                    .unwrap(),
+            );
         }
         if entry.as_ref().unwrap().metadata()?.is_dir() {
-            get_files_elapsed(&mut elapsed_times, entry.as_ref().unwrap().path().as_path()).unwrap();
+            get_files_elapsed(&mut elapsed_times, entry.as_ref().unwrap().path().as_path())
+                .unwrap();
         }
     }
     info!("Recursive directory info: {:#?}", elapsed_times.clone());
