@@ -1,20 +1,23 @@
 pub mod utils;
 
+//package imports
 use cider::executor::*;
 use cider::parsing::*;
 
+//arg parser
 use clap::Parser;
 
+//logger
 use log::info;
 use simplelog::*;
 
+//std library imports
 use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-
 use std::time::Duration;
 use std::time::UNIX_EPOCH;
 use std::{thread, time};
@@ -46,38 +49,36 @@ fn main() -> std::io::Result<()> {
     };
 
     let conf = json_parser::new_top_level(&filename);
-    let mut file = File::create(curate_filepath(conf.s_config.get_output(), "main_test.txt"))?;
-
-    let mut elapsed_times = HashMap::<OsString, Duration>::new();
+    let mut output_file = File::create(curate_filepath(conf.s_config.get_output(), "cider_output.txt"))?;
 
     let source_dir = Path::new(conf.s_config.get_source());
-    get_files_elapsed(&mut elapsed_times, source_dir)?;
 
-    let mut recent_file_changed = get_least_time(&elapsed_times);
 
-    loop {
-        if args.watch {
-            thread::sleep(time::Duration::from_millis(2000));
-            get_files_elapsed(&mut elapsed_times, source_dir)?;
+
+    if args.watch {
+        let mut elapsed_times = HashMap::<OsString, Duration>::new();
+        let mut recent_file_changed = get_least_time(&elapsed_times);
+        loop {
+            get_files_time_elapsed_since_changed(&mut elapsed_times, source_dir)?;
             let checked_time = get_least_time(&elapsed_times);
             if checked_time < recent_file_changed {
                 recent_file_changed = checked_time;
                 println!("Changes detected in source directory.");
-                file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
+                output_file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
             } else {
                 recent_file_changed = checked_time;
                 info!(
                     "File in watched directory most recently changed {:#?} ago.",
                     recent_file_changed
                 );
-                // println!("Waiting for changes to be made to source directory.");
-            }
-        } else {
-            file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
-            println!("test");
-            break;
+            // println!("Waiting for changes to be made to source directory.");
         }
+        thread::sleep(time::Duration::from_millis(2000));}
+    } else {
+        output_file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
+        println!("test");
     }
+    
 
     let mut file = File::create("./dist/output/config_output.txt")?;
     file.write_fmt(format_args!("{:#?}", conf))?;
@@ -99,7 +100,7 @@ fn get_least_time(elapsed_times: &HashMap<OsString, Duration>) -> Duration {
     least_time
 }
 
-fn get_files_elapsed<'a>(
+fn get_files_time_elapsed_since_changed<'a>(
     mut elapsed_times: &'a mut HashMap<OsString, Duration>,
     path: &'a Path,
 ) -> std::io::Result<()> {
@@ -129,11 +130,11 @@ fn get_files_elapsed<'a>(
             );
         }
         if entry.as_ref().unwrap().metadata()?.is_dir() {
-            get_files_elapsed(&mut elapsed_times, entry.as_ref().unwrap().path().as_path())
+            get_files_time_elapsed_since_changed(&mut elapsed_times, entry.as_ref().unwrap().path().as_path())
                 .unwrap();
         }
     }
-    info!("Recursive directory info: {:#?}", elapsed_times.clone());
+    // info!("Recursive directory info: {:#?}", elapsed_times.clone());
     Ok(())
 }
 

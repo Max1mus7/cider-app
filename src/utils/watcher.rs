@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::{PathBuf};
 
 /// Contains path information needed to watch directory.
 ///

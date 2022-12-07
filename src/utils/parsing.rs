@@ -118,7 +118,7 @@ pub mod json_parser {
                 }
             },
             {
-                if !backend.to_lowercase().eq("docker") {
+                if !backend.to_lowercase().eq("docker") && !backend.is_empty() {
                     warn!("Image cannot be set if docker is not the backend.");
                     None
                 } else if json["image"].is_null() {

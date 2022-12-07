@@ -1,5 +1,5 @@
 use crate::utils::config::{Action, Condition, Step};
-use chrono::{DateTime, Utc};
+use chrono::{Utc};
 use csv::Writer;
 use log::{error, info, warn};
 use relative_path::RelativePath;
