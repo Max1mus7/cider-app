@@ -427,10 +427,14 @@
 <span id="427">427</span>
 <span id="428">428</span>
 <span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::utils::config::{Action, Condition, Step};
-<span class="kw">use </span>chrono::{DateTime, Utc};
-<span class="kw">use </span>csv::Writer;
-<span class="kw">use </span>log::{error, info, warn};
+<span class="comment">// use chrono::Utc;
+// use csv::Writer;
+</span><span class="kw">use </span>log::{error, info, warn};
 <span class="kw">use </span>relative_path::RelativePath;
 <span class="doccomment">/**
  * Module used to clean input and execute actions
@@ -520,16 +524,17 @@
     <span class="kw">let </span><span class="kw-2">mut </span>outputs = <span class="macro">vec!</span>[];
     image_setup(<span class="kw-2">&amp;mut </span>setup, <span class="kw-2">&amp;mut </span>outputs);
     generate_dockerfile(<span class="kw-2">&amp;</span>setup);
-    <span class="kw">let </span>csv_headers = <span class="macro">vec!</span>[<span class="string">&quot;Image_pull_time&quot;</span>, <span class="string">&quot;Image_remove_time&quot;</span>, <span class="string">&quot;Image_build_time&quot;</span>];
-    <span class="kw">let </span><span class="kw-2">mut </span>csv_data: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = <span class="macro">vec!</span>[];
-    <span class="kw">if </span><span class="macro">cfg!</span>(windows) {
-        <span class="kw">let </span>log_time = Utc::now().format(<span class="string">&quot;%d-%m_%H%M%S&quot;</span>);
-        <span class="kw">let </span>log_file = <span class="string">&quot;./metrics/win/&quot;</span>.to_string() + log_time.to_string().as_str() + <span class="string">&quot;.csv&quot;</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>csv_wtr = Writer::from_path(log_file).unwrap_or_else(|err| {
-            <span class="macro">error!</span>(<span class="string">&quot;{}&quot;</span>, err);
-            <span class="macro">panic!</span>(<span class="string">&quot;{}&quot;</span>, err);
-        });
-        <span class="kw">let </span>image_pull_time = SystemTime::now();
+    <span class="comment">// let csv_headers = vec![&quot;Image_pull_time&quot;, &quot;Image_remove_time&quot;, &quot;Image_build_time&quot;];
+    // let mut csv_data: Vec&lt;&amp;str&gt; = vec![];
+
+    </span><span class="kw">if </span><span class="macro">cfg!</span>(windows) {
+        <span class="comment">// let log_time = Utc::now().format(&quot;%d-%m_%H%M%S&quot;);
+        // let log_file = &quot;./metrics/win/&quot;.to_string() + log_time.to_string().as_str() + &quot;.csv&quot;;
+        // let mut csv_wtr = Writer::from_path(log_file).unwrap_or_else(|err| {
+        //     error!(&quot;{}&quot;, err);
+        //     panic!(&quot;{}&quot;, err);
+        // });
+        </span><span class="kw">let </span>image_pull_time = SystemTime::now();
         <span class="kw">let </span><span class="kw-2">mut </span>cmd = Command::new(<span class="string">&quot;cmd&quot;</span>);
         <span class="kw">let </span><span class="kw-2">mut </span>process = docker_setup_windows(<span class="kw-2">&amp;mut </span>cmd, <span class="kw-2">&amp;</span>setup.image.unwrap(), <span class="bool-val">true</span>)
             .spawn()
@@ -539,10 +544,11 @@
             <span class="macro">panic!</span>(<span class="string">&quot;{:#?}&quot;</span>, err);
         });
         <span class="macro">info!</span>(<span class="string">&quot;{:#?}&quot;</span>, <span class="kw-2">&amp;</span>image_pull_time.elapsed().unwrap());
-        <span class="kw">let </span>image_pull_string = <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, image_pull_time.elapsed().unwrap());
-        csv_data.push(<span class="kw-2">&amp;</span>image_pull_string);
 
-        <span class="kw">let </span>image_rm_time = SystemTime::now();
+        <span class="comment">// let image_pull_string = format!(&quot;{:?}&quot;, image_pull_time.elapsed().unwrap());
+        // csv_data.push(&amp;image_pull_string);
+
+        </span><span class="kw">let </span>image_rm_time = SystemTime::now();
         <span class="kw">let </span><span class="kw-2">mut </span>cmd = Command::new(<span class="string">&quot;cmd&quot;</span>);
         <span class="kw">let </span><span class="kw-2">mut </span>process = docker_clean_windows(<span class="kw-2">&amp;mut </span>cmd, <span class="bool-val">true</span>)
             .spawn()
@@ -552,10 +558,11 @@
             <span class="macro">panic!</span>(<span class="string">&quot;{:#?}&quot;</span>, err);
         });
         <span class="macro">info!</span>(<span class="string">&quot;{:#?}&quot;</span>, image_rm_time.elapsed().unwrap());
-        <span class="kw">let </span>image_rm_string = <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, image_rm_time.elapsed().unwrap());
-        csv_data.push(<span class="kw-2">&amp;</span>image_rm_string);
 
-        <span class="kw">let </span>image_build_time = SystemTime::now();
+        <span class="comment">// let image_rm_string = format!(&quot;{:?}&quot;, image_rm_time.elapsed().unwrap());
+        // csv_data.push(&amp;image_rm_string);
+
+        </span><span class="kw">let </span>image_build_time = SystemTime::now();
         <span class="kw">let </span><span class="kw-2">mut </span>cmd = Command::new(<span class="string">&quot;cmd&quot;</span>);
         <span class="kw">let </span><span class="kw-2">mut </span>process = docker_build_windows(<span class="kw-2">&amp;mut </span>cmd, <span class="bool-val">true</span>)
             .spawn()
@@ -565,13 +572,14 @@
             <span class="macro">panic!</span>(<span class="string">&quot;{:#?}&quot;</span>, err);
         });
         <span class="macro">info!</span>(<span class="string">&quot;{:#?}&quot;</span>, image_build_time.elapsed().unwrap());
-        <span class="kw">let </span>image_build_string = <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, image_build_time.elapsed().unwrap());
-        csv_data.push(<span class="kw-2">&amp;</span>image_build_string);
 
-        csv_wtr.write_record(<span class="kw-2">&amp;</span>csv_headers).unwrap();
-        csv_wtr.write_record(<span class="kw-2">&amp;</span>csv_data).unwrap();
-        csv_wtr.flush().unwrap();
-    } <span class="kw">else </span>{
+        <span class="comment">// let image_build_string = format!(&quot;{:?}&quot;, image_build_time.elapsed().unwrap());
+        // csv_data.push(&amp;image_build_string);
+
+        // csv_wtr.write_record(&amp;csv_headers).unwrap();
+        // csv_wtr.write_record(&amp;csv_data).unwrap();
+        // csv_wtr.flush().unwrap();
+    </span>} <span class="kw">else </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>cmd = Command::new(<span class="string">&quot;sh&quot;</span>);
         <span class="kw">let </span><span class="kw-2">mut </span>process = docker_setup_unix(<span class="kw-2">&amp;mut </span>cmd, <span class="kw-2">&amp;</span>setup.image.unwrap(), <span class="bool-val">true</span>)
             .spawn()

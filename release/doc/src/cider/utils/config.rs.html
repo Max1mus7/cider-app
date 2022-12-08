@@ -977,6 +977,7 @@
 <span id="977">977</span>
 <span id="978">978</span>
 <span id="979">979</span>
+<span id="980">980</span>
 </pre><pre class="rust"><code><span class="kw">use </span>log::{info, warn};
 <span class="kw">use </span>std::collections::HashMap;
 
@@ -1040,7 +1041,7 @@
     <span class="doccomment">/// Creates a new [`ShareableConfiguration`]
     ///
     /// Some values are completely optional, and will either be defaulted or set as None if not provided.
-    /// Note that some required information is set by default in [`cider::parsing::json_parser`] if it is not explicitly defaulted here.
+    /// Note that some required information is set by default in [`crate::utils::parsing::json_parser`] if it is not explicitly defaulted here.
     /// Specifically, output, and source are defaulted to ./dist/cider and ./src, respectively.
     ///
     /// # Examples:
@@ -1063,7 +1064,6 @@
     ) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>image = {
             <span class="kw">if </span>!backend.to_lowercase().eq(<span class="string">&quot;docker&quot;</span>) {
-                <span class="macro">warn!</span>(<span class="string">&quot;Image cannot be set if docker is not the backend.&quot;</span>);
                 <span class="prelude-val">None
             </span>} <span class="kw">else </span>{
                 image
@@ -1298,8 +1298,10 @@
                 <span class="prelude-val">Some</span>(image.to_string())
             }
             <span class="prelude-val">None </span>=&gt; {
-                <span class="kw">let </span>res_str = <span class="string">&quot;No image found or no image configured.&quot;</span>;
-                <span class="macro">warn!</span>(<span class="string">&quot;{}&quot;</span>, res_str);
+                <span class="kw">if </span><span class="self">Self</span>::get_backend(<span class="kw-2">&amp;</span><span class="self">self</span>) == <span class="string">&quot;docker&quot; </span>{
+                    <span class="kw">let </span>res_str = <span class="string">&quot;No image found or no image configured.&quot;</span>;
+                    <span class="macro">warn!</span>(<span class="string">&quot;{}&quot;</span>, res_str);
+                }
                 <span class="prelude-val">None
             </span>}
         }
