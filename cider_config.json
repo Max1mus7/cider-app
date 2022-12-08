@@ -6,8 +6,6 @@
         "actions": ["Run_Tests", "Consolidate_Reports"],
         "Run_Tests": { 
             "manual": {
-                "step_1": "rustc --version",
-                "step_2": "cargo build",
                 "step_3": "cargo test"
             }
         },

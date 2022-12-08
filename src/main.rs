@@ -49,11 +49,12 @@ fn main() -> std::io::Result<()> {
     };
 
     let conf = json_parser::new_top_level(&filename);
-    let mut output_file = File::create(curate_filepath(conf.s_config.get_output(), "cider_output.txt"))?;
+    let mut output_file = File::create(curate_filepath(
+        conf.s_config.get_output(),
+        "cider_output.txt",
+    ))?;
 
     let source_dir = Path::new(conf.s_config.get_source());
-
-
 
     if args.watch {
         let mut elapsed_times = HashMap::<OsString, Duration>::new();
@@ -64,21 +65,22 @@ fn main() -> std::io::Result<()> {
             if checked_time < recent_file_changed {
                 recent_file_changed = checked_time;
                 println!("Changes detected in source directory.");
-                output_file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
+                output_file
+                    .write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
             } else {
                 recent_file_changed = checked_time;
                 info!(
                     "File in watched directory most recently changed {:#?} ago.",
                     recent_file_changed
                 );
-            // println!("Waiting for changes to be made to source directory.");
+                // println!("Waiting for changes to be made to source directory.");
+            }
+            thread::sleep(time::Duration::from_millis(2000));
         }
-        thread::sleep(time::Duration::from_millis(2000));}
     } else {
         output_file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
         println!("test");
     }
-    
 
     let mut file = File::create("./dist/output/config_output.txt")?;
     file.write_fmt(format_args!("{:#?}", conf))?;
@@ -130,8 +132,11 @@ fn get_files_time_elapsed_since_changed<'a>(
             );
         }
         if entry.as_ref().unwrap().metadata()?.is_dir() {
-            get_files_time_elapsed_since_changed(&mut elapsed_times, entry.as_ref().unwrap().path().as_path())
-                .unwrap();
+            get_files_time_elapsed_since_changed(
+                &mut elapsed_times,
+                entry.as_ref().unwrap().path().as_path(),
+            )
+            .unwrap();
         }
     }
     // info!("Recursive directory info: {:#?}", elapsed_times.clone());
@@ -140,16 +145,16 @@ fn get_files_time_elapsed_since_changed<'a>(
 
 /**
  * Sets up a logger to be used by the program. This will have more functionality in the future
- * /*!TODO: Allow multiple verbosity options. */
+ * /*!TODO: Allow multiple verbosity options to be input by users. */
  * /*!TODO: Allow for custom file pathing for logs. */
  */
 fn setup_logger() -> std::io::Result<()> {
     fs::create_dir_all("dist/logs")?;
     fs::create_dir_all("dist/cider")?;
     fs::create_dir_all("dist/output")?;
-    fs::create_dir_all("metrics/win").unwrap();
-    fs::create_dir_all("metrics/deb").unwrap();
-    fs::create_dir_all("metrics/rhel").unwrap();
+    // fs::create_dir_all("metrics/win")?;
+    // fs::create_dir_all("metrics/deb")?;
+    // fs::create_dir_all("metrics/rhel")?;
 
     CombinedLogger::init(vec![
         TermLogger::new(

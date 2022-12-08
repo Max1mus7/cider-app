@@ -1,6 +1,6 @@
 use crate::utils::config::{Action, Condition, Step};
-use chrono::{Utc};
-use csv::Writer;
+// use chrono::Utc;
+// use csv::Writer;
 use log::{error, info, warn};
 use relative_path::RelativePath;
 /**
@@ -91,15 +91,16 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
     let mut outputs = vec![];
     image_setup(&mut setup, &mut outputs);
     generate_dockerfile(&setup);
-    let csv_headers = vec!["Image_pull_time", "Image_remove_time", "Image_build_time"];
-    let mut csv_data: Vec<&str> = vec![];
+    // let csv_headers = vec!["Image_pull_time", "Image_remove_time", "Image_build_time"];
+    // let mut csv_data: Vec<&str> = vec![];
+
     if cfg!(windows) {
-        let log_time = Utc::now().format("%d-%m_%H%M%S");
-        let log_file = "./metrics/win/".to_string() + log_time.to_string().as_str() + ".csv";
-        let mut csv_wtr = Writer::from_path(log_file).unwrap_or_else(|err| {
-            error!("{}", err);
-            panic!("{}", err);
-        });
+        // let log_time = Utc::now().format("%d-%m_%H%M%S");
+        // let log_file = "./metrics/win/".to_string() + log_time.to_string().as_str() + ".csv";
+        // let mut csv_wtr = Writer::from_path(log_file).unwrap_or_else(|err| {
+        //     error!("{}", err);
+        //     panic!("{}", err);
+        // });
         let image_pull_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
         let mut process = docker_setup_windows(&mut cmd, &setup.image.unwrap(), true)
@@ -110,8 +111,9 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
             panic!("{:#?}", err);
         });
         info!("{:#?}", &image_pull_time.elapsed().unwrap());
-        let image_pull_string = format!("{:?}", image_pull_time.elapsed().unwrap());
-        csv_data.push(&image_pull_string);
+
+        // let image_pull_string = format!("{:?}", image_pull_time.elapsed().unwrap());
+        // csv_data.push(&image_pull_string);
 
         let image_rm_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
@@ -123,8 +125,9 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
             panic!("{:#?}", err);
         });
         info!("{:#?}", image_rm_time.elapsed().unwrap());
-        let image_rm_string = format!("{:?}", image_rm_time.elapsed().unwrap());
-        csv_data.push(&image_rm_string);
+
+        // let image_rm_string = format!("{:?}", image_rm_time.elapsed().unwrap());
+        // csv_data.push(&image_rm_string);
 
         let image_build_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
@@ -136,12 +139,13 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
             panic!("{:#?}", err);
         });
         info!("{:#?}", image_build_time.elapsed().unwrap());
-        let image_build_string = format!("{:?}", image_build_time.elapsed().unwrap());
-        csv_data.push(&image_build_string);
 
-        csv_wtr.write_record(&csv_headers).unwrap();
-        csv_wtr.write_record(&csv_data).unwrap();
-        csv_wtr.flush().unwrap();
+        // let image_build_string = format!("{:?}", image_build_time.elapsed().unwrap());
+        // csv_data.push(&image_build_string);
+
+        // csv_wtr.write_record(&csv_headers).unwrap();
+        // csv_wtr.write_record(&csv_data).unwrap();
+        // csv_wtr.flush().unwrap();
     } else {
         let mut cmd = Command::new("sh");
         let mut process = docker_setup_unix(&mut cmd, &setup.image.unwrap(), true)
