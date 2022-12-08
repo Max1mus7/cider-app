@@ -84,7 +84,6 @@ impl ShareableConfiguration {
     ) -> Self {
         let image = {
             if !backend.to_lowercase().eq("docker") {
-                warn!("Image cannot be set if docker is not the backend.");
                 None
             } else {
                 image
@@ -319,8 +318,10 @@ impl ShareableConfiguration {
                 Some(image.to_string())
             }
             None => {
-                let res_str = "No image found or no image configured.";
-                warn!("{}", res_str);
+                if Self::get_backend(&self) == "docker" {
+                    let res_str = "No image found or no image configured.";
+                    warn!("{}", res_str);
+                }
                 None
             }
         }
