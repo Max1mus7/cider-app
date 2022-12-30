@@ -10,7 +10,8 @@
             "manual": {
                 "step_1": "rustc --version",
                 "step_2": "cargo build"
-            }
+            },
+            "source_directory": "./"
         },
         "Consolidate_Reports": {
             "backend": "bash",

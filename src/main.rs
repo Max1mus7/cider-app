@@ -80,7 +80,6 @@ fn main() -> std::io::Result<()> {
         }
     } else {
         output_file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
-        println!("test");
     }
 
     let mut file = File::create("./dist/output/config_output.txt")?;
@@ -157,7 +156,8 @@ fn setup_logger() -> std::io::Result<()> {
     fs::create_dir_all("dist/logs")?;
     fs::create_dir_all("dist/cider")?;
     fs::create_dir_all("dist/output")?;
-    // fs::create_dir_all("metrics/win")?;
+    fs::create_dir_all("metrics/win")?;
+    fs::create_dir_all("metrics/combined_reports")?;
     // fs::create_dir_all("metrics/deb")?;
     // fs::create_dir_all("metrics/rhel")?;
 

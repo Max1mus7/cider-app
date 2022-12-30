@@ -1,6 +1,6 @@
 {
     "title": "CIder 0.1 Example Docker Config",
-    "backend": "bash",
+    "backend": "docker",
     "pipelines": ["Test_Program"],
     "Test_Program": {
         "actions": ["Run_Tests", "Consolidate_Reports"],
