@@ -120,8 +120,8 @@ pub mod json_parser {
             {
                 if !backend.to_lowercase().eq("docker")
                     && !backend.is_empty()
-                    && !(backend == "bash")
-                    && !(backend == "batch")
+                    && backend != "bash"
+                    && backend != "batch"
                 {
                     warn!("Image cannot be set if docker is not the backend.");
                     None
@@ -260,8 +260,8 @@ pub mod json_parser {
             {
                 if !backend.to_lowercase().eq("docker")
                     && !backend.is_empty()
-                    && !(backend == "bash")
-                    && !(backend == "batch")
+                    && backend != "bash"
+                    && backend != "batch"
                 {
                     warn!("Image cannot be set if docker is not the backend.");
                     None
@@ -367,8 +367,8 @@ pub mod json_parser {
             {
                 if !backend.to_lowercase().eq("docker")
                     && !backend.is_empty()
-                    && !(backend == "bash")
-                    && !(backend == "batch")
+                    && backend != "bash"
+                    && backend != "batch"
                 {
                     warn!("Image cannot be set if docker is not the backend.");
                     None

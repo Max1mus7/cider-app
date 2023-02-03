@@ -318,7 +318,7 @@ impl ShareableConfiguration {
                 Some(image.to_string())
             }
             None => {
-                if Self::get_backend(&self) == "docker" {
+                if Self::get_backend(self) == "docker" {
                     let res_str = "No image found or no image configured.";
                     warn!("{}", res_str);
                 }
