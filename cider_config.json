@@ -3,10 +3,10 @@
     "backend": "bash",
     "pipelines": ["Test_Program"],
     "Test_Program": {
-        "actions": ["Run_Tests", "Consolidate_Reports"],
-        "Run_Tests": { 
+        "actions": ["Run_Tests"],
+        "Run_Tests": {
             "manual": {
-                "step_3": "cargo test"
+                "step_1": "cargo test"
             }
         },
         "Consolidate_Reports": {
