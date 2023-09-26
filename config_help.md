@@ -77,6 +77,9 @@ Example:
 }
 ```
 
+\
+*This does not currently have any purpose,* and is intended to be used purely as decoration.
+
 ***
 
 #### Tags*
@@ -95,8 +98,6 @@ Example:
 ```
 
 *This does not do anything at the moment, but will be used as a way to specify which actions are performed via CLI arguments at a later date.*
-
-***Note to the Developer(s)***
 
 ***
 
