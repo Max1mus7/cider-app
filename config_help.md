@@ -16,7 +16,14 @@
    10. [pipelines](#pipelines)
    11. [actions](#actions)
 3. **[Pipeline Configuration](#pipeline-configuration)**
+   1. [conditions](#conditions)
+   2. [actions](#actions-1)
+   3. [requires](#requires)
 4. **[Action Configuration](#action-configuration)**
+   1. [conditions](#conditions-1)
+   2. [retries](#retries)
+   3. [allowed_failure](#allowed_failure)
+   4. **[manual](#manual)**
 5. **[References](#references)**
 6. **[Additional Notes](#additional-notes)**
 
