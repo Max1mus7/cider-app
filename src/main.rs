@@ -104,7 +104,7 @@ fn get_least_time(elapsed_times: &HashMap<OsString, Duration>) -> Duration {
 }
 
 fn get_files_time_elapsed_since_changed<'a>(
-    mut elapsed_times: &'a mut HashMap<OsString, Duration>,
+    elapsed_times: &'a mut HashMap<OsString, Duration>,
     path: &'a Path,
 ) -> std::io::Result<()> {
     info!("Getting elapsed time for files within {:#?}", path);
@@ -137,7 +137,7 @@ fn get_files_time_elapsed_since_changed<'a>(
         }
         if entry.as_ref().unwrap().metadata()?.is_dir() && entry.as_ref().unwrap().file_name() != "target" && entry.as_ref().unwrap().file_name() != "node_modules" && entry.as_ref().unwrap().file_name() != "bin" && entry.as_ref().unwrap().file_name() != "obj" {
             get_files_time_elapsed_since_changed(
-                &mut elapsed_times,
+                elapsed_times,
                 entry.as_ref().unwrap().path().as_path(),
             )
             .unwrap();

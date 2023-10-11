@@ -1,6 +1,5 @@
 #![deny(missing_docs)]
 #![warn(
-    rustdoc::missing_doc_code_examples,
     dead_code,
     missing_copy_implementations,
     missing_debug_implementations,

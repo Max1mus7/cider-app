@@ -69,11 +69,11 @@ fn run_batch_script(setup: &ExecInfo) -> Vec<String> {
         warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
         for step in &setup.manual {
             let mut command = Command::new("cmd");
-            let mut script = script_setup(&mut outputs, &step);
+            let mut script = script_setup(&mut outputs, step);
             let output = command_setup_windows(&mut command, &mut script, false)
                 .output()
                 .expect(&("Failed to execute: ".to_string() + &script.concat()));
-            collect_piped_output(&step, &output, &mut outputs);
+            collect_piped_output(step, &output, &mut outputs);
         }
         return outputs;
     } else {
@@ -185,21 +185,21 @@ fn run_bash_scripts(setup: &ExecInfo) -> Vec<String> {
         warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
         for step in &setup.manual {
             let mut command = Command::new("cmd");
-            let mut script = script_setup(&mut outputs, &step);
+            let mut script = script_setup(&mut outputs, step);
             let output = command_setup_windows(&mut command, &mut script, false).current_dir(&setup.source)
                 .output()
                 .expect(&("Failed to execute: ".to_string() + &script.concat()));
-            collect_piped_output(&step, &output, &mut outputs);
+            collect_piped_output(step, &output, &mut outputs);
         }
         outputs
     } else {
         for step in &setup.manual {
             let mut command = Command::new("sh");
-            let mut script = script_setup(&mut outputs, &step);
+            let mut script = script_setup(&mut outputs, step);
             let output = command_setup_unix(&mut command, &mut script, false)
                 .output()
                 .expect(&("Failed to execute: ".to_string() + &script.concat()));
-            collect_piped_output(&step, &output, &mut outputs)
+            collect_piped_output(step, &output, &mut outputs)
         }
         outputs
     }
