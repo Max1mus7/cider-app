@@ -253,7 +253,7 @@ The following information details the different keywords that can be used in a c
 
 ***
 
-#### conditions
+#### conditions*
 
 - A JSON object that contains different conditions which must be met to run a configuration.
 - The format is currently expected as { "name": "Condition" }
@@ -311,6 +311,83 @@ Example:
 
 ## Action Configuration
 
+### Overview of Action Configurations
+
+Action configurations are the third-and-final tier of the CIder configuration, with the ability to execute scripts detailed within them. So as to reduce the amount of boilerplate json code used within a configuration file, Actions inherit settings from the two upper tiers (see shared keywords outlined in [Top-Level Configuration](#top-level-configuration)). Action Configurations also hold some action-specific settings.
+
+The following information details the different keywords that can be used in a cider configuration file as well as their purposes.
+
+***
+
+#### conditions
+
+See [conditions](#conditions)
+
+***
+
+#### retries
+
+- Forces failed CIder actions to attempt to run `x` amount of times until they are considered `Failing`.
+- Statuses such as `Failing` are not currently implemented and do not return user feedback.
+
+Example:
+
+```json
+{
+    "actions": ["Action_1"],
+    "Action_1": {
+        "retries": 2
+    }
+}
+```
+
+*This is currently a W.I.P. feature. There is no timeline for the implementation of retries.*
+
+***
+
+#### allowed_failure
+
+- A boolean which tells whether or not an action is considered successful, even if there is an error.
+
+Example:
+
+```json
+{
+    "actions": ["Action_1"],
+    "Action_1": {
+        "allowed_failure": true
+    }
+}
+```
+
+*This is currently a W.I.P. feature. There is no timeline for the implementation of allowed_failure.*
+
+***
+
+#### manual
+
+- Manuals are how CIder knows what scripts to run.
+- Scripts are provided with a name, then outlined immediately after.
+- As of now, each manual "step" works as an individual bash script. This will be fixed in a future iteration of CIder.
+
+Example:
+
+```json
+{
+    "actions": ["Action_1"],
+    "Action_1": {
+        "manual": {
+            "build": "cd src/rust && cargo build",
+            "test": "cd src/rust && cargo run"
+        }
+    }
+}
+```
+
+***
+
 ## References
+
+For more information regarding the code, please see [the code docs](https://max1mus7.github.io/cider-app/).
 
 ## Additional Notes
