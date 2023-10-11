@@ -10,12 +10,10 @@ use std::collections::HashMap;
 /// [`ShareableConfiguration`]s also contain program-critical information like the backend, image, and the language you would
 /// like to use in order to run your [`Action`] steps.
 ///
-/// Configuration levels are as follows:
-/// | Level | Priority |
-/// |-------|----------|
-/// | Top   |     1    |
-/// | Pipeline |  2    |
-/// | Action|     3    |
+/// Data held within [`ShareableConfiguration`]s become the default data held within more granular configurations, like [`Pipeline`]s and [`Action`]s.
+/// Inversely, the more granular configurations override any configurations set at higher levels. Therefore, a backend belonging to an [`Action`] has priority
+/// over one belonging to a [`Pipeline`] and likewise over a backend belonging to a [`ShareableConfiguration`].
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ShareableConfiguration {
     /// metadata not required
@@ -318,7 +316,7 @@ impl ShareableConfiguration {
                 Some(image.to_string())
             }
             None => {
-                if Self::get_backend(&self) == "docker" {
+                if Self::get_backend(self) == "docker" {
                     let res_str = "No image found or no image configured.";
                     warn!("{}", res_str);
                 }

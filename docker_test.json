@@ -5,12 +5,13 @@
     "pipelines": ["Test_Docker"],
     "Test_Docker": {
         "image": "rust:1.65.0",
-        "actions": ["Run_Tests", "Consolidate_Reports"],
+        "actions": ["Run_Tests"],
         "Run_Tests": {
             "manual": {
                 "step_1": "rustc --version",
                 "step_2": "cargo build"
-            }
+            },
+            "source_directory": "./"
         },
         "Consolidate_Reports": {
             "backend": "bash",

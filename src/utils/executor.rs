@@ -1,6 +1,6 @@
 use crate::utils::config::{Action, Condition, Step};
-// use chrono::Utc;
-// use csv::Writer;
+use chrono::Utc;
+use csv::Writer;
 use log::{error, info, warn};
 use relative_path::RelativePath;
 /**
@@ -28,9 +28,9 @@ pub fn exec_actions(action_vec: &Vec<Action>) -> Vec<Vec<String>> {
 fn exec_action(action: &Action) -> Vec<String> {
     let exec_info = ExecInfo::new(action);
     match exec_info.backend.to_lowercase().as_str() {
-        "bash" => run_bash_scripts(exec_info.manual),
-        "batch" => run_batch_script(exec_info.manual),
-        "bat" => run_batch_script(exec_info.manual),
+        "bash" => run_bash_scripts(&exec_info),
+        "batch" => run_batch_script(&exec_info),
+        "bat" => run_batch_script(&exec_info),
         "docker" => run_with_docker(exec_info),
         &_ => {
             panic!("Specified backend not supported");
@@ -39,7 +39,7 @@ fn exec_action(action: &Action) -> Vec<String> {
 }
 
 fn generate_dockerfile(info: &ExecInfo) -> File {
-    let mut file = File::create("Dockerfile").unwrap_or_else(|_| {
+    let mut file = File::create(format!("{}/Dockerfile", info.source)).unwrap_or_else(|_| {
             error!("There was an issue creating a dockerfile for your docker backend.\nMake sure there are no files in your project named \"DOCKERFILE\".");
             panic!("There was an issue regarding your dockerfile. Please check your logs for more information.");
         }
@@ -62,18 +62,18 @@ fn generate_dockerfile(info: &ExecInfo) -> File {
 }
 
 //
-fn run_batch_script(manual: Vec<Step>) -> Vec<String> {
+fn run_batch_script(setup: &ExecInfo) -> Vec<String> {
     let mut outputs = vec![];
 
     if cfg!(windows) {
         warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
-        for step in manual {
+        for step in &setup.manual {
             let mut command = Command::new("cmd");
-            let mut script = script_setup(&mut outputs, &step);
+            let mut script = script_setup(&mut outputs, step);
             let output = command_setup_windows(&mut command, &mut script, false)
                 .output()
                 .expect(&("Failed to execute: ".to_string() + &script.concat()));
-            collect_piped_output(&step, &output, &mut outputs);
+            collect_piped_output(step, &output, &mut outputs);
         }
         return outputs;
     } else {
@@ -91,19 +91,22 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
     let mut outputs = vec![];
     image_setup(&mut setup, &mut outputs);
     generate_dockerfile(&setup);
-    // let csv_headers = vec!["Image_pull_time", "Image_remove_time", "Image_build_time"];
-    // let mut csv_data: Vec<&str> = vec![];
+
+    let csv_headers = vec!["Image_pull_time", "Image_remove_time", "Image_build_time"];
+    let mut csv_data: Vec<&str> = vec![];
 
     if cfg!(windows) {
-        // let log_time = Utc::now().format("%d-%m_%H%M%S");
-        // let log_file = "./metrics/win/".to_string() + log_time.to_string().as_str() + ".csv";
-        // let mut csv_wtr = Writer::from_path(log_file).unwrap_or_else(|err| {
-        //     error!("{}", err);
-        //     panic!("{}", err);
-        // });
+
+        let log_time = Utc::now().format("%d-%m_%H%M%S");
+        let log_file = "./metrics/win/".to_string() + log_time.to_string().as_str() + ".csv";
+        let mut csv_wtr = Writer::from_path(log_file).unwrap_or_else(|err| {
+            error!("{}", err);
+            panic!("{}", err);
+        });
+
         let image_pull_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
-        let mut process = docker_setup_windows(&mut cmd, &setup.image.unwrap(), true)
+        let mut process = docker_setup_windows(&mut cmd, &setup, true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
@@ -112,8 +115,8 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
         });
         info!("{:#?}", &image_pull_time.elapsed().unwrap());
 
-        // let image_pull_string = format!("{:?}", image_pull_time.elapsed().unwrap());
-        // csv_data.push(&image_pull_string);
+        let image_pull_string = format!("{:?}", image_pull_time.elapsed().unwrap());
+        csv_data.push(&image_pull_string);
 
         let image_rm_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
@@ -126,12 +129,12 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
         });
         info!("{:#?}", image_rm_time.elapsed().unwrap());
 
-        // let image_rm_string = format!("{:?}", image_rm_time.elapsed().unwrap());
-        // csv_data.push(&image_rm_string);
+        let image_rm_string = format!("{:?}", image_rm_time.elapsed().unwrap());
+        csv_data.push(&image_rm_string);
 
         let image_build_time = SystemTime::now();
         let mut cmd = Command::new("cmd");
-        let mut process = docker_build_windows(&mut cmd, true)
+        let mut process = docker_build_windows(&mut cmd, &setup, true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
@@ -140,15 +143,16 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
         });
         info!("{:#?}", image_build_time.elapsed().unwrap());
 
-        // let image_build_string = format!("{:?}", image_build_time.elapsed().unwrap());
-        // csv_data.push(&image_build_string);
+        let image_build_string = format!("{:?}", image_build_time.elapsed().unwrap());
+        csv_data.push(&image_build_string);
 
-        // csv_wtr.write_record(&csv_headers).unwrap();
-        // csv_wtr.write_record(&csv_data).unwrap();
-        // csv_wtr.flush().unwrap();
+        csv_wtr.write_record(&csv_headers).unwrap();
+        csv_wtr.write_record(&csv_data).unwrap();
+        csv_wtr.flush().unwrap();
+
     } else {
         let mut cmd = Command::new("sh");
-        let mut process = docker_setup_unix(&mut cmd, &setup.image.unwrap(), true)
+        let mut process = docker_setup_unix(&mut cmd, &setup, true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
@@ -162,7 +166,7 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
             panic!("{:#?}", err);
         });
         let mut cmd = Command::new("sh");
-        let mut process = docker_build_unix(&mut cmd, true)
+        let mut process = docker_build_unix(&mut cmd, &setup, true)
             .spawn()
             .expect("There was an error building your docker environment.");
         process.wait().unwrap_or_else(|err| {
@@ -174,28 +178,28 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
 }
 
 ///Runs bash scripts defined in an Action's Manual
-fn run_bash_scripts(manual: Vec<Step>) -> Vec<String> {
+fn run_bash_scripts(setup: &ExecInfo) -> Vec<String> {
     let mut outputs = vec![];
 
     if cfg!(windows) {
         warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
-        for step in manual {
+        for step in &setup.manual {
             let mut command = Command::new("cmd");
-            let mut script = script_setup(&mut outputs, &step);
-            let output = command_setup_windows(&mut command, &mut script, false)
+            let mut script = script_setup(&mut outputs, step);
+            let output = command_setup_windows(&mut command, &mut script, false).current_dir(&setup.source)
                 .output()
                 .expect(&("Failed to execute: ".to_string() + &script.concat()));
-            collect_piped_output(&step, &output, &mut outputs);
+            collect_piped_output(step, &output, &mut outputs);
         }
         outputs
     } else {
-        for step in manual {
+        for step in &setup.manual {
             let mut command = Command::new("sh");
-            let mut script = script_setup(&mut outputs, &step);
+            let mut script = script_setup(&mut outputs, step);
             let output = command_setup_unix(&mut command, &mut script, false)
                 .output()
                 .expect(&("Failed to execute: ".to_string() + &script.concat()));
-            collect_piped_output(&step, &output, &mut outputs)
+            collect_piped_output(step, &output, &mut outputs)
         }
         outputs
     }
@@ -299,18 +303,18 @@ fn image_setup(setup: &mut ExecInfo, outputs: &mut Vec<String>) {
     }
 }
 
-fn docker_setup_unix<'a>(cmd: &'a mut Command, image: &str, inherit: bool) -> &'a mut Command {
+fn docker_setup_unix<'a>(cmd: &'a mut Command, info: &ExecInfo, inherit: bool) -> &'a mut Command {
     cmd.arg("-c")
-        .arg(format_args!("docker pull {}", image).to_string().as_str());
+        .arg(format_args!("docker pull {}", &info.image.clone().unwrap()).to_string().as_str()).current_dir(&info.source);
     if inherit {
         return set_output_inherit(cmd);
     }
     set_output_piped(cmd)
 }
 
-fn docker_setup_windows<'a>(cmd: &'a mut Command, image: &str, inherit: bool) -> &'a mut Command {
-    cmd.args(vec!["/C", "docker", "pull", image])
-        .current_dir(current_dir().unwrap());
+fn docker_setup_windows<'a>(cmd: &'a mut Command, info: &ExecInfo, inherit: bool) -> &'a mut Command {
+    cmd.args(vec!["/C", "docker", "pull", &info.image.clone().unwrap()])
+        .current_dir(&info.source);
     if inherit {
         return set_output_inherit(cmd);
     }
@@ -326,24 +330,23 @@ fn docker_clean_unix<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command
 }
 
 fn docker_clean_windows<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command {
-    cmd.args(vec!["/C", "docker", "image", "rm", "-f", "cider-image"])
-        .current_dir(current_dir().unwrap());
+    cmd.args(vec!["/C", "docker", "image", "rm", "-f", "cider-image"]);
     if inherit {
         return set_output_inherit(cmd);
     }
     set_output_piped(cmd)
 }
 
-fn docker_build_unix<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command {
-    cmd.arg("-c").arg("docker build -t cider-image .");
+fn docker_build_unix<'a>(cmd: &'a mut Command, info: &ExecInfo, inherit: bool) -> &'a mut Command {
+    cmd.arg("-c").arg("docker build -t cider-image .").current_dir(&info.source);
     if inherit {
         return set_output_inherit(cmd);
     }
     set_output_piped(cmd)
 }
 
-fn docker_build_windows<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command {
-    cmd.args(["/C", "docker", "build", "-t", "cider-image", "."]);
+fn docker_build_windows<'a>(cmd: &'a mut Command, info: &ExecInfo, inherit: bool) -> &'a mut Command {
+    cmd.args(["/C", "docker", "build", "-t", "cider-image", "."]).current_dir(&info.source);
     if inherit {
         return set_output_inherit(cmd);
     }

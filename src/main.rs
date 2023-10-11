@@ -13,6 +13,7 @@ use simplelog::*;
 
 //std library imports
 use std::collections::HashMap;
+use std::ffi::OsStr;
 use std::ffi::OsString;
 use std::fs;
 use std::fs::File;
@@ -79,7 +80,6 @@ fn main() -> std::io::Result<()> {
         }
     } else {
         output_file.write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
-        println!("test");
     }
 
     let mut file = File::create("./dist/output/config_output.txt")?;
@@ -93,6 +93,7 @@ fn get_least_time(elapsed_times: &HashMap<OsString, Duration>) -> Duration {
     for entry in elapsed_times {
         if entry.1 < &least_time {
             least_time = *entry.1;
+            info!("The file with the newest changes is {:#?} with the last change {:#?} ago",entry.0, entry.1);
         }
     }
     info!(
@@ -103,11 +104,14 @@ fn get_least_time(elapsed_times: &HashMap<OsString, Duration>) -> Duration {
 }
 
 fn get_files_time_elapsed_since_changed<'a>(
-    mut elapsed_times: &'a mut HashMap<OsString, Duration>,
+    elapsed_times: &'a mut HashMap<OsString, Duration>,
     path: &'a Path,
 ) -> std::io::Result<()> {
     info!("Getting elapsed time for files within {:#?}", path);
     for entry in fs::read_dir(path)? {
+        if Path::new(&entry.as_ref().unwrap().file_name()).extension().and_then(OsStr::to_str) == Some("class") || entry.as_ref().unwrap().file_name() == "package-lock.json" {
+            continue;
+        }
         if !elapsed_times.contains_key(&entry.as_ref().unwrap().file_name()) {
             elapsed_times.insert(
                 entry.as_ref().unwrap().file_name().to_os_string().clone(),
@@ -131,9 +135,9 @@ fn get_files_time_elapsed_since_changed<'a>(
                     .unwrap(),
             );
         }
-        if entry.as_ref().unwrap().metadata()?.is_dir() {
+        if entry.as_ref().unwrap().metadata()?.is_dir() && entry.as_ref().unwrap().file_name() != "target" && entry.as_ref().unwrap().file_name() != "node_modules" && entry.as_ref().unwrap().file_name() != "bin" && entry.as_ref().unwrap().file_name() != "obj" {
             get_files_time_elapsed_since_changed(
-                &mut elapsed_times,
+                elapsed_times,
                 entry.as_ref().unwrap().path().as_path(),
             )
             .unwrap();
@@ -152,7 +156,8 @@ fn setup_logger() -> std::io::Result<()> {
     fs::create_dir_all("dist/logs")?;
     fs::create_dir_all("dist/cider")?;
     fs::create_dir_all("dist/output")?;
-    // fs::create_dir_all("metrics/win")?;
+    fs::create_dir_all("metrics/win")?;
+    fs::create_dir_all("metrics/combined_reports")?;
     // fs::create_dir_all("metrics/deb")?;
     // fs::create_dir_all("metrics/rhel")?;
 

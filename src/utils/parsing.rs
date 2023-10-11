@@ -93,7 +93,8 @@ pub mod json_parser {
                 json["backend"].to_string()
             }
         };
-
+        
+        
         let new_shared_config = ShareableConfiguration::new(
             {
                 if json["metadata"].is_null() {
@@ -120,8 +121,8 @@ pub mod json_parser {
             {
                 if !backend.to_lowercase().eq("docker")
                     && !backend.is_empty()
-                    && !(backend == "bash")
-                    && !(backend == "batch")
+                    && backend != "bash"
+                    && backend != "batch"
                 {
                     warn!("Image cannot be set if docker is not the backend.");
                     None
@@ -260,8 +261,8 @@ pub mod json_parser {
             {
                 if !backend.to_lowercase().eq("docker")
                     && !backend.is_empty()
-                    && !(backend == "bash")
-                    && !(backend == "batch")
+                    && backend != "bash"
+                    && backend != "batch"
                 {
                     warn!("Image cannot be set if docker is not the backend.");
                     None
@@ -367,8 +368,8 @@ pub mod json_parser {
             {
                 if !backend.to_lowercase().eq("docker")
                     && !backend.is_empty()
-                    && !(backend == "bash")
-                    && !(backend == "batch")
+                    && backend != "bash"
+                    && backend != "batch"
                 {
                     warn!("Image cannot be set if docker is not the backend.");
                     None
