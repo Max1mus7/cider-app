@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":[["utils","Contains functions that allow CIder to create docker images, parse JSON, and more."]]};

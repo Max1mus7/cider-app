@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["new_top_level","Creates a new set of configuration data specific to the top-level of a CIder configuration."],["overwrite_top_level",""],["parse_json_string","Created strictly for testing purposes."]]};

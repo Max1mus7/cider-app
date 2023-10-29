@@ -1,1 +1,0 @@
-window.ALL_CRATES = ["atty","bitflags","cfg_if","chrono","cider","clap","clap_derive","clap_lex","heck","iana_time_zone","itoa","json","log","num_integer","num_traits","once_cell","os_str_bytes","proc_macro2","proc_macro_error","proc_macro_error_attr","quote","relative_path","simplelog","strsim","syn","termcolor","time","time_macros","unicode_ident","winapi","winapi_util"];
