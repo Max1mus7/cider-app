@@ -24,8 +24,9 @@
    2. [retries](#retries)
    3. [allowed_failure](#allowed_failure)
    4. **[manual](#manual)**
-5. **[References](#references)**
-6. **[Additional Notes](#additional-notes)**
+5. **[Examples](#examples)**
+6. **[References](#references)**
+7. **[Additional Notes](#additional-notes)**
 
 ## Overview
 
@@ -392,6 +393,118 @@ Example:
 ```
 
 ***
+
+
+## Examples
+
+> A configuration using docker to run a cargo build:
+
+```json
+{
+    "title": "CIder 0.1 Example Docker Config",
+    "operating_system": "Windows",
+    "backend": "Docker",
+    "pipelines": ["Test_Docker"],
+    "Test_Docker": {
+        "image": "rust:1.65.0",
+        "actions": ["Run_Tests"],
+        "Run_Tests": {
+            "manual": {
+                "step_1": "rustc --version",
+                "step_2": "cargo build"
+            },
+            "source_directory": "./"
+        },
+        "Consolidate_Reports": {
+            "backend": "bash",
+            "manual": {
+                "combine_csvs": "python ./tests/pyscripts/accumulate_tests.py"
+            }
+        }
+    },
+    "source_directory": "./src"
+}
+```
+
+> An example running cargo test via bash then consolidating runtime metrics using a python script:
+
+```json
+{
+    "title": "CIder 0.1 Example Docker Config",
+    "backend": "bash",
+    "pipelines": ["Test_Program"],
+    "Test_Program": {
+        "actions": ["Run_Tests"],
+        "Run_Tests": {
+            "manual": {
+                "step_1": "cargo test"
+            }
+        },
+        "Consolidate_Reports": {
+            "manual": {
+                "combine_csvs": "python ./tests/pyscripts/accumulate_tests.py"
+            }
+        }
+    }
+}
+```
+
+> A multi-project, multi-language workflow:
+
+```json
+{
+    "title": "CIder 0.1 Example Config",
+    "backend": "bash",
+    "pipelines": ["Test_Compiled_Programs", "Test_Interpreted_Programs"],
+    "image": "rust:1.65",
+    "Test_Compiled_Programs": {
+        "actions": ["Run_Tests_Rs", "Run_Tests_Rb", "Run_Tests_Java", "Run_Tests_CSharp"],
+        "Run_Tests_Rs": {
+            "manual": {
+                "build": "cd src/rust && cargo build",
+                "test": "cd src/rust && cargo run"
+            }
+        },
+        "Run_Tests_Rb": {
+            "image": "ruby:3.1",
+            "manual": {
+                "test": "ruby ./src/ruby/test.rb"
+            }
+        },
+        "Run_Tests_Java": {
+            "image": "openjdk:18.0",
+            "manual": {
+                "build": "cd src/java && javac Test.java",
+                "test": "cd src/java && java Test"
+            }
+        },
+        "Run_Tests_CSharp": {
+            "image": "mcr.microsoft.com/dotnet/aspnet:6.0",
+            "manual": {
+                "test": "cd src/dotnet && dotnet run"
+            }
+        }
+    },
+    "Test_Interpreted_Programs": {
+        "actions": ["Run_Tests_Py", "Run_Tests_JS"],
+        "Run_Tests_Py": {
+            "image": "python:3.9",
+            "manual": {
+                "test": "python ./src/python/test.py"
+            }
+        },
+        "Run_Tests_JS": {
+            "image": "node:latest",
+            "manual": {
+                "build": "cd src/javascript && npm i",
+                "test": "node ./src/javascript/test.js"
+            }
+        }
+
+    },
+    "source_directory": "./"
+}
+```
 
 ## References
 

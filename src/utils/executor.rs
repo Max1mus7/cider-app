@@ -321,7 +321,7 @@ fn docker_setup_windows<'a>(cmd: &'a mut Command, info: &ExecInfo, inherit: bool
     set_output_piped(cmd)
 }
 
-fn docker_clean_unix<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command {
+fn docker_clean_unix(cmd: &mut Command, inherit: bool) -> &mut Command {
     cmd.arg("-c").arg("docker image rm -f cider-image");
     if inherit {
         return set_output_inherit(cmd);
@@ -329,7 +329,7 @@ fn docker_clean_unix<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command
     set_output_piped(cmd)
 }
 
-fn docker_clean_windows<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command {
+fn docker_clean_windows(cmd: &mut Command, inherit: bool) -> &mut Command {
     cmd.args(vec!["/C", "docker", "image", "rm", "-f", "cider-image"]);
     if inherit {
         return set_output_inherit(cmd);
