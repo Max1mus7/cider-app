@@ -61,12 +61,10 @@ fn generate_dockerfile(info: &ExecInfo) -> File {
     file
 }
 
-//
+
 fn run_batch_script(setup: &ExecInfo) -> Vec<String> {
     let mut outputs = vec![];
-
     if cfg!(windows) {
-        warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
         for step in &setup.manual {
             let mut command = Command::new("cmd");
             let mut script = script_setup(&mut outputs, step);
