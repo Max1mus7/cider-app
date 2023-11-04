@@ -4,6 +4,7 @@
 
 This app can be used to perform Continuous Integration tasks across multiple languages and frameworks!
 This project is still in development, although post-graduation it will be reduced to a passion project.
+
 If you have any questions/comments/concerns, please reach out to the developer at [maxdweber7@gmail.com](maxdweber7@gmail.com).
 
 ## Code Documentation
