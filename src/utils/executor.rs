@@ -1,3 +1,6 @@
+#![warn(missing_docs)]
+
+
 use crate::utils::config::{Action, Condition, Step};
 use chrono::Utc;
 use csv::Writer;
@@ -67,19 +70,25 @@ fn run_batch_script(setup: &ExecInfo) -> Vec<String> {
 
     if cfg!(windows) {
         warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
+        let mut all_steps: Vec<String> = Vec::new();
+        let mut command = Command::new("cmd");
         for step in &setup.manual {
-            let mut command = Command::new("cmd");
-            let mut script = script_setup(&mut outputs, step);
-            let output = command_setup_windows(&mut command, &mut script, false)
-                .output()
-                .expect(&("Failed to execute: ".to_string() + &script.concat()));
-            collect_piped_output(step, &output, &mut outputs);
+            all_steps.append(&mut script_setup(&mut outputs, step));
+            if &step.get_script() != &setup.manual.last().unwrap_or_else(|| {
+            error!("{:#?}", "Failed to parse the final Step");
+            panic!("{:#?}", "Failed to parse the final Step");
+            }).get_script() {
+                all_steps.push("&&".to_owned());
+            }
         }
-        return outputs;
+        let output = command_setup_windows(&mut command, &mut all_steps, false, setup.source.clone())
+                .output()
+                .expect(&("Failed to execute: ".to_string() + &all_steps.concat()));
+            collect_piped_output(setup, &output, &mut outputs);
     } else {
         error!("As of now, running batch scripts is unsupported on non-windows systems.");
         outputs.push(
-            "A batch script was unable to be processed on Linux and was taken care of accordingly."
+            "A batch script was unable to be processed on Linux and was taken care of safely."
                 .to_string(),
         );
     }
@@ -183,26 +192,32 @@ fn run_bash_scripts(setup: &ExecInfo) -> Vec<String> {
 
     if cfg!(windows) {
         warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
+        let mut all_steps: Vec<String> = Vec::new();
+        let mut command = Command::new("cmd");
         for step in &setup.manual {
-            let mut command = Command::new("cmd");
-            let mut script = script_setup(&mut outputs, step);
-            let output = command_setup_windows(&mut command, &mut script, false).current_dir(&setup.source)
-                .output()
-                .expect(&("Failed to execute: ".to_string() + &script.concat()));
-            collect_piped_output(step, &output, &mut outputs);
+            all_steps.append(&mut script_setup(&mut outputs, step));
+            if &step.get_script() != &setup.manual.last().unwrap_or_else(|| {
+            error!("{:#?}", "Failed to parse the final Step");
+            panic!("{:#?}", "Failed to parse the final Step");
+            }).get_script() {
+                all_steps.push("&&".to_owned());
+            }
         }
-        outputs
+        let output = command_setup_windows(&mut command, &mut all_steps, false, setup.source.clone())
+                .output()
+                .expect(&("Failed to execute: ".to_string() + &all_steps.concat()));
+            collect_piped_output(setup, &output, &mut outputs);
     } else {
         for step in &setup.manual {
             let mut command = Command::new("sh");
             let mut script = script_setup(&mut outputs, step);
-            let output = command_setup_unix(&mut command, &mut script, false)
+            let output = command_setup_unix(&mut command, &mut script, false, setup.source.clone())
                 .output()
                 .expect(&("Failed to execute: ".to_string() + &script.concat()));
-            collect_piped_output(step, &output, &mut outputs)
+            collect_piped_output(setup, &output, &mut outputs)
         }
-        outputs
     }
+    outputs
 }
 
 /// Cleans paths used within scripts.
@@ -282,14 +297,33 @@ fn command_setup_windows<'a>(
     cmd: &'a mut Command,
     args: &mut Vec<String>,
     inherit: bool,
+    source: String
 ) -> &'a mut Command {
     //pass command first?
 
     args.insert(0, "/C".to_string());
     if inherit {
-        return set_output_inherit(cmd.args(args).current_dir(current_dir().unwrap()));
+        return set_output_inherit(cmd.args(args).current_dir(source));
     }
-    set_output_piped(cmd.args(args).current_dir(current_dir().unwrap()))
+    set_output_piped(cmd.args(args).current_dir(source))
+}
+
+fn command_setup_unix<'a>(
+    cmd: &'a mut Command,
+    args: &mut Vec<String>,
+    inherit: bool,
+    source: String
+) -> &'a mut Command {
+    let mut arg_string = String::new();
+    for arg in args {
+        arg_string += &(arg.to_owned() + " ");
+    }
+
+    arg_string = arg_string.trim().to_string();
+    if inherit {
+        return set_output_inherit(cmd.arg("-c").arg(arg_string).current_dir(source));
+    }
+    set_output_piped(cmd.arg("-c").arg(arg_string).current_dir(source))
 }
 
 fn image_setup(setup: &mut ExecInfo, outputs: &mut Vec<String>) {
@@ -353,43 +387,26 @@ fn docker_build_windows<'a>(cmd: &'a mut Command, info: &ExecInfo, inherit: bool
     set_output_piped(cmd)
 }
 
-fn command_setup_unix<'a>(
-    cmd: &'a mut Command,
-    args: &mut Vec<String>,
-    inherit: bool,
-) -> &'a mut Command {
-    let mut arg_string = String::new();
-    for arg in args {
-        arg_string += &(arg.to_owned() + " ");
-    }
-
-    arg_string = arg_string.trim().to_string();
-    if inherit {
-        return set_output_inherit(cmd.arg("-c").arg(arg_string));
-    }
-    return set_output_piped(cmd.arg("-c").arg(arg_string));
-}
-
 /// Potential issues:
 /// Some success outputs may be read as failures on Linux environments. Look into this more.
-fn collect_piped_output(step: &Step, output: &Output, outputs: &mut Vec<String>) {
+fn collect_piped_output(setup: &ExecInfo, output: &Output, outputs: &mut Vec<String>) {
     let stdout = String::from_utf8(output.stdout.clone())
         .expect("Could not parse command output as a String.");
     let stderr = String::from_utf8(output.stderr.clone())
         .expect("Could not parse command output as a String.");
 
-    println!("stdout from {}: {stdout}", step.get_name());
-    println!("stderr from {}: {stderr}", step.get_name());
+    println!("stdout from {:#?}: {stdout}", setup.title.to_owned().unwrap_or_else(|| String::from("Untitled Step")));
+    println!("stderr from {:#?}: {stderr}", setup.title.to_owned().unwrap_or_else(|| String::from("Untitled Step")));
 
     outputs.push(if stdout.is_empty() {
         if stderr.is_empty() {
             "No standard output detected. Check to see if it was piped to another file.".to_string()
         } else {
-            error!("Standard output from step {}: {}", step.get_name(), stderr);
+            error!("Standard output from step {:#?}: {:#?}", setup.title.to_owned().unwrap_or_else(|| String::from("Untitled Step")), stderr);
             stderr
         }
     } else {
-        info!("Standard output from step {}: {}", step.get_name(), stdout);
+        info!("Standard output from step {:#?}: {:#?}", setup.title.to_owned().unwrap_or_else(|| String::from("Untitled Step")), stdout);
         stdout
     });
 }
@@ -415,22 +432,58 @@ fn script_setup(outputs: &mut Vec<String>, step: &Step) -> Vec<String> {
 #[cfg(test)]
 mod tests {
 
-    // use crate::parsing::Parser;
+    use std::process::Command;
+    use relative_path::RelativePath;
 
-    // use crate::executor::executor;
-
-    // #[test]
-    // fn prove_exec_info() {
-    //     let test_config = Parser::new_top_level("example_docker_config.json");
-    //     let actions = test_config.get_all_actions();
-    //     let exec_info = executor::ExecInfo {}
-    // }
+    use super::*;
 
     #[test]
-    fn create_command_windows() {
-        //
-        let input1 = "input";
-        let input2 = "input";
-        assert!(input1 == input2);
+    fn test_create_command_path_abs_path() {
+        let source = String::from("D:\\Everything");
+        let mut command = Command::new("cmd");
+        command.current_dir(source.clone());
+        // let root = current_dir().unwrap();
+        assert_eq!(RelativePath::new(&source)
+        .to_path(""), command.get_current_dir().unwrap())
     }
+
+    #[test]
+    fn test_script_path_cleaning() {
+        let expected = vec![String::from("cat"),String::from("D:\\Everything\\CST-452 Workspace\\cider-app\\..\\test.txt")];
+        let test_script = "cat ../test.txt";
+        // let root = current_dir().unwrap();
+        let res = clean_script_pathing(test_script);
+        assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn test_set_new_command_directory() {
+        let expected_dir = "D:\\Everything";
+        let mut steps: Vec<String> = Vec::new();
+        if cfg!(windows) {
+            steps.push(String::from("cd"));
+            let mut command = Command::new("cmd");
+            let output = command_setup_windows(&mut command, &mut steps, false, String::from(expected_dir))
+                .output()
+                .expect(&("Failed to execute: ".to_string() + &steps.concat()));
+            assert_eq!(expected_dir.to_owned(), String::from_utf8(output.stdout.clone()).unwrap().to_owned().trim_end());
+        } else {
+            steps.push(String::from("pwd"));
+            let mut command = Command::new("cmd");
+            let output = command_setup_unix(&mut command, &mut steps, false, String::from(expected_dir))
+                .output()
+                .expect(&("Failed to execute: ".to_string() + &steps.concat()));
+            assert_eq!(expected_dir.to_owned(), String::from_utf8(output.stdout.clone()).unwrap().to_owned().trim_end());
+        }
+        // println!("{:#?}, {:#?}, {:#?}", expected_dir,  String::from_utf8(output.stdout.clone()).unwrap().to_owned().trim_end(), String::from_utf8(output.stderr.clone()).unwrap().to_owned());
+    }
+
+    // #[test]
+    // fn test_create_command_windows() {
+    //     //
+    //     let input1 = "input";
+    //     let input2 = "input";
+    //     let mut result = Command::new("cmd").args(["/C", "echo", "get results"]);
+    //     assert!(input1 != input2);
+    // }
 }

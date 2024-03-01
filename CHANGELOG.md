@@ -28,7 +28,7 @@
 #### Docker
 
 - Improved `docker` build times(testing times).
-  - As it stands, docker build takes a long time to work with package managers (most notably cargo and npm). As a result,  
+  - As it stands, docker build takes a long time to work with package managers (most notably cargo and npm). As a result,
 - The source directory specifed on an action within a config file should be considered the root directory for Steps to execute commands in.
   - Currently, this is the directory which `cider.exe` was run from.
   - If not otherwise specified via configuration, the source directory for actions  is `cwd(or pwd for windows)/src`.

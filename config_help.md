@@ -320,7 +320,7 @@ Example:
 
 ### Overview of Action Configurations
 
-Action configurations are the third-and-final tier of the CIder configuration, with the ability to execute scripts detailed within them. So as to reduce the amount of boilerplate json code used within a configuration file, Actions inherit settings from the two upper tiers (see shared keywords outlined in [Top-Level Configuration](#top-level-configuration)). Action Configurations also hold some action-specific settings.
+Action configurations are the third-and-final tier of the CIder configuration, with the ability to execute scripts detailed within them. Though a single Action may have multiple steps defined within it (see [manual](#manual)), the intent is for every action to take place within the same shell session. So as to reduce the amount of boilerplate json code used within a configuration file, Actions inherit settings from the two upper tiers (see shared keywords outlined in [Top-Level Configuration](#top-level-configuration)). Action Configurations also hold some action-specific settings.
 
 The following information details the different keywords that can be used in a cider configuration file as well as their purposes.
 
