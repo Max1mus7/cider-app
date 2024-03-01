@@ -64,10 +64,9 @@ fn generate_dockerfile(info: &ExecInfo) -> File {
     file
 }
 
-//
+
 fn run_batch_script(setup: &ExecInfo) -> Vec<String> {
     let mut outputs = vec![];
-
     if cfg!(windows) {
         warn!("In order to avoid unexpected behavior, please consider using \"bat\" or \"batch\" backend for windows operating systems.");
         let mut all_steps: Vec<String> = Vec::new();
@@ -75,8 +74,8 @@ fn run_batch_script(setup: &ExecInfo) -> Vec<String> {
         for step in &setup.manual {
             all_steps.append(&mut script_setup(&mut outputs, step));
             if &step.get_script() != &setup.manual.last().unwrap_or_else(|| {
-            error!("{:#?}", "Failed to parse the final Step");
-            panic!("{:#?}", "Failed to parse the final Step");
+                error!("{:#?}", "Failed to parse the final Step");
+                panic!("{:#?}", "Failed to parse the final Step");
             }).get_script() {
                 all_steps.push("&&".to_owned());
             }
@@ -197,8 +196,8 @@ fn run_bash_scripts(setup: &ExecInfo) -> Vec<String> {
         for step in &setup.manual {
             all_steps.append(&mut script_setup(&mut outputs, step));
             if &step.get_script() != &setup.manual.last().unwrap_or_else(|| {
-            error!("{:#?}", "Failed to parse the final Step");
-            panic!("{:#?}", "Failed to parse the final Step");
+                error!("{:#?}", "Failed to parse the final Step");
+                panic!("{:#?}", "Failed to parse the final Step");
             }).get_script() {
                 all_steps.push("&&".to_owned());
             }
@@ -355,7 +354,7 @@ fn docker_setup_windows<'a>(cmd: &'a mut Command, info: &ExecInfo, inherit: bool
     set_output_piped(cmd)
 }
 
-fn docker_clean_unix<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command {
+fn docker_clean_unix(cmd: &mut Command, inherit: bool) -> &mut Command {
     cmd.arg("-c").arg("docker image rm -f cider-image");
     if inherit {
         return set_output_inherit(cmd);
@@ -363,7 +362,7 @@ fn docker_clean_unix<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command
     set_output_piped(cmd)
 }
 
-fn docker_clean_windows<'a>(cmd: &'a mut Command, inherit: bool) -> &'a mut Command {
+fn docker_clean_windows(cmd: &mut Command, inherit: bool) -> &mut Command {
     cmd.args(vec!["/C", "docker", "image", "rm", "-f", "cider-image"]);
     if inherit {
         return set_output_inherit(cmd);
