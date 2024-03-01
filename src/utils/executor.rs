@@ -29,7 +29,6 @@ pub fn exec_actions(action_vec: &Vec<Action>) -> Vec<Vec<String>> {
 
 /// Determines how to perform steps defined by an Action
 fn exec_action(action: &Action) -> Vec<String> {
-    error!("{:#?}", action.shared_config.get_source());
     let exec_info = ExecInfo::new(action);
     match exec_info.backend.to_lowercase().as_str() {
         "bash" => run_bash_scripts(&exec_info),
@@ -81,7 +80,6 @@ fn run_batch_script(setup: &ExecInfo) -> Vec<String> {
                 all_steps.push("&&".to_owned());
             }
         }
-        warn!("{:#?}", setup.source.clone());
         let output = command_setup_windows(&mut command, &mut all_steps, false, setup.source.clone())
                 .output()
                 .expect(&("Failed to execute: ".to_string() + &all_steps.concat()));
