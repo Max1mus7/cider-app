@@ -11,8 +11,8 @@
    5. [language](#language)
    6. [image](#image)
    7. [backend](#backend)
-   8. [output](#output)
-   9. [source](#source)
+   8. [output_directory](#output_directory)
+   9. [source_directory](#source_directory)
    10. [pipelines](#pipelines)
    11. [actions](#actions)
 3. **[Pipeline Configuration](#pipeline-configuration)**
@@ -169,23 +169,23 @@ Example:
 
 ***
 
-#### output*
+#### output_directory*
 
 - Specifies the output directory that CIder will place logs into.
-- This supports relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source](#source) setting. These issues will be looked into and resolved in the future.
+- This supports relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source_directory](#source_directory) setting. These issues will be looked into and resolved in the future.
 - Default value is `./dist/cider`
 
 Example:
 
 ```json
 {
-    "output": "./output_logs"
+    "output_directory": "./output_logs"
 }
 ```
 
 ***
 
-#### source*
+#### source_directory*
 
 - Specifies the "root" directory for [Action](#action-configuration) scripts to be executed within.
 - This supports both relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source](#source) setting. These issues will be looked into and resolved in the future.
@@ -196,7 +196,7 @@ Example:
 
 ```json
 {
-    "source": "/home/users/jsmith/dev/project_1/src"
+    "source_directory": "/home/users/jsmith/dev/project_1/src"
 }
 ```
 

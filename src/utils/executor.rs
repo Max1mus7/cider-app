@@ -409,11 +409,11 @@ fn collect_piped_output(setup: &ExecInfo, output: &Output, outputs: &mut Vec<Str
             "No standard output detected. Check to see if it was piped to another file.".to_string()
         } else {
             error!("Standard output from step {:#?}: {:#?}", setup.title.to_owned().unwrap_or_else(|| String::from("Untitled Step")), stderr);
-            stderr
+            stderr.trim_end().to_owned()
         }
     } else {
         info!("Standard output from step {:#?}: {:#?}", setup.title.to_owned().unwrap_or_else(|| String::from("Untitled Step")), stdout);
-        stdout
+        stdout.trim_end().to_owned()
     });
 }
 
