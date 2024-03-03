@@ -51,7 +51,7 @@ pub struct ShareableConfiguration {
     output: String,
 
     /// Source directory required
-    /// defaulted to ./src
+    /// defaulted to ./
     source: String,
 }
 
@@ -60,14 +60,14 @@ impl ShareableConfiguration {
     ///
     /// Some values are completely optional, and will either be defaulted or set as None if not provided.
     /// Note that some required information is set by default in [`crate::utils::parsing::json_parser`] if it is not explicitly defaulted here.
-    /// Specifically, output, and source are defaulted to ./dist/cider and ./src, respectively.
+    /// Specifically, output, and source are defaulted to ./dist/cider and ./, respectively.
     ///
     /// # Examples:
     /// Basic usage:
     /// ```
     /// use cider::config::ShareableConfiguration;
     ///
-    /// let s = ShareableConfiguration::new(None, None, None, "Rust".to_string(), None, "bash".to_string(), "./dist/cider".to_string(), "./src".to_string());
+    /// let s = ShareableConfiguration::new(None, None, None, "Rust".to_string(), None, "bash".to_string(), "./dist/cider".to_string(), "./".to_string());
     /// ```
     ///
     pub fn new(
@@ -455,7 +455,7 @@ impl ShareableConfiguration {
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let mut s = json_parser::new_top_level("./cider_config.json");
-    /// let src = "./src".to_string();
+    /// let src = "./c".to_string();
     ///
     /// s.s_config.set_source(src.clone());
     ///
