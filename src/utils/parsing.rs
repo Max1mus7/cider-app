@@ -7,6 +7,7 @@ pub mod json_parser {
     use log::{error, warn};
     use relative_path::RelativePath;
     use std::env::current_dir;
+    use std::path::Path;
     use std::{collections::HashMap, fs};
 
     /// Parses a map of JSON information into a HashMap<String,String>
@@ -93,8 +94,7 @@ pub mod json_parser {
                 json["backend"].to_string()
             }
         };
-        
-        
+
         let new_shared_config = ShareableConfiguration::new(
             {
                 if json["metadata"].is_null() {
@@ -147,6 +147,12 @@ pub mod json_parser {
             {
                 if json["source_directory"].is_null() {
                     shared_config.get_source().to_string()
+                } else if json["source_directory"].to_string().starts_with('/') || json["source_directory"].to_string().contains(":") {
+                    Path::new(&json["source_directory"].to_string())
+                        .to_owned()
+                        .to_str()
+                        .unwrap()
+                        .to_owned()
                 } else {
                     RelativePath::new(&json["source_directory"].to_string())
                         .to_path(&root)
@@ -287,6 +293,12 @@ pub mod json_parser {
             {
                 if json["source_directory"].is_null() {
                     shared_config.get_source().to_string()
+                } else if json["source_directory"].to_string().starts_with('/') || json["source_directory"].to_string().contains(":") {
+                    Path::new(&json["source_directory"].to_string())
+                        .to_owned()
+                        .to_str()
+                        .unwrap()
+                        .to_owned()
                 } else {
                     RelativePath::new(&json["source_directory"].to_string())
                         .to_path(&root)
@@ -397,11 +409,17 @@ pub mod json_parser {
             },
             {
                 if json["source_directory"].is_null() {
-                    RelativePath::new("./src")
+                    RelativePath::new("./")
                         .to_path(&root)
                         .to_str()
                         .unwrap()
                         .to_string()
+                } else if json["source_directory"].to_string().starts_with('/') || json["source_directory"].to_string().contains(":") {
+                    Path::new(&json["source_directory"].to_string())
+                        .to_owned()
+                        .to_str()
+                        .unwrap()
+                        .to_owned()
                 } else {
                     RelativePath::new(&json["source_directory"].to_string())
                         .to_path(&root)

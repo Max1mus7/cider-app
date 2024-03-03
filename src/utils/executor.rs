@@ -50,10 +50,17 @@ fn generate_dockerfile(info: &ExecInfo) -> File {
     let mut str = format_args!("FROM {}\r\n", info.image.as_ref().unwrap()).to_string();
     str += "WORKDIR /cider/app\r\n";
     str += "COPY . ./\r\n";
+    str += "RUN ";
     for step in info.manual.iter() {
-        str += format_args!("RUN {}\r\n", step.get_script())
-            .to_string()
-            .as_ref();
+        if step != info.manual.last().unwrap(){
+            str += format_args!("{} && \\\r\n    ", step.get_script())
+                .to_string()
+                .as_ref();
+        } else {
+            str += format_args!("{}", step.get_script())
+                .to_string()
+                .as_ref();
+        }
     }
 
     file.write_fmt(format_args!("{}", str)).unwrap_or_else(|_| {
