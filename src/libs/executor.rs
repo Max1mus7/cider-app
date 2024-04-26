@@ -283,11 +283,12 @@ pub struct ExecInfo {
 impl ExecInfo {
     fn new(action: &Action) -> Self {
         ExecInfo {
-            backend: action.shared_config.get_backend().to_string(),
-            image: action.shared_config.get_image(),
-            title: action.shared_config.get_title(),
-            tags: action.shared_config.get_tags(),
-            metadata: action.shared_config.get_metadata(),
+            // Cloning all of these so I don't have to worry about lifetimes
+            backend: action.shared_config.get_backend().to_string().cloned(),
+            image: action.shared_config.get_image().cloned(),
+            title: action.shared_config.get_title().cloned(),
+            tags: action.shared_config.get_tags().cloned(),
+            metadata: action.shared_config.get_metadata().cloned(),
             output: action.shared_config.get_output().to_string(),
             source: action.shared_config.get_source().to_string(),
             conditions: action.action_config.get_conditions(),

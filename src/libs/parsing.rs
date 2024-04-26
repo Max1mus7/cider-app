@@ -1,8 +1,9 @@
 /// Parses Json information into a program-readable configuration
 
-pub mod json_parser {
+// pub mod json_parser {
 
     use crate::config::config_structs::*;
+    use shared_config::ShareableConfiguration;
     use json::JsonValue;
     use log::{error, warn};
     use relative_path::RelativePath;
@@ -28,197 +29,198 @@ pub mod json_parser {
         map
     }
 
-    fn parse_json_to_conditions(json: &JsonValue) -> Vec<Condition> {
-        // info!("{:#?}", json);
-        let mut conditions = vec![];
-        for key_value in json.entries() {
-            conditions.push(Condition::new(
-                key_value.0.to_string(),
-                key_value.1.to_string(),
-            ));
-        }
-        conditions
-    }
+    
+    // fn parse_json_to_conditions(json: &JsonValue) -> Vec<Condition> {
+    //     // info!("{:#?}", json);
+    //     let mut conditions = vec![];
+    //     for key_value in json.entries() {
+    //         conditions.push(Condition::new(
+    //             key_value.0.to_string(),
+    //             key_value.1.to_string(),
+    //         ));
+    //     }
+    //     conditions
+    // }
 
-    fn parse_json_to_steps(json: &JsonValue) -> Vec<Step> {
-        // info!("{:#?}", json);
-        let mut steps = vec![];
-        for key_value in json.entries() {
-            steps.push(Step::new(key_value.0.to_string(), key_value.1.to_string()));
-        }
-        steps
-    }
+    // fn parse_json_to_steps(json: &JsonValue) -> Vec<Step> {
+    //     // info!("{:#?}", json);
+    //     let mut steps = vec![];
+    //     for key_value in json.entries() {
+    //         steps.push(Step::new(key_value.0.to_string(), key_value.1.to_string()));
+    //     }
+    //     steps
+    // }
 
-    fn parse_json_vector(json: &JsonValue) -> Vec<String> {
-        // println!("{:#?}", json);
-        let mut vec = vec![];
-        for value in json.members() {
-            vec.push(value.to_string())
-        }
-        // println!("{:#?}", json);
-        if vec.is_empty() {
-            warn!("No mappable values found in json vector {:#?}", json);
-            return vec;
-        }
-        vec
-    }
+    // fn parse_json_vector(json: &JsonValue) -> Vec<String> {
+    //     // println!("{:#?}", json);
+    //     let mut vec = vec![];
+    //     for value in json.members() {
+    //         vec.push(value.to_string())
+    //     }
+    //     // println!("{:#?}", json);
+    //     if vec.is_empty() {
+    //         warn!("No mappable values found in json vector {:#?}", json);
+    //         return vec;
+    //     }
+    //     vec
+    // }
 
-    fn parse_action_defs(
-        shared_config: &ShareableConfiguration,
-        action_defs: &Vec<String>,
-        data: &JsonValue,
-    ) -> Vec<Action> {
-        let mut actions = vec![];
-        for str in action_defs {
-            actions.push(parse_action(shared_config, &data[str], str));
-        }
-        actions
-    }
+    // fn parse_action_defs(
+    //     shared_config: &ShareableConfiguration,
+    //     action_defs: &Vec<String>,
+    //     data: &JsonValue,
+    // ) -> Vec<Action> {
+    //     let mut actions = vec![];
+    //     for str in action_defs {
+    //         actions.push(parse_action(shared_config, &data[str], str));
+    //     }
+    //     actions
+    // }
 
-    fn parse_action(
-        shared_config: &ShareableConfiguration,
-        json: &JsonValue,
-        name: &str,
-    ) -> Action {
-        let root = current_dir().unwrap();
-        if json.is_null() {
-            panic!(
-                "Could not find action defined with appropriate tag: {}",
-                name
-            )
-        }
-        let backend = {
-            if json["backend"].is_null() {
-                shared_config.get_backend().to_string()
-            } else {
-                json["backend"].to_string()
-            }
-        };
+    // fn parse_action(
+    //     shared_config: &ShareableConfiguration,
+    //     json: &JsonValue,
+    //     name: &str,
+    // ) -> Action {
+    //     let root = current_dir().unwrap();
+    //     if json.is_null() {
+    //         panic!(
+    //             "Could not find action defined with appropriate tag: {}",
+    //             name
+    //         )
+    //     }
+    //     let backend = {
+    //         if json["backend"].is_null() {
+    //             shared_config.get_backend().to_string()
+    //         } else {
+    //             json["backend"].to_string()
+    //         }
+    //     };
 
-        let new_shared_config = ShareableConfiguration::new(
-            {
-                if json["metadata"].is_null() {
-                    None
-                } else {
-                    Some(parse_json_map(&json["metadata"]))
-                }
-            },
-            Some(name.to_string()),
-            {
-                if json["tags"].is_null() {
-                    None
-                } else {
-                    Some(parse_json_map(&json["tags"]))
-                }
-            },
-            {
-                if json["language"].is_null() {
-                    shared_config.get_language().to_string()
-                } else {
-                    json["language"].to_string()
-                }
-            },
-            {
-                if !backend.to_lowercase().eq("docker")
-                    && !backend.is_empty()
-                    && backend != "bash"
-                    && backend != "batch"
-                {
-                    warn!("Image cannot be set if docker is not the backend.");
-                    None
-                } else if json["image"].is_null() {
-                    shared_config.get_image()
-                } else {
-                    Some(json["image"].to_string())
-                }
-            },
-            backend,
-            {
-                if json["output_directory"].is_null() {
-                    shared_config.get_output().to_string()
-                } else {
-                    RelativePath::new(&json["output_directory"].to_string())
-                        .to_path(&root)
-                        .to_str()
-                        .unwrap()
-                        .to_string()
-                }
-            },
-            {
-                if json["source_directory"].is_null() {
-                    shared_config.get_source().to_string()
-                } else if json["source_directory"].to_string().starts_with('/') || json["source_directory"].to_string().contains(":") {
-                    Path::new(&json["source_directory"].to_string())
-                        .to_owned()
-                        .to_str()
-                        .unwrap()
-                        .to_owned()
-                } else {
-                    RelativePath::new(&json["source_directory"].to_string())
-                        .to_path(&root)
-                        .to_str()
-                        .unwrap()
-                        .to_string()
-                }
-            },
-        );
+    //     let new_shared_config = ShareableConfiguration::new(
+    //         {
+    //             if json["metadata"].is_null() {
+    //                 None
+    //             } else {
+    //                 Some(parse_json_map(&json["metadata"]))
+    //             }
+    //         },
+    //         Some(name.to_string()),
+    //         {
+    //             if json["tags"].is_null() {
+    //                 None
+    //             } else {
+    //                 Some(parse_json_map(&json["tags"]))
+    //             }
+    //         },
+    //         {
+    //             if json["language"].is_null() {
+    //                 shared_config.get_language().to_string()
+    //             } else {
+    //                 json["language"].to_string()
+    //             }
+    //         },
+    //         {
+    //             if !backend.to_lowercase().eq("docker")
+    //                 && !backend.is_empty()
+    //                 && backend != "bash"
+    //                 && backend != "batch"
+    //             {
+    //                 warn!("Image cannot be set if docker is not the backend.");
+    //                 None
+    //             } else if json["image"].is_null() {
+    //                 shared_config.get_image()
+    //             } else {
+    //                 Some(json["image"].to_string())
+    //             }
+    //         },
+    //         backend,
+    //         {
+    //             if json["output_directory"].is_null() {
+    //                 shared_config.get_output().to_string()
+    //             } else {
+    //                 RelativePath::new(&json["output_directory"].to_string())
+    //                     .to_path(&root)
+    //                     .to_str()
+    //                     .unwrap()
+    //                     .to_string()
+    //             }
+    //         },
+    //         {
+    //             if json["source_directory"].is_null() {
+    //                 shared_config.get_source().to_string()
+    //             } else if json["source_directory"].to_string().starts_with('/') || json["source_directory"].to_string().contains(":") {
+    //                 Path::new(&json["source_directory"].to_string())
+    //                     .to_owned()
+    //                     .to_str()
+    //                     .unwrap()
+    //                     .to_owned()
+    //             } else {
+    //                 RelativePath::new(&json["source_directory"].to_string())
+    //                     .to_path(&root)
+    //                     .to_str()
+    //                     .unwrap()
+    //                     .to_string()
+    //             }
+    //         },
+    //     );
 
-        let action_config = ActionConfig::new(
-            {
-                let conditions = parse_json_to_conditions(&json["conditions"]);
-                if conditions.is_empty() {
-                    None
-                } else {
-                    Some(conditions)
-                }
-            },
-            {
-                if json["retries"].is_null() {
-                    Some(0)
-                } else {
-                    Some(json["retries"].as_i8().unwrap_or_else(|| {
-                            error!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
-                            panic!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
-                        }))
-                }
-            },
-            {
-                if json["allowed_failure"].is_null() {
-                    Some(false)
-                } else {
-                    Some(json["allowed_failure"].as_bool().unwrap_or_else(|| {
-                            error!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
-                            panic!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
-                            }
-                        ))
-                }
-            },
-            {
-                let manual = parse_json_to_steps(&json["manual"]);
-                if manual.is_empty() {
-                    error!("Actions require at least one step in their manual. Error occured in Action: {}", name);
-                    panic!("Actions require at least one step in their manual. Error occured in Action: {}", name);
-                }
-                manual
-            },
-        );
-        Action::new(new_shared_config, action_config)
-    }
+    //     let action_config = ActionConfig::new(
+    //         {
+    //             let conditions = parse_json_to_conditions(&json["conditions"]);
+    //             if conditions.is_empty() {
+    //                 None
+    //             } else {
+    //                 Some(conditions)
+    //             }
+    //         },
+    //         {
+    //             if json["retries"].is_null() {
+    //                 Some(0)
+    //             } else {
+    //                 Some(json["retries"].as_i8().unwrap_or_else(|| {
+    //                         error!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
+    //                         panic!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
+    //                     }))
+    //             }
+    //         },
+    //         {
+    //             if json["allowed_failure"].is_null() {
+    //                 Some(false)
+    //             } else {
+    //                 Some(json["allowed_failure"].as_bool().unwrap_or_else(|| {
+    //                         error!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
+    //                         panic!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
+    //                         }
+    //                     ))
+    //             }
+    //         },
+    //         {
+    //             let manual = parse_json_to_steps(&json["manual"]);
+    //             if manual.is_empty() {
+    //                 error!("Actions require at least one step in their manual. Error occured in Action: {}", name);
+    //                 panic!("Actions require at least one step in their manual. Error occured in Action: {}", name);
+    //             }
+    //             manual
+    //         },
+    //     );
+    //     Action::new(new_shared_config, action_config)
+    // }
 
-    /**
-     *
-     */
-    fn parse_pipeline_defs(
-        shared_config: &ShareableConfiguration,
-        json: &JsonValue,
-        pipeline_defs: &Vec<String>,
-    ) -> Vec<Pipeline> {
-        let mut pipelines = vec![];
-        for str in pipeline_defs {
-            pipelines.push(parse_pipeline(shared_config, &json[str], str));
-        }
-        pipelines
-    }
+    // /**
+    //  *
+    //  */
+    // fn parse_pipeline_defs(
+    //     shared_config: &ShareableConfiguration,
+    //     json: &JsonValue,
+    //     pipeline_defs: &Vec<String>,
+    // ) -> Vec<Pipeline> {
+    //     let mut pipelines = vec![];
+    //     for str in pipeline_defs {
+    //         pipelines.push(parse_pipeline(shared_config, &json[str], str));
+    //     }
+    //     pipelines
+    // }
 
     /**
      *
@@ -540,4 +542,4 @@ pub mod json_parser {
         // println!("{:#?}", parsed_data.as_ref().unwrap().clone());
         parsed_data.unwrap()
     }
-}
+// }

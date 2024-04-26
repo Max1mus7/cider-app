@@ -1,20 +1,495 @@
 use log::{info, warn};
+use logginggetters::get_optional_property;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PROPERTY {
-    TITLE(Option<String>),
-    IMAGE(Option<String>),
-
+/// Allows an inheriting struct to return the value of these function and cut down repeated code while still creating effective logs.
+pub mod logginggetters {
+    use log::{debug, warn};
+    use std::collections::HashMap;
+    /// Returns the value of a given property while also logging whether the retrieval was successful.
+    pub fn get_optional_property(property: &Option<String>) -> Option<&String> {
+        let property_name = stringify!(property);
+        match property {
+            Some(property) => {
+                debug!(
+                    "{:#?} successfully retrieved: {:#?}",
+                    &property_name, property
+                );
+                Some(&property)
+            }
+            None => {
+                let res_str = format!(
+                    "No {:#?} value found or no {:#?} value configured.",
+                    &property_name, &property_name
+                );
+                warn!("{}", res_str);
+                None
+            }
+        }
+    }
+    pub fn get_optional_mapped_property(
+        property: &Option<HashMap<String, String>>,
+    ) -> Option<&HashMap<String, String>> {
+        let property_name = stringify!(property);
+        match property {
+            Some(property) => {
+                debug!(
+                    "{:#?} successfully retrieved: {:#?}",
+                    &property_name, property
+                );
+                Some(&property)
+            }
+            None => {
+                let res_str = format!(
+                    "No {:#?} value found or no {:#?} value configured.",
+                    &property_name, &property_name
+                );
+                warn!("{}", res_str);
+                None
+            }
+        }
+    }
 }
 
-pub enum MAPPED_PROPERTY {
-    METADATA(Option<HashMap<String,String>>)
-}
+pub mod shared_config {
+    use log::{info, warn};
 
-pub trait LoggingGetters {
-    fn get_optional_property(&self, optional_property: PROPERTY) -> Option<String>;
-    fn getOptionalMappedProperty(&self, optional_mapped_property: MAPPED_PROPERTY) -> Option<HashMap<String, String>>;
+    use super::logginggetters::*;
+    use std::collections::HashMap;
+
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct ShareableConfiguration {
+        /// metadata not required
+        ///
+        /// defaulted to None
+        metadata: Option<HashMap<String, String>>,
+
+        /// title not required
+        /// title can be used to name different configuration sections, but is completely optional, unlike action_defs or pipeline_defs
+        /// in [`TopLevelConfiguration`]
+        /// defaulted to None
+        title: Option<String>,
+
+        /// tags not required
+        /// tags do nothing functionally at the moment, but may be used in a later release.
+        /// defaulted to None
+        tags: Option<HashMap<String, String>>,
+
+        ///language required at runtime
+        ///defaulted to bash
+        language: String,
+
+        /// image not required
+        /// defaulted to None
+        /// if "docker" is specified as a backend, this will default to alpine:latest
+        /// IMAGE IS A DOCKER-SPECIFIC FEATURE. IF BACKEND IS NOT DOCKER, IMAGE SHOULD NOT BE DEFINED
+        image: Option<String>,
+
+        /// backend required
+        /// defaulted to local(Windows in this case)
+        backend: String,
+
+        /// Output directory required
+        /// defaulted to ./dist/cider/
+        output: String,
+
+        /// Source directory required
+        /// defaulted to ./
+        source: String,
+    }
+
+    impl ShareableConfiguration {
+        /// Creates a new [`ShareableConfiguration`]
+        ///
+        /// Some values are completely optional, and will either be defaulted or set as None if not provided.
+        /// Note that some required information is set by default in [`crate::utils::parsing::json_parser`] if it is not explicitly defaulted here.
+        /// Specifically, output, and source are defaulted to ./dist/cider and ./, respectively.
+        ///
+        /// # Examples:
+        /// Basic usage:
+        /// ```
+        /// use cider::config::ShareableConfiguration;
+        ///
+        /// let s = ShareableConfiguration::new(None, None, None, "Rust".to_string(), None, "bash".to_string(), "./dist/cider".to_string(), "./".to_string());
+        /// ```
+        ///
+        pub fn new(
+            metadata: Option<HashMap<String, String>>,
+            title: Option<String>,
+            tags: Option<HashMap<String, String>>,
+            language: String,
+            image: Option<String>,
+            backend: String,
+            output: String,
+            source: String,
+        ) -> Self {
+            // TODO: Make this cleaner. The image should just be ignored at this point. (If the backend is not docker.)
+            let image = {
+                if !backend.to_lowercase().eq("docker") {
+                    None
+                } else {
+                    image
+                }
+            };
+            Self {
+                metadata,
+                title,
+                tags,
+                language,
+                image,
+                backend,
+                output,
+                source,
+            }
+        }
+
+        /// Returns metadata
+        ///
+        /// Returns the metadata associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
+        /// or of a None type.
+        ///
+        /// # Warnings
+        /// Will provide the user with a warning if metadata obtained returns a None type.
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let s = json_parser::new_top_level("./cider_config.json");
+        ///
+        /// let m = s.s_config.get_metadata();
+        /// ```
+        pub fn get_metadata(&self) -> Option<&HashMap<String, String>> {
+            get_optional_mapped_property(&self.metadata)
+        }
+
+        ///Allows the metadata of a [`ShareableConfiguration`] to be changed
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        /// use std::collections::HashMap;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let mut s = json_parser::new_top_level("./cider_config.json");
+        /// let mut hm = HashMap::new();
+        /// hm.insert("some metadata tag".to_string(), "some metadata data".to_string());
+        ///
+        /// let m = s.s_config.set_metadata(hm.clone());
+        ///
+        /// assert_eq!(s.s_config.get_metadata().unwrap(), hm);
+        /// ```
+        pub fn set_metadata(&mut self, new_metadata: HashMap<String, String>) {
+            info!("New metadata set: {:#?}", new_metadata);
+            self.metadata = Some(new_metadata);
+        }
+
+        /// Returns the title
+        ///
+        /// Returns the title associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
+        /// or of a None type.
+        ///
+        /// # Warnings
+        /// Will provide the user with a warning if metadata obtained returns a None type.
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let s = json_parser::new_top_level("./cider_config.json");
+        ///
+        /// let m = s.s_config.get_title();
+        /// ```
+        pub fn get_title(&self) -> Option<&String> {
+            get_optional_property(&self.title)
+        }
+
+        ///Allows the title of a [`ShareableConfiguration`] to be changed
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let mut s = json_parser::new_top_level("./cider_config.json");
+        /// let t = "Cider".to_string();
+        ///
+        /// s.s_config.set_title(t.clone());
+        ///
+        /// assert_eq!(s.s_config.get_title().unwrap(), t);
+        /// ```
+        pub fn set_title(&mut self, new_title: String) {
+            info!("New title set: {}", new_title);
+            self.title = Some(new_title);
+        }
+
+        /// Returns tags
+        ///
+        /// Returns the tags associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
+        /// or of a None type.
+        ///
+        /// # Warnings
+        /// Will provide the user with a warning if metadata obtained returns a None type.
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let s = json_parser::new_top_level("./cider_config.json");
+        ///
+        /// let m = s.s_config.get_tags();
+        /// ```
+        pub fn get_tags(&self) -> Option<HashMap<String, String>> {
+            match &self.tags {
+                Some(tags) => {
+                    info!("Tags successfully retrieved: {:?}", &tags);
+                    Some(tags.to_owned())
+                }
+                None => {
+                    let res_str = "No tags found or no tags configured.";
+                    warn!("{}", res_str);
+                    None
+                }
+            }
+        }
+
+        ///Allows the tags of a [`ShareableConfiguration`] to be changed
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///use std::collections::HashMap;
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let mut s = json_parser::new_top_level("./cider_config.json");
+        /// let mut hm = HashMap::new();
+        /// hm.insert("some tag".to_string(), "some data".to_string());
+        ///
+        /// let m = s.s_config.set_tags(hm.clone());
+        ///
+        /// assert_eq!(s.s_config.get_tags().unwrap(), hm);
+        /// ```
+        pub fn set_tags(&mut self, new_tags: HashMap<String, String>) {
+            self.tags = Some(new_tags);
+        }
+
+        /// Returns language
+        ///
+        /// Returns the language associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
+        /// or of a None type.
+        ///
+        /// # Warnings
+        /// Will provide the user with a warning if metadata obtained returns a None type.
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let s = json_parser::new_top_level("./cider_config.json");
+        ///
+        /// let m = s.s_config.get_language();
+        /// println!("{}", m);
+        /// ```
+        pub fn get_language(&self) -> &str {
+            &self.language
+        }
+
+        /// Allows the language of a [`ShareableConfiguration`] to be changed
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let mut s = json_parser::new_top_level("./cider_config.json");
+        /// let l = "Rust".to_string();
+        ///
+        /// s.s_config.set_language(l.clone());
+        ///
+        /// assert_eq!(s.s_config.get_language(), l);
+        /// ```
+        pub fn set_language(&mut self, new_language: String) {
+            info!("New language set: {}", new_language);
+            self.language = new_language;
+        }
+
+        /// Returns configured image
+        ///
+        /// Returns the image associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
+        /// or of a None type.
+        ///
+        /// # Warnings
+        /// Will provide the user with a warning if image obtained returns a None type.
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let s = json_parser::new_top_level("./cider_config.json");
+        ///
+        /// let m = s.s_config.get_image();
+        /// ```
+        pub fn get_image(&self) -> Option<String> {
+            match &self.image {
+                Some(image) => {
+                    info!("Image successfully retrieved: {:?}", &image);
+                    Some(image.to_string())
+                }
+                None => {
+                    if Self::get_backend(self) == "docker" {
+                        let res_str = "No image found or no image configured.";
+                        warn!("{}", res_str);
+                    }
+                    None
+                }
+            }
+        }
+
+        /// Allows the image of a [`ShareableConfiguration`] to be changed
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let mut s = json_parser::new_top_level("./cider_config.json");
+        /// let i = "rust:1.65.0".to_string();
+        ///
+        /// let m = s.s_config.set_image(i.clone());
+        ///
+        /// assert_eq!(s.s_config.get_image().unwrap(), i);
+        /// ```
+        pub fn set_image(&mut self, new_image: String) {
+            if !self.get_backend().to_lowercase().eq("docker") {
+                warn!("image can only be set on configurations with a docker backend");
+                self.image = None
+            }
+            info!("New title set: {}", new_image);
+            self.image = Some(new_image);
+        }
+
+        /// Returns backend
+        ///
+        /// Returns the backend associated with a [`ShareableConfiguration`]
+        ///
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let s = json_parser::new_top_level("./cider_config.json");
+        ///
+        /// let m = s.s_config.get_backend();
+        /// ```
+        pub fn get_backend(&self) -> &str {
+            &self.backend
+        }
+
+        ///Allows the backend of a [`ShareableConfiguration`] to be changed
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let mut s = json_parser::new_top_level("./cider_config.json");
+        /// let b = "bash".to_string();
+        ///
+        /// s.s_config.set_backend(b.clone());
+        ///
+        /// assert_eq!(s.s_config.get_backend(), b);
+        /// ```
+        pub fn set_backend(&mut self, new_backend: String) {
+            info!("New backend set: {}", new_backend);
+            self.backend = new_backend;
+        }
+
+        /// Returns output directory
+        ///
+        /// Returns the output directory associated with a [`ShareableConfiguration`]
+        ///
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let s = json_parser::new_top_level("./cider_config.json");
+        ///
+        /// let m = s.s_config.get_output();
+        /// ```
+        pub fn get_output(&self) -> &str {
+            info!(
+                "Output directory successfully retrieved: {:?}",
+                &self.output
+            );
+            &self.output
+        }
+
+        ///Allows the output directory of a [`ShareableConfiguration`] to be changed
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let mut s = json_parser::new_top_level("./cider_config.json");
+        /// let o = "./dist/cider".to_string();
+        ///
+        /// s.s_config.set_output(o.clone());
+        ///
+        /// assert_eq!(s.s_config.get_output(), o);
+        /// ```
+        pub fn set_output(&mut self, new_output: String) {
+            info!("New output directory set: {}", new_output);
+            self.output = new_output;
+        }
+
+        /// Returns source directory
+        ///
+        /// Returns the source directory associated with a [`ShareableConfiguration`]
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let s = json_parser::new_top_level("./cider_config.json");
+        ///
+        /// let m = s.s_config.get_source();
+        /// ```
+        pub fn get_source(&self) -> &str {
+            info!(
+                "Source directory successfully retrieved: {:?}",
+                &self.source
+            );
+            &self.source
+        }
+
+        ///Allows the source directory of a [`ShareableConfiguration`] to be changed
+        ///
+        /// # Examples:
+        /// ```
+        /// use cider::parsing::json_parser;
+        ///
+        /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+        /// let mut s = json_parser::new_top_level("./cider_config.json");
+        /// let src = "./c".to_string();
+        ///
+        /// s.s_config.set_source(src.clone());
+        ///
+        /// //assert_eq!(s.s_config.get_source(), &src);
+        /// ```
+        pub fn set_source(&mut self, new_source: String) {
+            info!("New source directory set: {}", new_source);
+            self.backend = new_source;
+        }
+    }
 }
 
 /// Contains information that can be shared between levels of a configuration
@@ -30,460 +505,6 @@ pub trait LoggingGetters {
 /// Inversely, the more granular configurations override any configurations set at higher levels. Therefore, a backend belonging to an [`Action`] has priority
 /// over one belonging to a [`Pipeline`] and likewise over a backend belonging to a [`ShareableConfiguration`].
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ShareableConfiguration {
-    /// metadata not required
-    ///
-    /// defaulted to None
-    metadata: Option<HashMap<String, String>>,
-
-    /// title not required
-    /// title can be used to name different configuration sections, but is completely optional, unlike action_defs or pipeline_defs
-    /// in [`TopLevelConfiguration`]
-    /// defaulted to None
-    title: Option<String>,
-
-    /// tags not required
-    /// tags do nothing functionally at the moment, but may be used in a later release.
-    /// defaulted to None
-    tags: Option<HashMap<String, String>>,
-
-    ///language required at runtime
-    /// defines scripting language used in config
-    ///defaulted to bash
-    language: String,
-
-    /// image not required
-    /// defaulted to None
-    /// if "docker" is specified as a backend, this will default to alpine:latest
-    /// IMAGE IS A DOCKER-SPECIFIC FEATURE. IF BACKEND IS NOT DOCKER, IMAGE SHOULD NOT BE DEFINED
-    image: Option<String>,
-
-    /// backend required
-    /// defaulted to local(Windows in this case)
-    backend: String,
-
-    /// Output directory required
-    /// defaulted to ./dist/cider/
-    output: String,
-
-    /// Source directory required
-    /// defaulted to ./
-    source: String,
-}
-
-impl ShareableConfiguration {
-    /// Creates a new [`ShareableConfiguration`]
-    ///
-    /// Some values are completely optional, and will either be defaulted or set as None if not provided.
-    /// Note that some required information is set by default in [`crate::utils::parsing::json_parser`] if it is not explicitly defaulted here.
-    /// Specifically, output, and source are defaulted to ./dist/cider and ./, respectively.
-    ///
-    /// # Examples:
-    /// Basic usage:
-    /// ```
-    /// use cider::config::ShareableConfiguration;
-    ///
-    /// let s = ShareableConfiguration::new(None, None, None, "Rust".to_string(), None, "bash".to_string(), "./dist/cider".to_string(), "./".to_string());
-    /// ```
-    ///
-    pub fn new(
-        metadata: Option<HashMap<String, String>>,
-        title: Option<String>,
-        tags: Option<HashMap<String, String>>,
-        language: String,
-        image: Option<String>,
-        backend: String,
-        output: String,
-        source: String,
-    ) -> Self {
-        let image = {
-            if !backend.to_lowercase().eq("docker") {
-                None
-            } else {
-                image
-            }
-        };
-        Self {
-            metadata,
-            title,
-            tags,
-            language,
-            image,
-            backend,
-            output,
-            source,
-        }
-    }
-
-    /// Returns metadata
-    ///
-    /// Returns the metadata associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
-    /// or of a None type.
-    ///
-    /// # Warnings
-    /// Will provide the user with a warning if metadata obtained returns a None type.
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let s = json_parser::new_top_level("./cider_config.json");
-    ///
-    /// let m = s.s_config.get_metadata();
-    /// ```
-    pub fn get_metadata(&self) -> Option<HashMap<String, String>> {
-        match &self.metadata {
-            Some(metadata) => {
-                info!("Metadata successfully retrieved: {:#?}", &metadata);
-                Some(metadata.to_owned())
-            }
-            None => {
-                let res_str = "No metadata value found or no metadata value configured.";
-                warn!("{}", res_str);
-                None
-            }
-        }
-    }
-
-    ///Allows the metadata of a [`ShareableConfiguration`] to be changed
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    /// use std::collections::HashMap;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let mut s = json_parser::new_top_level("./cider_config.json");
-    /// let mut hm = HashMap::new();
-    /// hm.insert("some metadata tag".to_string(), "some metadata data".to_string());
-    ///
-    /// let m = s.s_config.set_metadata(hm.clone());
-    ///
-    /// assert_eq!(s.s_config.get_metadata().unwrap(), hm);
-    /// ```
-    pub fn set_metadata(&mut self, new_metadata: HashMap<String, String>) {
-        info!("New metadata set: {:#?}", new_metadata);
-        self.metadata = Some(new_metadata);
-    }
-
-    /// Returns the title
-    ///
-    /// Returns the title associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
-    /// or of a None type.
-    ///
-    /// # Warnings
-    /// Will provide the user with a warning if metadata obtained returns a None type.
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let s = json_parser::new_top_level("./cider_config.json");
-    ///
-    /// let m = s.s_config.get_title();
-    /// ```
-    pub fn get_title(&self) -> Option<String> {
-        match &self.title {
-            Some(title) => {
-                info!("Title successfully retrieved: {:?}", &title);
-                Some(title.to_string())
-            }
-            None => {
-                let res_str = "No title value found or no title value configured.";
-                warn!("{}", res_str);
-                None
-            }
-        }
-    }
-
-    ///Allows the title of a [`ShareableConfiguration`] to be changed
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let mut s = json_parser::new_top_level("./cider_config.json");
-    /// let t = "Cider".to_string();
-    ///
-    /// s.s_config.set_title(t.clone());
-    ///
-    /// assert_eq!(s.s_config.get_title().unwrap(), t);
-    /// ```
-    pub fn set_title(&mut self, new_title: String) {
-        info!("New title set: {}", new_title);
-        self.title = Some(new_title);
-    }
-
-    /// Returns tags
-    ///
-    /// Returns the tags associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
-    /// or of a None type.
-    ///
-    /// # Warnings
-    /// Will provide the user with a warning if metadata obtained returns a None type.
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let s = json_parser::new_top_level("./cider_config.json");
-    ///
-    /// let m = s.s_config.get_tags();
-    /// ```
-    pub fn get_tags(&self) -> Option<HashMap<String, String>> {
-        match &self.tags {
-            Some(tags) => {
-                info!("Tags successfully retrieved: {:?}", &tags);
-                Some(tags.to_owned())
-            }
-            None => {
-                let res_str = "No tags found or no tags configured.";
-                warn!("{}", res_str);
-                None
-            }
-        }
-    }
-
-    ///Allows the tags of a [`ShareableConfiguration`] to be changed
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///use std::collections::HashMap;
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let mut s = json_parser::new_top_level("./cider_config.json");
-    /// let mut hm = HashMap::new();
-    /// hm.insert("some tag".to_string(), "some data".to_string());
-    ///
-    /// let m = s.s_config.set_tags(hm.clone());
-    ///
-    /// assert_eq!(s.s_config.get_tags().unwrap(), hm);
-    /// ```
-    pub fn set_tags(&mut self, new_tags: HashMap<String, String>) {
-        self.tags = Some(new_tags);
-    }
-
-    /// Returns language
-    ///
-    /// Returns the language associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
-    /// or of a None type.
-    ///
-    /// # Warnings
-    /// Will provide the user with a warning if metadata obtained returns a None type.
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let s = json_parser::new_top_level("./cider_config.json");
-    ///
-    /// let m = s.s_config.get_language();
-    /// println!("{}", m);
-    /// ```
-    pub fn get_language(&self) -> &str {
-        &self.language
-    }
-
-    /// Allows the language of a [`ShareableConfiguration`] to be changed
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let mut s = json_parser::new_top_level("./cider_config.json");
-    /// let l = "Rust".to_string();
-    ///
-    /// s.s_config.set_language(l.clone());
-    ///
-    /// assert_eq!(s.s_config.get_language(), l);
-    /// ```
-    pub fn set_language(&mut self, new_language: String) {
-        info!("New language set: {}", new_language);
-        self.language = new_language;
-    }
-
-    /// Returns configured image
-    ///
-    /// Returns the image associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
-    /// or of a None type.
-    ///
-    /// # Warnings
-    /// Will provide the user with a warning if image obtained returns a None type.
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let s = json_parser::new_top_level("./cider_config.json");
-    ///
-    /// let m = s.s_config.get_image();
-    /// ```
-    pub fn get_image(&self) -> Option<String> {
-        match &self.image {
-            Some(image) => {
-                info!("Image successfully retrieved: {:?}", &image);
-                Some(image.to_string())
-            }
-            None => {
-                if Self::get_backend(self) == "docker" {
-                    let res_str = "No image found or no image configured.";
-                    warn!("{}", res_str);
-                }
-                None
-            }
-        }
-    }
-
-    /// Allows the image of a [`ShareableConfiguration`] to be changed
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let mut s = json_parser::new_top_level("./cider_config.json");
-    /// let i = "rust:1.65.0".to_string();
-    ///
-    /// let m = s.s_config.set_image(i.clone());
-    ///
-    /// assert_eq!(s.s_config.get_image().unwrap(), i);
-    /// ```
-    pub fn set_image(&mut self, new_image: String) {
-        if !self.get_backend().to_lowercase().eq("docker") {
-            warn!("image can only be set on configurations with a docker backend");
-            self.image = None
-        }
-        info!("New title set: {}", new_image);
-        self.image = Some(new_image);
-    }
-
-    /// Returns backend
-    ///
-    /// Returns the backend associated with a [`ShareableConfiguration`]
-    ///
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let s = json_parser::new_top_level("./cider_config.json");
-    ///
-    /// let m = s.s_config.get_backend();
-    /// ```
-    pub fn get_backend(&self) -> &str {
-        &self.backend
-    }
-
-    ///Allows the backend of a [`ShareableConfiguration`] to be changed
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let mut s = json_parser::new_top_level("./cider_config.json");
-    /// let b = "bash".to_string();
-    ///
-    /// s.s_config.set_backend(b.clone());
-    ///
-    /// assert_eq!(s.s_config.get_backend(), b);
-    /// ```
-    pub fn set_backend(&mut self, new_backend: String) {
-        info!("New backend set: {}", new_backend);
-        self.backend = new_backend;
-    }
-
-    /// Returns output directory
-    ///
-    /// Returns the output directory associated with a [`ShareableConfiguration`]
-    ///
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let s = json_parser::new_top_level("./cider_config.json");
-    ///
-    /// let m = s.s_config.get_output();
-    /// ```
-    pub fn get_output(&self) -> &str {
-        info!(
-            "Output directory successfully retrieved: {:?}",
-            &self.output
-        );
-        &self.output
-    }
-
-    ///Allows the output directory of a [`ShareableConfiguration`] to be changed
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let mut s = json_parser::new_top_level("./cider_config.json");
-    /// let o = "./dist/cider".to_string();
-    ///
-    /// s.s_config.set_output(o.clone());
-    ///
-    /// assert_eq!(s.s_config.get_output(), o);
-    /// ```
-    pub fn set_output(&mut self, new_output: String) {
-        info!("New output directory set: {}", new_output);
-        self.output = new_output;
-    }
-
-    /// Returns source directory
-    ///
-    /// Returns the source directory associated with a [`ShareableConfiguration`]
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let s = json_parser::new_top_level("./cider_config.json");
-    ///
-    /// let m = s.s_config.get_source();
-    /// ```
-    pub fn get_source(&self) -> &str {
-        info!(
-            "Source directory successfully retrieved: {:?}",
-            &self.source
-        );
-        &self.source
-    }
-
-    ///Allows the source directory of a [`ShareableConfiguration`] to be changed
-    ///
-    /// # Examples:
-    /// ```
-    /// use cider::parsing::json_parser;
-    ///
-    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
-    /// let mut s = json_parser::new_top_level("./cider_config.json");
-    /// let src = "./c".to_string();
-    ///
-    /// s.s_config.set_source(src.clone());
-    ///
-    /// //assert_eq!(s.s_config.get_source(), &src);
-    /// ```
-    pub fn set_source(&mut self, new_source: String) {
-        info!("New source directory set: {}", new_source);
-        self.backend = new_source;
-    }
-}
-
 /// Contains information pertinent to a CIder configuration as a whole.
 ///
 /// A [`TopLevelConfiguration`] is meant to contain information relevant to multiple pipelines, or actions, or metadata/information relevant
@@ -496,8 +517,6 @@ impl ShareableConfiguration {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TopLevelConfiguration {
     /// ShareableConfiguration data required to perform top-level tasks and pass on to lower-level tasks. See [`ShareableConfiguration`]
-    pub s_config: ShareableConfiguration,
-
     ///pipeline definitions required at runtime, even if it is an empty Vector
     pipeline_defs: Vec<String>,
 
@@ -524,14 +543,12 @@ impl TopLevelConfiguration {
     ///
     /// For more information, see new_top_level() in [`crate::utils::parsing`]
     pub fn new(
-        s_config: ShareableConfiguration,
         pipeline_defs: Vec<String>,
         pipelines: Vec<Pipeline>,
         action_defs: Vec<String>,
         actions: Vec<Action>,
     ) -> Self {
         Self {
-            s_config,
             pipeline_defs,
             pipelines,
             action_defs,

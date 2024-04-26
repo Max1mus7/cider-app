@@ -5,5 +5,4 @@ pub mod config_structs;
 /// Not implemented yet.
 pub mod config_generator;
 
-
 // use crate::libs;

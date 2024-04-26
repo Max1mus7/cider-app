@@ -2,7 +2,9 @@
 pub mod executor;
 
 /// This module contains the necessary functionality to parse configuration files into a usable form.
-pub mod parsing;
+pub mod parsing_new;
 
 /// This module contains functionality relevant to the watch functionality of this program (Not implemented yet.)
 pub mod watcher;
+
+pub mod errors;
