@@ -2,7 +2,7 @@
 
 pub mod json_parser {
 
-    use crate::utils::config::*;
+    use crate::config::config_structs::*;
     use json::JsonValue;
     use log::{error, warn};
     use relative_path::RelativePath;

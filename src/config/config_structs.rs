@@ -1,6 +1,22 @@
 use log::{info, warn};
 use std::collections::HashMap;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PROPERTY {
+    TITLE(Option<String>),
+    IMAGE(Option<String>),
+
+}
+
+pub enum MAPPED_PROPERTY {
+    METADATA(Option<HashMap<String,String>>)
+}
+
+pub trait LoggingGetters {
+    fn get_optional_property(&self, optional_property: PROPERTY) -> Option<String>;
+    fn getOptionalMappedProperty(&self, optional_mapped_property: MAPPED_PROPERTY) -> Option<HashMap<String, String>>;
+}
+
 /// Contains information that can be shared between levels of a configuration
 ///
 /// Contains information to be shared from a higher-level of configuration to a lower-level of a configuration.
@@ -33,6 +49,7 @@ pub struct ShareableConfiguration {
     tags: Option<HashMap<String, String>>,
 
     ///language required at runtime
+    /// defines scripting language used in config
     ///defaulted to bash
     language: String,
 

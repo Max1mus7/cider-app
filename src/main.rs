@@ -1,8 +1,9 @@
-pub mod utils;
 
 //package imports
 use cider::executor::*;
 use cider::parsing::*;
+
+
 
 //arg parser
 use clap::Parser;

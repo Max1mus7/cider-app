@@ -5,16 +5,20 @@
     missing_debug_implementations,
     clippy::style
 )]
-
 //! Contains all necessary functions.
-//!
+
+
+///Contains configuration-related structs and functionality. 
+mod config;
+///Contains general functionality such as parsing, watching files, executing commands, etc.
+mod libs;
+
 /// Contains functions that allow CIder to create docker images, parse JSON, and more.
-pub mod utils;
-pub use utils::config;
-pub use utils::config_generator;
-pub use utils::executor;
-pub use utils::parsing;
-// pub use utils::watcher;
+pub use config::config_structs;
+// pub use config::config_generator;
+pub use libs::executor;
+pub use libs::parsing;
+pub use libs::watcher;
 
 #[cfg(test)]
 mod systests {

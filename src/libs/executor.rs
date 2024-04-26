@@ -1,7 +1,6 @@
 #![warn(missing_docs)]
 
-
-use crate::utils::config::{Action, Condition, Step};
+use crate::config::config_structs::*;
 use chrono::Utc;
 use csv::Writer;
 use log::{error, info, warn};
