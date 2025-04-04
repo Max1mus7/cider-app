@@ -401,8 +401,8 @@ fn collect_piped_output(setup: &ExecInfo, output: &Output, outputs: &mut Vec<Str
     let stderr = String::from_utf8(output.stderr.clone())
         .expect("Could not parse command output as a String.");
 
-    println!("stdout from {:#?}: {stdout}", setup.title.to_owned().unwrap_or_else(|| String::from("Untitled Step")));
-    println!("stderr from {:#?}: {stderr}", setup.title.to_owned().unwrap_or_else(|| String::from("Untitled Step")));
+    println!("Output from {:#?}: {stdout}", setup.title.to_owned().unwrap_or_else(|| String::from("Untitled Step")));
+    println!("Errors from {:#?}: {stderr}", setup.title.to_owned().unwrap_or_else(|| String::from("Untitled Step")));
 
     outputs.push(if stdout.is_empty() {
         if stderr.is_empty() {
@@ -445,7 +445,7 @@ mod tests {
 
     #[test]
     fn test_create_command_path_abs_path() {
-        let source = String::from("D:\\Everything");
+        let source = String::from("D:\\Coding Projects");
         let mut command = Command::new("cmd");
         command.current_dir(source.clone());
         // let root = current_dir().unwrap();
@@ -455,7 +455,7 @@ mod tests {
 
     #[test]
     fn test_script_path_cleaning() {
-        let expected = vec![String::from("cat"),String::from("D:\\Everything\\CST-452 Workspace\\cider-app\\..\\test.txt")];
+        let expected = vec![String::from("cat"),String::from("D:\\Coding Projects\\cider-app\\..\\test.txt")];
         let test_script = "cat ../test.txt";
         // let root = current_dir().unwrap();
         let res = clean_script_pathing(test_script);
@@ -464,7 +464,7 @@ mod tests {
 
     #[test]
     fn test_set_new_command_directory() {
-        let expected_dir = "D:\\Everything";
+        let expected_dir = "D:\\Coding Projects";
         let mut steps: Vec<String> = Vec::new();
         if cfg!(windows) {
             steps.push(String::from("cd"));

@@ -8,7 +8,7 @@ use cider::parsing::*;
 use clap::Parser;
 
 //logger
-use log::info;
+use log::{info, error};
 use simplelog::*;
 
 //std library imports
@@ -28,26 +28,28 @@ use std::{thread, time};
 struct Arguments {
     #[arg(short, long)]
     config: Option<String>,
-
     #[arg(short, long, default_value_t = false)]
     watch: bool,
+    #[arg(short, long, default_value_t = String::from("Warn"))]
+    loglevel: String
+
 }
 
 fn main() -> std::io::Result<()> {
-    setup_logger().unwrap_or_else(|err| {
+    let args = Arguments::parse();
+    let filename = if args.config.is_none() {
+        "cider_config.json".to_string()
+    } else {
+        args.config.unwrap()
+    };
+    setup_logger(args.loglevel).unwrap_or_else(|err| {
         panic!(
             "Logs could not be properly set up due to the following error:\n{}",
             err
         );
     });
 
-    let args = Arguments::parse();
 
-    let filename = if args.config.is_none() {
-        "cider_config.json".to_string()
-    } else {
-        args.config.unwrap()
-    };
 
     let conf = json_parser::new_top_level(&filename);
     let mut output_file = File::create(curate_filepath(
@@ -152,7 +154,7 @@ fn get_files_time_elapsed_since_changed<'a>(
  * /*!TODO: Allow multiple verbosity options to be input by users. */
  * /*!TODO: Allow for custom file pathing for logs. */
  */
-fn setup_logger() -> std::io::Result<()> {
+fn setup_logger(term_log_level: String) -> std::io::Result<()> {
     fs::create_dir_all("dist/logs")?;
     fs::create_dir_all("dist/cider")?;
     fs::create_dir_all("dist/output")?;
@@ -160,10 +162,23 @@ fn setup_logger() -> std::io::Result<()> {
     fs::create_dir_all("metrics/combined_reports")?;
     // fs::create_dir_all("metrics/deb")?;
     // fs::create_dir_all("metrics/rhel")?;
+    let term_log_level_filter = {
+        match term_log_level.as_str() {
+            "Warn"  | "warn"  | "WARN"  => LevelFilter::Warn,
+            "Info"  | "info"  | "INFO"  => LevelFilter::Info,
+            "Debug" | "debug" | "DEBUG" => LevelFilter::Debug,
+            "Trace" | "trace" | "TRACE" => LevelFilter::Trace,
+            "Off"   | "off"   | "OFF"   => LevelFilter::Off,
+            &_ => {
+                error!("{} {} {}", "Failed to parse log level.", term_log_level, "provided. Please select warn, info, debug, trace, or off.");
+                panic!("Please choose an appropriate log level.");
+            }
+        }
+    };
 
     CombinedLogger::init(vec![
         TermLogger::new(
-            LevelFilter::Warn,
+            term_log_level_filter,
             Config::default(),
             TerminalMode::Mixed,
             ColorChoice::Auto,
