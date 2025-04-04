@@ -4,7 +4,7 @@ pub mod json_parser {
 
     use crate::utils::config::*;
     use json::JsonValue;
-    use log::{error, warn};
+    use log::{debug, error, info, warn};
     use relative_path::RelativePath;
     use std::env::current_dir;
     use std::path::Path;
@@ -187,8 +187,8 @@ pub mod json_parser {
                     Some(false)
                 } else {
                     Some(json["allowed_failure"].as_bool().unwrap_or_else(|| {
-                            error!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
-                            panic!("There was no valid value for retries in the configuration. Error occured in Action: {}", name);
+                            error!("There was no valid value for failure allowance in the configuration. Please provide a boolean value. Error occured in Action: {}", name);
+                            panic!("There was no valid value for failure allowance in the configuration. Please provide a boolean value. Error occured in Action: {}", name);
                             }
                         ))
                 }
@@ -442,10 +442,10 @@ pub mod json_parser {
     /// let config = json_parser::new_top_level("./cider_config.json");
     /// ```
     /// This function will panic when provided with a configuration file that is not found on the host device.
-    ///  
+    ///
 
     pub fn new_top_level(filename: &str) -> TopLevelConfiguration {
-        println!("{}", filename);
+        info!("{}", filename);
         let file_contents = fs::read_to_string(filename).unwrap_or_else(|err| {
             eprintln!("{}", err);
             error!(
@@ -454,6 +454,7 @@ pub mod json_parser {
             );
             panic!("{}", err.to_string());
         });
+        debug!("{}", &file_contents);
         let parsed_data = json::parse(&file_contents).unwrap_or_else(|err| {
             eprintln!();
             error!(
