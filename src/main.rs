@@ -7,6 +7,8 @@ use cider::parsing::*;
 //arg parser
 use clap::Parser;
 
+use log::debug;
+use log::warn;
 //logger
 use log::{info, error};
 use simplelog::*;
@@ -63,16 +65,15 @@ fn main() -> std::io::Result<()> {
         let mut elapsed_times = HashMap::<OsString, Duration>::new();
         let mut recent_file_changed = get_least_time(&elapsed_times);
         loop {
-            get_files_time_elapsed_since_changed(&mut elapsed_times, source_dir)?;
+            get_files_time_elapsed_since_changed(&mut elapsed_times, source_dir, &conf.s_config.get_ignore_dirs())?;
             let checked_time = get_least_time(&elapsed_times);
             if checked_time < recent_file_changed {
                 recent_file_changed = checked_time;
-                println!("Changes detected in source directory.");
                 output_file
                     .write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
             } else {
                 recent_file_changed = checked_time;
-                info!(
+                debug!(
                     "File in watched directory most recently changed {:#?} ago.",
                     recent_file_changed
                 );
@@ -108,6 +109,7 @@ fn get_least_time(elapsed_times: &HashMap<OsString, Duration>) -> Duration {
 fn get_files_time_elapsed_since_changed<'a>(
     elapsed_times: &'a mut HashMap<OsString, Duration>,
     path: &'a Path,
+    ignore_dirs: & Option<Vec<String>>
 ) -> std::io::Result<()> {
     info!("Getting elapsed time for files within {:#?}", path);
     for entry in fs::read_dir(path)? {
@@ -137,15 +139,19 @@ fn get_files_time_elapsed_since_changed<'a>(
                     .unwrap(),
             );
         }
-        if entry.as_ref().unwrap().metadata()?.is_dir() && entry.as_ref().unwrap().file_name() != "target" && entry.as_ref().unwrap().file_name() != "node_modules" && entry.as_ref().unwrap().file_name() != "bin" && entry.as_ref().unwrap().file_name() != "obj" {
+        if entry.as_ref().unwrap().metadata()?.is_dir() && !ignore_dirs.as_ref().unwrap().contains(&String::from(&entry.as_ref().unwrap().path().as_os_str().to_str().unwrap().to_owned())) {
             get_files_time_elapsed_since_changed(
                 elapsed_times,
                 entry.as_ref().unwrap().path().as_path(),
+                ignore_dirs
             )
-            .unwrap();
+            .unwrap_or_else(|err| {
+                warn!("Error: {:#?}", err);
+                warn!("Failed to find directory {:#?} on filesystem. Please only use paths that exist.", entry.as_ref().unwrap().file_name())
+            });
         }
     }
-    // info!("Recursive directory info: {:#?}", elapsed_times.clone());
+    debug!("Times since last directory modification: {:#?}", elapsed_times.clone());
     Ok(())
 }
 

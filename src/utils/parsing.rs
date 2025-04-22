@@ -1,5 +1,4 @@
 /// Parses Json information into a program-readable configuration
-
 pub mod json_parser {
 
     use crate::utils::config::*;
@@ -13,11 +12,11 @@ pub mod json_parser {
     /// Parses a map of JSON information into a HashMap<String,String>
     ///
     /// Iterates through a JSON hashmap and parses its data into a HashMap<String,String>
-    ///
     fn parse_json_map(json: &JsonValue) -> HashMap<String, String> {
         // println!("{:#?}", json);
         let mut map = HashMap::new();
         for key_value in json.entries() {
+            debug!("{:#?}", &key_value);
             map.insert(key_value.0.to_string(), key_value.1.to_string());
         }
         // println!("{:#?}", json);
@@ -28,34 +27,43 @@ pub mod json_parser {
         map
     }
 
+    /// Parses a map of JSON information into a Vector of Condition objects
+    ///
+    /// Iterates through a JSON hashmap and parses its data into a Vec<Condition>
     fn parse_json_to_conditions(json: &JsonValue) -> Vec<Condition> {
-        // info!("{:#?}", json);
+        debug!("Converting \n{:#?} into Conditions", json);
         let mut conditions = vec![];
         for key_value in json.entries() {
-            conditions.push(Condition::new(
+            let condition = Condition::new(
                 key_value.0.to_string(),
                 key_value.1.to_string(),
-            ));
+            );
+            debug!("Condition created: {:#?}", &condition);
+            conditions.push(condition);
         }
         conditions
     }
 
+    /// Parses a map of JSON information into a Vector of Step objects
+    ///
+    /// Iterates through a JSON hashmap and parses its data into a Vec<Step>
     fn parse_json_to_steps(json: &JsonValue) -> Vec<Step> {
-        // info!("{:#?}", json);
+        debug!("Converting \n{:#} into Steps.", json);
         let mut steps = vec![];
         for key_value in json.entries() {
-            steps.push(Step::new(key_value.0.to_string(), key_value.1.to_string()));
+            let step = Step::new(key_value.0.to_string(), key_value.1.to_string());
+            debug!("Step parsed: {:#?}", &step);
+            steps.push(step);
         }
         steps
     }
 
     fn parse_json_vector(json: &JsonValue) -> Vec<String> {
-        // println!("{:#?}", json);
+        debug!("Converting \n{:#} into a String vector.", json);
         let mut vec = vec![];
         for value in json.members() {
             vec.push(value.to_string())
         }
-        // println!("{:#?}", json);
         if vec.is_empty() {
             warn!("No mappable values found in json vector {:#?}", json);
             return vec;
@@ -69,8 +77,9 @@ pub mod json_parser {
         data: &JsonValue,
     ) -> Vec<Action> {
         let mut actions = vec![];
-        for str in action_defs {
-            actions.push(parse_action(shared_config, &data[str], str));
+        for action_name in action_defs {
+            debug!("Parsing action {}", action_name);
+            actions.push(parse_action(shared_config, &data[action_name], action_name));
         }
         actions
     }
@@ -161,6 +170,33 @@ pub mod json_parser {
                         .to_string()
                 }
             },
+            {
+                if json["ignore_directories"].is_null() {
+                    shared_config.get_ignore_dirs()
+                } else {
+                    let mut ignore_dirs: Vec<String> = vec![];
+                    for dir in json["ignore_directories"].members() {
+                        if dir.as_str().unwrap().to_owned().starts_with('/') || dir.as_str().unwrap().to_string().contains(":") {
+                            ignore_dirs.push(Path::new(&dir.as_str().unwrap().to_string())
+                            .to_owned()
+                            .to_str()
+                            .unwrap()
+                            .to_owned());
+                        } else {
+                            ignore_dirs.push(RelativePath::new(&dir.as_str().unwrap().to_string())
+                                .to_path(&root)
+                                .to_str()
+                                .unwrap()
+                                .to_string());
+                        }
+                    }
+                    if !ignore_dirs.is_empty() {
+                        Some(ignore_dirs)
+                    } else {
+                        None
+                    }
+                }
+            }
         );
 
         let action_config = ActionConfig::new(
@@ -307,6 +343,33 @@ pub mod json_parser {
                         .to_string()
                 }
             },
+            {
+                if json["ignore_directories"].is_null() {
+                    shared_config.get_ignore_dirs()
+                } else {
+                    let mut ignore_dirs: Vec<String> = vec![];
+                    for dir in json["ignore_directories"].members() {
+                        if dir.as_str().unwrap().to_owned().starts_with('/') || dir.as_str().unwrap().to_string().contains(":") {
+                            ignore_dirs.push(Path::new(&dir.as_str().unwrap().to_string())
+                            .to_owned()
+                            .to_str()
+                            .unwrap()
+                            .to_owned());
+                        } else {
+                            ignore_dirs.push(RelativePath::new(&dir.as_str().unwrap().to_string())
+                                .to_path(&root)
+                                .to_str()
+                                .unwrap()
+                                .to_string());
+                        }
+                    }
+                    if !ignore_dirs.is_empty() {
+                        Some(ignore_dirs)
+                    } else {
+                        None
+                    }
+                }
+            }
         );
 
         let pipeline_config = PipelineConfig::new(
@@ -341,9 +404,7 @@ pub mod json_parser {
         Pipeline::new(new_shared_config, pipeline_config)
     }
 
-    /**
-     *
-     */
+
     fn parse_shared_config(json: &JsonValue) -> ShareableConfiguration {
         let root = current_dir().unwrap();
         let backend = {
@@ -353,7 +414,6 @@ pub mod json_parser {
                 json["backend"].to_string()
             }
         };
-
         let new_shared_config = ShareableConfiguration::new(
             {
                 if json["metadata"].is_null() {
@@ -394,12 +454,14 @@ pub mod json_parser {
             backend,
             {
                 if json["output_directory"].is_null() {
+                    debug!("{}", "No output directory specified. Defaulting to output dir ./dist/cider/");
                     RelativePath::new("./dist/cider/")
                         .to_path(&root)
                         .to_str()
                         .unwrap()
                         .to_string()
                 } else {
+                    debug!("{}{}", "Output directory specified: ", &json["output_directory"]);
                     RelativePath::new(&json["output_directory"].to_string())
                         .to_path(&root)
                         .to_str()
@@ -428,7 +490,35 @@ pub mod json_parser {
                         .to_string()
                 }
             },
+            {
+                if json["ignore_directories"].is_null() {
+                    None
+                } else {
+                    let mut ignore_dirs: Vec<String> = vec![];
+                    for dir in json["ignore_directories"].members() {
+                        if dir.as_str().unwrap().to_owned().starts_with('/') || dir.as_str().unwrap().to_string().contains(":") {
+                            ignore_dirs.push(Path::new(&dir.as_str().unwrap().to_string())
+                            .to_owned()
+                            .to_str()
+                            .unwrap()
+                            .to_owned());
+                        } else {
+                            ignore_dirs.push(RelativePath::new(&dir.as_str().unwrap().to_string())
+                                .to_path(&root)
+                                .to_str()
+                                .unwrap()
+                                .to_string());
+                        }
+                    }
+                    if !ignore_dirs.is_empty() {
+                        Some(ignore_dirs)
+                    } else {
+                        Some(vec![String::from("./dist"),String::from("./target"),String::from("./.github"),String::from("./.git"),String::from("./metrics")])
+                    }
+                }
+            }
         );
+        debug!("Created new shared config: \n{:#?}", &new_shared_config);
         new_shared_config
     }
 
@@ -443,7 +533,6 @@ pub mod json_parser {
     /// ```
     /// This function will panic when provided with a configuration file that is not found on the host device.
     ///
-
     pub fn new_top_level(filename: &str) -> TopLevelConfiguration {
         info!("{}", filename);
         let file_contents = fs::read_to_string(filename).unwrap_or_else(|err| {

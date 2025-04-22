@@ -13,8 +13,9 @@
    7. [backend](#backend)
    8. [output_directory](#output_directory)
    9. [source_directory](#source_directory)
-   10. [pipelines](#pipelines)
-   11. [actions](#actions)
+   10. [ignore_directories](#ignore_directories)
+   11. [pipelines](#pipelines)
+   12. [actions](#actions)
 3. **[Pipeline Configuration](#pipeline-configuration)**
    1. [conditions](#conditions)
    2. [actions](#actions-1)
@@ -188,7 +189,7 @@ Example:
 #### source_directory*
 
 - Specifies the "root" directory for [Action](#action-configuration) scripts to be executed within.
-- This supports both relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source](#source) setting. These issues will be looked into and resolved in the future.
+- This supports both relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source_directory](#source_directory) setting. These issues will be looked into and resolved in the future.
 - Defaulted to ./
 - This can also be used if you want to have CIder installed to a different directory from the project you are developing.
 
@@ -197,6 +198,21 @@ Example:
 ```json
 {
     "source_directory": "/home/users/jsmith/dev/project_1/src"
+}
+```
+
+#### ignore_directories*
+
+- An array of directories that should not be copied into a docker image when running with the docker [backend](#backend).
+- This supports both relative and absolute paths but there have been some issues with how CIder handles directories both in the case of this setting and the [source_driectory](#source_directory) setting. These issues will be looked into and resolved in the future.
+- This is set to ["./dist", "./targets", "./.github", "./.git", "./metrics"] by default.
+- This setting is not yet implemented!
+
+Example:
+
+```json
+{
+    "ignore_directories": ["./dist", "./targets", "./logs"]
 }
 ```
 

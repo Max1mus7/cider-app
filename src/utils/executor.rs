@@ -41,6 +41,22 @@ fn exec_action(action: &Action) -> Vec<String> {
     }
 }
 
+fn generate_dockerignore(info: &ExecInfo) -> File {
+    let mut file = File::create(format!("{}/.dockerignore", &info.source)).unwrap_or_else(|_| {
+            error!("There was an issue creating a dockerignore for your docker backend.\nMake sure there are no files in your project named \".dockerignore\".");
+            panic!("There was an issue regarding your dockerignore. Please check your logs for more information.");
+        }
+    );
+    let mut ignored_dirs = String::new();
+    for dir in info.ignore_dirs.as_ref().unwrap() {
+        ignored_dirs += format!("{}\r\n",dir).as_str();
+    }
+    file.write_fmt(format_args!("{}", ignored_dirs)).unwrap_or_else(|_| {
+        error!("There was an issue creating a dockerignore for your docker backend.\nMake sure there are no files in your project named \".dockerignore\".");
+        panic!("There was an issue regarding your dockerignore. Please check your logs for more information.");
+    });
+    file
+}
 fn generate_dockerfile(info: &ExecInfo) -> File {
     let mut file = File::create(format!("{}/Dockerfile", info.source)).unwrap_or_else(|_| {
             error!("There was an issue creating a dockerfile for your docker backend.\nMake sure there are no files in your project named \"DOCKERFILE\".");
@@ -80,7 +96,7 @@ fn run_batch_script(setup: &ExecInfo) -> Vec<String> {
         let mut command = Command::new("cmd");
         for step in &setup.manual {
             all_steps.append(&mut script_setup(&mut outputs, step));
-            if &step.get_script() != &setup.manual.last().unwrap_or_else(|| {
+            if step.get_script() != setup.manual.last().unwrap_or_else(|| {
                 error!("{:#?}", "Failed to parse the final Step");
                 panic!("{:#?}", "Failed to parse the final Step");
             }).get_script() {
@@ -105,6 +121,7 @@ fn run_with_docker(setup: ExecInfo) -> Vec<String> {
     let mut setup = setup;
     let mut outputs = vec![];
     image_setup(&mut setup, &mut outputs);
+    generate_dockerignore(&setup);
     generate_dockerfile(&setup);
 
     let csv_headers = vec!["Image_pull_time", "Image_remove_time", "Image_build_time"];
@@ -202,7 +219,7 @@ fn run_bash_scripts(setup: &ExecInfo) -> Vec<String> {
         let mut command = Command::new("cmd");
         for step in &setup.manual {
             all_steps.append(&mut script_setup(&mut outputs, step));
-            if &step.get_script() != &setup.manual.last().unwrap_or_else(|| {
+            if step.get_script() != setup.manual.last().unwrap_or_else(|| {
                 error!("{:#?}", "Failed to parse the final Step");
                 panic!("{:#?}", "Failed to parse the final Step");
             }).get_script() {
@@ -275,6 +292,8 @@ pub struct ExecInfo {
     pub retries: i8,
     /// See [`crate::utils::config::ActionConfig`] for more information.
     pub allowed_failure: bool,
+    /// See [`crate::utils::config::ShareableConfiguration`] for more information.
+    pub ignore_dirs: Option<Vec<String>>
 }
 
 /**
@@ -295,6 +314,7 @@ impl ExecInfo {
             manual: action.action_config.get_manual().to_vec(),
             retries: *action.action_config.get_retries(),
             allowed_failure: *action.action_config.get_allowed_failure(),
+            ignore_dirs: action.shared_config.get_ignore_dirs()
         }
     }
 }
