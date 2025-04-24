@@ -37,7 +37,7 @@ jobs:
       - name: Build Documentation
         run: cargo doc --workspace --no-deps
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v1
         with:
           # upload release docs directory
           path: './target/doc'
