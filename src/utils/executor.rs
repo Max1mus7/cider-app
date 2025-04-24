@@ -4,7 +4,7 @@
 use crate::utils::config::{Action, Condition, Step};
 use chrono::Utc;
 use csv::Writer;
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 use relative_path::RelativePath;
 /**
  * Module used to clean input and execute actions
@@ -48,8 +48,14 @@ fn generate_dockerignore(info: &ExecInfo) -> File {
         }
     );
     let mut ignored_dirs = String::new();
-    for dir in info.ignore_dirs.as_ref().unwrap() {
-        ignored_dirs += format!("{}\r\n",dir).as_str();
+    if cfg!(windows){
+        for dir in info.ignore_dirs.as_ref().unwrap() {
+            ignored_dirs += format!("{}\r\n",dir.rsplit_once(".\\").unwrap().1).as_str();
+        }
+    } else{
+        for dir in info.ignore_dirs.as_ref().unwrap() {
+            ignored_dirs += format!("{}\r\n",dir.rsplit_once("./").unwrap().1).as_str();
+        }
     }
     file.write_fmt(format_args!("{}", ignored_dirs)).unwrap_or_else(|_| {
         error!("There was an issue creating a dockerignore for your docker backend.\nMake sure there are no files in your project named \".dockerignore\".");
@@ -383,6 +389,7 @@ fn docker_setup_windows<'a>(cmd: &'a mut Command, info: &ExecInfo, inherit: bool
 
 fn docker_clean_unix(cmd: &mut Command, inherit: bool) -> &mut Command {
     cmd.arg("-c").arg("docker image rm -f cider-image");
+    debug!("Running {:#?}",cmd);
     if inherit {
         return set_output_inherit(cmd);
     }
@@ -391,6 +398,7 @@ fn docker_clean_unix(cmd: &mut Command, inherit: bool) -> &mut Command {
 
 fn docker_clean_windows(cmd: &mut Command, inherit: bool) -> &mut Command {
     cmd.args(vec!["/C", "docker", "image", "rm", "-f", "cider-image"]);
+    debug!("Running {:#?}",cmd);
     if inherit {
         return set_output_inherit(cmd);
     }
@@ -399,6 +407,7 @@ fn docker_clean_windows(cmd: &mut Command, inherit: bool) -> &mut Command {
 
 fn docker_build_unix<'a>(cmd: &'a mut Command, info: &ExecInfo, inherit: bool) -> &'a mut Command {
     cmd.arg("-c").arg("docker build -t cider-image .").current_dir(&info.source);
+    debug!("Running {:#?}",cmd);
     if inherit {
         return set_output_inherit(cmd);
     }
@@ -406,7 +415,8 @@ fn docker_build_unix<'a>(cmd: &'a mut Command, info: &ExecInfo, inherit: bool) -
 }
 
 fn docker_build_windows<'a>(cmd: &'a mut Command, info: &ExecInfo, inherit: bool) -> &'a mut Command {
-    cmd.args(["/C", "docker", "build", "-t", "cider-image", "."]).current_dir(&info.source);
+    cmd.args(["/C", "docker", "build", "-t", "cider-image", ".", "--no-cache"]).current_dir(&info.source);
+    debug!("Running {:#?}",cmd);
     if inherit {
         return set_output_inherit(cmd);
     }

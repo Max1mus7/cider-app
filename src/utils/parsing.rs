@@ -348,6 +348,7 @@ pub mod json_parser {
                     shared_config.get_ignore_dirs()
                 } else {
                     let mut ignore_dirs: Vec<String> = vec![];
+                    //TODO: Error when value exists but is not a directory.
                     for dir in json["ignore_directories"].members() {
                         if dir.as_str().unwrap().to_owned().starts_with('/') || dir.as_str().unwrap().to_string().contains(":") {
                             ignore_dirs.push(Path::new(&dir.as_str().unwrap().to_string())
@@ -495,6 +496,7 @@ pub mod json_parser {
                     None
                 } else {
                     let mut ignore_dirs: Vec<String> = vec![];
+                    //TODO: Error when value exists but is not a directory.
                     for dir in json["ignore_directories"].members() {
                         if dir.as_str().unwrap().to_owned().starts_with('/') || dir.as_str().unwrap().to_string().contains(":") {
                             ignore_dirs.push(Path::new(&dir.as_str().unwrap().to_string())
