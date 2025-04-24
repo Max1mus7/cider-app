@@ -1,4 +1,5 @@
-*target*
-*dist*
-*metrics*
-*node_modules*
+dist
+target
+.git
+.github
+metrics

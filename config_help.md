@@ -11,21 +11,25 @@
    5. [language](#language)
    6. [image](#image)
    7. [backend](#backend)
-   8. [output](#output)
-   9. [source](#source)
-   10. [pipelines](#pipelines)
-   11. [actions](#actions)
+   8. [output_directory](#output_directory)
+   9. [source_directory](#source_directory)
+   10. [ignore_directories](#ignore_directories)
+   11. [pipelines](#pipelines)
+   12. [actions](#actions)
 3. **[Pipeline Configuration](#pipeline-configuration)**
    1. [conditions](#conditions)
    2. [actions](#actions-1)
    3. [requires](#requires)
+   4. [ignore_directories](#ignore_directories)
 4. **[Action Configuration](#action-configuration)**
    1. [conditions](#conditions-1)
    2. [retries](#retries)
    3. [allowed_failure](#allowed_failure)
    4. **[manual](#manual)**
-5. **[References](#references)**
-6. **[Additional Notes](#additional-notes)**
+   5. [ignore_directories](#ignore_directories)
+5. **[Examples](#examples)**
+6. **[References](#references)**
+7. **[Additional Notes](#additional-notes)**
 
 ## Overview
 
@@ -168,34 +172,49 @@ Example:
 
 ***
 
-#### output*
+#### output_directory*
 
 - Specifies the output directory that CIder will place logs into.
-- This supports relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source](#source) setting. These issues will be looked into and resolved in the future.
+- This supports relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source_directory](#source_directory) setting. These issues will be looked into and resolved in the future.
 - Default value is `./dist/cider`
 
 Example:
 
 ```json
 {
-    "output": "./output_logs"
+    "output_directory": "./output_logs"
 }
 ```
 
 ***
 
-#### source*
+#### source_directory*
 
 - Specifies the "root" directory for [Action](#action-configuration) scripts to be executed within.
-- This supports both relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source](#source) setting. These issues will be looked into and resolved in the future.
-- Defaulted to ./src
+- This supports both relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source_directory](#source_directory) setting. These issues will be looked into and resolved in the future.
+- Defaulted to ./
 - This can also be used if you want to have CIder installed to a different directory from the project you are developing.
 
 Example:
 
 ```json
 {
-    "source": "/home/users/jsmith/dev/project_1/src"
+    "source_directory": "/home/users/jsmith/dev/project_1/src"
+}
+```
+
+#### ignore_directories*
+
+- An array of directories that should not be copied into a docker image when running with the docker [backend](#backend).
+- This supports both relative and absolute paths but there have been some issues with how CIder handles directories both in the case of this setting and the [source_directory](#source_directory) setting. These issues will be looked into and resolved in the future.
+- This is set to ["./dist", "./targets", "./.github", "./.git", "./metrics"] by default.
+- This setting is not yet implemented!
+
+Example:
+
+```json
+{
+    "ignore_directories": ["./dist", "./targets", "./logs"]
 }
 ```
 
@@ -320,7 +339,7 @@ Example:
 
 ### Overview of Action Configurations
 
-Action configurations are the third-and-final tier of the CIder configuration, with the ability to execute scripts detailed within them. So as to reduce the amount of boilerplate json code used within a configuration file, Actions inherit settings from the two upper tiers (see shared keywords outlined in [Top-Level Configuration](#top-level-configuration)). Action Configurations also hold some action-specific settings.
+Action configurations are the third-and-final tier of the CIder configuration, with the ability to execute scripts detailed within them. Though a single Action may have multiple steps defined within it (see [manual](#manual)), the intent is for every action to take place within the same shell session. So as to reduce the amount of boilerplate json code used within a configuration file, Actions inherit settings from the two upper tiers (see shared keywords outlined in [Top-Level Configuration](#top-level-configuration)). Action Configurations also hold some action-specific settings.
 
 The following information details the different keywords that can be used in a cider configuration file as well as their purposes.
 
@@ -392,6 +411,117 @@ Example:
 ```
 
 ***
+
+## Examples
+
+> A configuration using docker to run a cargo build:
+
+```json
+{
+    "title": "CIder 0.1 Example Docker Config",
+    "operating_system": "Windows",
+    "backend": "Docker",
+    "pipelines": ["Test_Docker"],
+    "Test_Docker": {
+        "image": "rust:1.65.0",
+        "actions": ["Run_Tests"],
+        "Run_Tests": {
+            "manual": {
+                "step_1": "rustc --version",
+                "step_2": "cargo build"
+            },
+            "source_directory": "./"
+        },
+        "Consolidate_Reports": {
+            "backend": "bash",
+            "manual": {
+                "combine_csvs": "python ./tests/pyscripts/accumulate_tests.py"
+            }
+        }
+    },
+    "source_directory": "./src"
+}
+```
+
+> An example running cargo test via bash then consolidating runtime metrics using a python script:
+
+```json
+{
+    "title": "CIder 0.1 Example Docker Config",
+    "backend": "bash",
+    "pipelines": ["Test_Program"],
+    "Test_Program": {
+        "actions": ["Run_Tests"],
+        "Run_Tests": {
+            "manual": {
+                "step_1": "cargo test"
+            }
+        },
+        "Consolidate_Reports": {
+            "manual": {
+                "combine_csvs": "python ./tests/pyscripts/accumulate_tests.py"
+            }
+        }
+    }
+}
+```
+
+> A multi-project, multi-language workflow:
+
+```json
+{
+    "title": "CIder 0.1 Example Config",
+    "backend": "bash",
+    "pipelines": ["Test_Compiled_Programs", "Test_Interpreted_Programs"],
+    "image": "rust:1.65",
+    "Test_Compiled_Programs": {
+        "actions": ["Run_Tests_Rs", "Run_Tests_Rb", "Run_Tests_Java", "Run_Tests_CSharp"],
+        "Run_Tests_Rs": {
+            "manual": {
+                "build": "cd src/rust && cargo build",
+                "test": "cd src/rust && cargo run"
+            }
+        },
+        "Run_Tests_Rb": {
+            "image": "ruby:3.1",
+            "manual": {
+                "test": "ruby ./src/ruby/test.rb"
+            }
+        },
+        "Run_Tests_Java": {
+            "image": "openjdk:18.0",
+            "manual": {
+                "build": "cd src/java && javac Test.java",
+                "test": "cd src/java && java Test"
+            }
+        },
+        "Run_Tests_CSharp": {
+            "image": "mcr.microsoft.com/dotnet/aspnet:6.0",
+            "manual": {
+                "test": "cd src/dotnet && dotnet run"
+            }
+        }
+    },
+    "Test_Interpreted_Programs": {
+        "actions": ["Run_Tests_Py", "Run_Tests_JS"],
+        "Run_Tests_Py": {
+            "image": "python:3.9",
+            "manual": {
+                "test": "python ./src/python/test.py"
+            }
+        },
+        "Run_Tests_JS": {
+            "image": "node:latest",
+            "manual": {
+                "build": "cd src/javascript && npm i",
+                "test": "node ./src/javascript/test.js"
+            }
+        }
+
+    },
+    "source_directory": "./"
+}
+```
 
 ## References
 

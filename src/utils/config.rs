@@ -1,4 +1,4 @@
-use log::{info, warn};
+use log::{debug, info, warn};
 use std::collections::HashMap;
 
 /// Contains information that can be shared between levels of a configuration
@@ -51,8 +51,12 @@ pub struct ShareableConfiguration {
     output: String,
 
     /// Source directory required
-    /// defaulted to ./src
+    /// defaulted to ./
     source: String,
+
+    /// Ignored directories not required
+    /// defaulted to ["./dist", "./targets", "./.github", "./.git"]
+    ignore_dirs: Option<Vec<String>>
 }
 
 impl ShareableConfiguration {
@@ -60,14 +64,14 @@ impl ShareableConfiguration {
     ///
     /// Some values are completely optional, and will either be defaulted or set as None if not provided.
     /// Note that some required information is set by default in [`crate::utils::parsing::json_parser`] if it is not explicitly defaulted here.
-    /// Specifically, output, and source are defaulted to ./dist/cider and ./src, respectively.
+    /// Specifically, output, and source are defaulted to ./dist/cider and ./, respectively.
     ///
     /// # Examples:
     /// Basic usage:
     /// ```
     /// use cider::config::ShareableConfiguration;
     ///
-    /// let s = ShareableConfiguration::new(None, None, None, "Rust".to_string(), None, "bash".to_string(), "./dist/cider".to_string(), "./src".to_string());
+    /// let s = ShareableConfiguration::new(None, None, None, "Rust".to_string(), None, "bash".to_string(), "./dist/cider".to_string(), "./".to_string(), None);
     /// ```
     ///
     pub fn new(
@@ -79,6 +83,7 @@ impl ShareableConfiguration {
         backend: String,
         output: String,
         source: String,
+        ignore_dirs: Option<Vec<String>>
     ) -> Self {
         let image = {
             if !backend.to_lowercase().eq("docker") {
@@ -96,6 +101,7 @@ impl ShareableConfiguration {
             backend,
             output,
             source,
+            ignore_dirs
         }
     }
 
@@ -119,7 +125,7 @@ impl ShareableConfiguration {
     pub fn get_metadata(&self) -> Option<HashMap<String, String>> {
         match &self.metadata {
             Some(metadata) => {
-                info!("Metadata successfully retrieved: {:#?}", &metadata);
+                debug!("Metadata successfully retrieved: {:#?}", &metadata);
                 Some(metadata.to_owned())
             }
             None => {
@@ -171,7 +177,7 @@ impl ShareableConfiguration {
     pub fn get_title(&self) -> Option<String> {
         match &self.title {
             Some(title) => {
-                info!("Title successfully retrieved: {:?}", &title);
+                debug!("Title successfully retrieved: {:?}", &title);
                 Some(title.to_string())
             }
             None => {
@@ -221,7 +227,7 @@ impl ShareableConfiguration {
     pub fn get_tags(&self) -> Option<HashMap<String, String>> {
         match &self.tags {
             Some(tags) => {
-                info!("Tags successfully retrieved: {:?}", &tags);
+                debug!("Tags successfully retrieved: {:?}", &tags);
                 Some(tags.to_owned())
             }
             None => {
@@ -312,7 +318,7 @@ impl ShareableConfiguration {
     pub fn get_image(&self) -> Option<String> {
         match &self.image {
             Some(image) => {
-                info!("Image successfully retrieved: {:?}", &image);
+                debug!("Image successfully retrieved: {:?}", &image);
                 Some(image.to_string())
             }
             None => {
@@ -400,7 +406,7 @@ impl ShareableConfiguration {
     /// let m = s.s_config.get_output();
     /// ```
     pub fn get_output(&self) -> &str {
-        info!(
+        debug!(
             "Output directory successfully retrieved: {:?}",
             &self.output
         );
@@ -440,7 +446,7 @@ impl ShareableConfiguration {
     /// let m = s.s_config.get_source();
     /// ```
     pub fn get_source(&self) -> &str {
-        info!(
+        debug!(
             "Source directory successfully retrieved: {:?}",
             &self.source
         );
@@ -455,7 +461,7 @@ impl ShareableConfiguration {
     ///
     /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
     /// let mut s = json_parser::new_top_level("./cider_config.json");
-    /// let src = "./src".to_string();
+    /// let src = "./c".to_string();
     ///
     /// s.s_config.set_source(src.clone());
     ///
@@ -464,6 +470,56 @@ impl ShareableConfiguration {
     pub fn set_source(&mut self, new_source: String) {
         info!("New source directory set: {}", new_source);
         self.backend = new_source;
+    }
+
+    /// Returns ignored directories
+    ///
+    /// Returns the ignored directories associated with a [`ShareableConfiguration`], and logs whether the retrieval was successful
+    /// or of a None type.
+    ///
+    /// # Warnings
+    /// Will provide the user with a warning if metadata obtained returns a None type.
+    ///
+    /// # Examples:
+    /// ```
+    /// use cider::parsing::json_parser;
+    ///
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let s = json_parser::new_top_level("./cider_config.json");
+    ///
+    /// let m = s.s_config.get_tags();
+    /// ```
+    pub fn get_ignore_dirs(&self) -> Option<Vec<String>> {
+        match &self.ignore_dirs {
+            Some(ignore_dirs) => {
+                debug!("Ignored directories successfully retrieved: {:?}", &ignore_dirs);
+                Some(ignore_dirs.to_owned())
+            }
+            None => {
+                let res_str = "No directories are configured to be ignored.";
+                info!("{}", res_str);
+                None
+            }
+        }
+    }
+
+    ///Allows the tags of a [`ShareableConfiguration`] to be changed
+    ///
+    /// # Examples:
+    /// ```
+    /// use cider::parsing::json_parser;
+    ///use std::collections::HashMap;
+    /// //returns a TopLevelConfiguration, which contains a ShareableConfiguration
+    /// let mut s = json_parser::new_top_level("./cider_config.json");
+    /// let mut hm = HashMap::new();
+    /// hm.insert("some tag".to_string(), "some data".to_string());
+    ///
+    /// let m = s.s_config.set_tags(hm.clone());
+    ///
+    /// assert_eq!(s.s_config.get_tags().unwrap(), hm);
+    /// ```
+    pub fn set_ignore_dirs(&mut self, new_ignore_dirs: Vec<String>) {
+        self.ignore_dirs = Some(new_ignore_dirs);
     }
 }
 
@@ -536,8 +592,8 @@ impl TopLevelConfiguration {
     /// let m = t.get_pipeline_defs();
     /// ```
     pub fn get_pipeline_defs(&self) -> &Vec<String> {
-        info!(
-            "Pipelines successfully retrieved from configuration: {:#?}",
+        debug!(
+            "Pipelines successfully retrieved from configuration: \n{:#?}",
             &self.pipeline_defs
         );
         &self.pipeline_defs
@@ -576,7 +632,7 @@ impl TopLevelConfiguration {
     /// let m = t.get_pipelines();
     /// ```
     pub fn get_pipelines(&self) -> &Vec<Pipeline> {
-        // info!("Pipelines successfully retrieved: \n{:#?}", &self.pipelines);
+        debug!("Pipelines successfully retrieved: \n{:#?}", &self.pipelines);
         &self.pipelines
     }
 
@@ -614,7 +670,7 @@ impl TopLevelConfiguration {
     /// let m = t.get_action_defs();
     /// ```
     pub fn get_action_defs(&self) -> &Vec<String> {
-        info!(
+        debug!(
             "Actions successfully retrieved from configuration: {:#?}",
             &self.action_defs
         );
@@ -653,7 +709,7 @@ impl TopLevelConfiguration {
     ///
     /// let m = t.get_action_defs();
     pub fn get_actions(&self) -> &Vec<Action> {
-        // info!("Actions successfully retrieved: {:#?}", &self.actions);
+        debug!("Actions successfully retrieved: {:#?}", &self.actions);
         &self.actions
     }
 
@@ -772,7 +828,7 @@ impl ActionConfig {
 
     /// Gets the retries within an [`ActionConfig`]
     pub fn get_retries(&self) -> &i8 {
-        info!("Retry count successfully acquired: {} ", &self.retries);
+        debug!("Retry count successfully retrieved: {} ", &self.retries);
         &self.retries
     }
 
@@ -784,8 +840,8 @@ impl ActionConfig {
 
     /// Returns whether or not the [`Action`] is allowed to fail.
     pub fn get_allowed_failure(&self) -> &bool {
-        info!(
-            "Failure allowance successfully acquired: {} ",
+        debug!(
+            "Failure allowance successfully retrieved: {} ",
             &self.allowed_failure
         );
         &self.allowed_failure
@@ -793,19 +849,19 @@ impl ActionConfig {
 
     /// Changes the conditions within an [`ActionConfig`]
     pub fn set_allowed_failure(&mut self, new_allowed_failure: bool) {
-        info!("New failure allowance set: {:?}", &new_allowed_failure);
+        debug!("New failure allowance set: {:?}", &new_allowed_failure);
         self.allowed_failure = new_allowed_failure;
     }
 
     /// Returns the [`Step`]s to be executed by the program.
     pub fn get_manual(&self) -> &Vec<Step> {
-        info!("Manual successfully retrieved: {:#?}", &self.manual);
+        debug!("Manual successfully retrieved: \n{:#?}\n", &self.manual);
         &self.manual
     }
 
     /// Changes the execution of [`Step`]s within an [`ActionConfig`]
     pub fn set_manual(&mut self, new_manual: Vec<Step>) {
-        info!("New manual set: {:#?}", new_manual);
+        debug!("New manual set: {:#?}", new_manual);
         self.manual = new_manual;
     }
 }
@@ -866,12 +922,7 @@ impl PipelineConfig {
         requires: Option<Vec<String>>,
     ) -> Self {
         let has_run = false;
-        let requires = match requires {
-            Some(requires) => requires,
-            None => {
-                vec![]
-            }
-        };
+        let requires = requires.unwrap_or_default();
         Self {
             conditions,
             action_defs,
@@ -885,7 +936,7 @@ impl PipelineConfig {
     pub fn get_conditions(&self) -> Result<&Vec<Condition>, &'static str> {
         match &self.conditions {
             Some(conditions) => {
-                info!("Conditions successfully retrieved: {:#?}", &conditions);
+                debug!("Conditions successfully retrieved: {:#?}", &conditions);
                 Ok(conditions)
             }
             None => {
@@ -898,7 +949,7 @@ impl PipelineConfig {
 
     /// Allows the [`Condition`]s for a [`PipelineConfig`] to be changed.
     pub fn set_conditions(&mut self, new_conditions: Vec<Condition>) {
-        info!("New conditions set: {:#?}", new_conditions);
+        debug!("New conditions set: {:#?}", new_conditions);
         self.conditions = Some(new_conditions);
     }
 
