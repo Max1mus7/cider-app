@@ -206,7 +206,7 @@ Example:
 #### ignore_directories*
 
 - An array of directories that should not be copied into a docker image when running with the docker [backend](#backend).
-- This supports both relative and absolute paths but there have been some issues with how CIder handles directories both in the case of this setting and the [source_driectory](#source_directory) setting. These issues will be looked into and resolved in the future.
+- This supports both relative and absolute paths but there have been some issues with how CIder handles directories both in the case of this setting and the [source_directory](#source_directory) setting. These issues will be looked into and resolved in the future.
 - This is set to ["./dist", "./targets", "./.github", "./.git", "./metrics"] by default.
 - This setting is not yet implemented!
 
