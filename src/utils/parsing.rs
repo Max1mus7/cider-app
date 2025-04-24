@@ -103,7 +103,8 @@ pub mod json_parser {
                 json["backend"].to_string()
             }
         };
-
+        
+        
         let new_shared_config = ShareableConfiguration::new(
             {
                 if json["metadata"].is_null() {

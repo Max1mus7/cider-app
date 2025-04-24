@@ -1,0 +1,18 @@
+{
+    "title": "CIder 0.1 Example Docker Config",
+    "backend": "bash",
+    "pipelines": ["Test_Program"],
+    "Test_Program": {
+        "actions": ["Run_Tests"],
+        "Run_Tests": {
+            "manual": {
+                "step_1": "cargo test"
+            }
+        },
+        "Consolidate_Reports": {
+            "manual": {
+                "combine_csvs": "python ./tests/pyscripts/accumulate_tests.py"
+            }
+        }
+    }
+}
