@@ -20,11 +20,13 @@
    1. [conditions](#conditions)
    2. [actions](#actions-1)
    3. [requires](#requires)
+   4. [ignore_directories](#ignore_directories)
 4. **[Action Configuration](#action-configuration)**
    1. [conditions](#conditions-1)
    2. [retries](#retries)
    3. [allowed_failure](#allowed_failure)
    4. **[manual](#manual)**
+   5. [ignore_directories](#ignore_directories)
 5. **[Examples](#examples)**
 6. **[References](#references)**
 7. **[Additional Notes](#additional-notes)**
