@@ -20,11 +20,13 @@
    1. [conditions](#conditions)
    2. [actions](#actions-1)
    3. [requires](#requires)
+   4. [ignore_directories](#ignore_directories)
 4. **[Action Configuration](#action-configuration)**
    1. [conditions](#conditions-1)
    2. [retries](#retries)
    3. [allowed_failure](#allowed_failure)
    4. **[manual](#manual)**
+   5. [ignore_directories](#ignore_directories)
 5. **[Examples](#examples)**
 6. **[References](#references)**
 7. **[Additional Notes](#additional-notes)**
@@ -204,7 +206,7 @@ Example:
 #### ignore_directories*
 
 - An array of directories that should not be copied into a docker image when running with the docker [backend](#backend).
-- This supports both relative and absolute paths but there have been some issues with how CIder handles directories both in the case of this setting and the [source_driectory](#source_directory) setting. These issues will be looked into and resolved in the future.
+- This supports both relative and absolute paths but there have been some issues with how CIder handles directories both in the case of this setting and the [source_directory](#source_directory) setting. These issues will be looked into and resolved in the future.
 - This is set to ["./dist", "./targets", "./.github", "./.git", "./metrics"] by default.
 - This setting is not yet implemented!
 

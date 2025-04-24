@@ -6,6 +6,7 @@
     "Test_Docker": {
         "image": "rust:1.65.0",
         "actions": ["Run_Tests"],
+        "backend": "docker",
         "Run_Tests": {
             "manual": {
                 "step_1": "rustc --version",
