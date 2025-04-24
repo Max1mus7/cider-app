@@ -13,5 +13,5 @@ Check out the [docs for this repo](https://max1mus7.github.io/cider-app/cider/)!
 
 ## Config Documentation
 
-Check out [how to design your own config!](https://github.com/Max1mus7/cider-app/blob/1.0.2-updates/config_help.md)
+Check out [how to design your own config!](https://github.com/Max1mus7/cider-app/blob/dev/config_help.md)
 Examples coming soon!
