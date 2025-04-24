@@ -20,4 +20,5 @@ metrics/*
 # Remove config files, create seperate repository(?) for example configurations.
 *.json
 
-*.lock
+!cider_config.json
+
