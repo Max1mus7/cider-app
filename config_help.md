@@ -195,8 +195,6 @@ Example:
 - Defaulted to ./
 - This can also be used if you want to have CIder installed to a different directory from the project you are developing.
 
-Example:
-
 ```json
 {
     "source_directory": "/home/users/jsmith/dev/project_1/src"
