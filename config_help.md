@@ -193,7 +193,7 @@ Example:
 - Specifies the "root" directory for [Action](#action-configuration) scripts to be executed within.
 - This supports both relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source_directory](#source_directory) setting. These issues will be looked into and resolved in the future.
 - Defaulted to ./
-
+- This can also be used if you want to have CIder installed to a different directory from the project you are developing.
 
 ```json
 {
