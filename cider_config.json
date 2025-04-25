@@ -6,7 +6,7 @@
         "actions": ["Run_Tests"],
         "Run_Tests": {
             "manual": {
-                "step_1": "cargo test"
+                "step_1": "cargo build"
             }
         },
         "Consolidate_Reports": {

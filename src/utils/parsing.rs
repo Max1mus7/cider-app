@@ -103,8 +103,6 @@ pub mod json_parser {
                 json["backend"].to_string()
             }
         };
-        
-        
         let new_shared_config = ShareableConfiguration::new(
             {
                 if json["metadata"].is_null() {
@@ -494,7 +492,14 @@ pub mod json_parser {
             },
             {
                 if json["ignore_directories"].is_null() {
-                    None
+                    Some(vec![
+                        RelativePath::new("./dist").to_path(&root).to_str().unwrap().to_string(),
+                        RelativePath::new("./metrics").to_path(&root).to_str().unwrap().to_string(),
+                        RelativePath::new("./target").to_path(&root).to_str().unwrap().to_string(),
+                        RelativePath::new("./.git").to_path(&root).to_str().unwrap().to_string(),
+                        RelativePath::new("./.github").to_path(&root).to_str().unwrap().to_string(),
+                        ]
+                    )
                 } else {
                     let mut ignore_dirs: Vec<String> = vec![];
                     //TODO: Error when value exists but is not a directory.

@@ -4,15 +4,13 @@
     "backend": "batch",
     "pipelines": ["Test_Docker"],
     "Test_Docker": {
-        "image": "rust:1.65.0",
+        "image": "rust:latest",
         "actions": ["Run_Tests"],
         "backend": "docker",
         "Run_Tests": {
             "manual": {
-                "step_1": "rustc --version",
                 "step_2": "cargo build"
-            },
-            "source_directory": "./"
+            }
         },
         "Consolidate_Reports": {
             "backend": "bash",
@@ -20,6 +18,5 @@
                 "combine_csvs": "python ./tests/pyscripts/accumulate_tests.py"
             }
         }
-    },
-    "source_directory": "./src"
+    }
 }

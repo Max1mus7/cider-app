@@ -12,7 +12,7 @@ metrics/*
 
 #/target
 Dockerfile
-# .dockerignore
+.dockerignore
 
 .dist
 
