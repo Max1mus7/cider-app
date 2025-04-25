@@ -5,7 +5,7 @@
 ### Logging
 
 - Warning logs no longer show reduntant "Image cannot be set if docker is not the backend." warnings.
-- Recursive file change information is no longer logged. (Previously logged at [Info] level.)
+- Recursive file change information is no longer logged. (Previously logged at `Info` level.)
   - There is no immediate plan for this to return, however if a use case arises it may be reinstated, albeit reworked.
 - `main_test.txt` file name changed to `cider_output.txt` for increased clarity.
 
@@ -28,7 +28,7 @@
 #### Docker
 
 - Improved `docker` build times(testing times).
-  - As it stands, docker build takes a long time to work with package managers (most notably cargo and npm). As a result,  
+  - As it stands, docker build takes a long time to work with package managers (most notably cargo and npm).
 - The source directory specifed on an action within a config file should be considered the root directory for Steps to execute commands in.
   - Currently, this is the directory which `cider.exe` was run from.
   - If not otherwise specified via configuration, the source directory for actions  is `cwd(or pwd for windows)/src`.

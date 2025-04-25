@@ -1,11 +1,12 @@
 {
     "title": "CIder 0.1 Example Docker Config",
     "operating_system": "Windows",
-    "backend": "Docker",
+    "backend": "batch",
     "pipelines": ["Test_Docker"],
     "Test_Docker": {
         "image": "rust:1.65.0",
         "actions": ["Run_Tests"],
+        "backend": "docker",
         "Run_Tests": {
             "manual": {
                 "step_1": "rustc --version",

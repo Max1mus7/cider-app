@@ -11,19 +11,22 @@
    5. [language](#language)
    6. [image](#image)
    7. [backend](#backend)
-   8. [output](#output)
-   9. [source](#source)
-   10. [pipelines](#pipelines)
-   11. [actions](#actions)
+   8. [output_directory](#output_directory)
+   9. [source_directory](#source_directory)
+   10. [ignore_directories](#ignore_directories)
+   11. [pipelines](#pipelines)
+   12. [actions](#actions)
 3. **[Pipeline Configuration](#pipeline-configuration)**
    1. [conditions](#conditions)
    2. [actions](#actions-1)
    3. [requires](#requires)
+   4. [ignore_directories](#ignore_directories)
 4. **[Action Configuration](#action-configuration)**
    1. [conditions](#conditions-1)
    2. [retries](#retries)
    3. [allowed_failure](#allowed_failure)
    4. **[manual](#manual)**
+   5. [ignore_directories](#ignore_directories)
 5. **[Examples](#examples)**
 6. **[References](#references)**
 7. **[Additional Notes](#additional-notes)**
@@ -169,34 +172,47 @@ Example:
 
 ***
 
-#### output*
+#### output_directory*
 
 - Specifies the output directory that CIder will place logs into.
-- This supports relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source](#source) setting. These issues will be looked into and resolved in the future.
+- This supports relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source_directory](#source_directory) setting. These issues will be looked into and resolved in the future.
 - Default value is `./dist/cider`
 
 Example:
 
 ```json
 {
-    "output": "./output_logs"
+    "output_directory": "./output_logs"
 }
 ```
 
 ***
 
-#### source*
+#### source_directory*
 
 - Specifies the "root" directory for [Action](#action-configuration) scripts to be executed within.
-- This supports both relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source](#source) setting. These issues will be looked into and resolved in the future.
-- Defaulted to ./src
-- This can also be used if you want to have CIder installed to a different directory from the project you are developing.
+- This supports both relative and absolute paths, but there have been some issues with how CIder handles directories both in the case of this setting and the [source_directory](#source_directory) setting. These issues will be looked into and resolved in the future.
+- Defaulted to ./
+
+
+```json
+{
+    "source_directory": "/home/users/jsmith/dev/project_1/src"
+}
+```
+
+#### ignore_directories*
+
+- An array of directories that should not be copied into a docker image when running with the docker [backend](#backend).
+- This supports both relative and absolute paths but there have been some issues with how CIder handles directories both in the case of this setting and the [source_directory](#source_directory) setting. These issues will be looked into and resolved in the future.
+- This is set to ["./dist", "./targets", "./.github", "./.git", "./metrics"] by default.
+- This setting is not yet implemented!
 
 Example:
 
 ```json
 {
-    "source": "/home/users/jsmith/dev/project_1/src"
+    "ignore_directories": ["./dist", "./targets", "./logs"]
 }
 ```
 
@@ -321,7 +337,7 @@ Example:
 
 ### Overview of Action Configurations
 
-Action configurations are the third-and-final tier of the CIder configuration, with the ability to execute scripts detailed within them. So as to reduce the amount of boilerplate json code used within a configuration file, Actions inherit settings from the two upper tiers (see shared keywords outlined in [Top-Level Configuration](#top-level-configuration)). Action Configurations also hold some action-specific settings.
+Action configurations are the third-and-final tier of the CIder configuration, with the ability to execute scripts detailed within them. Though a single Action may have multiple steps defined within it (see [manual](#manual)), the intent is for every action to take place within the same shell session. So as to reduce the amount of boilerplate json code used within a configuration file, Actions inherit settings from the two upper tiers (see shared keywords outlined in [Top-Level Configuration](#top-level-configuration)). Action Configurations also hold some action-specific settings.
 
 The following information details the different keywords that can be used in a cider configuration file as well as their purposes.
 
@@ -393,7 +409,6 @@ Example:
 ```
 
 ***
-
 
 ## Examples
 

@@ -19,4 +19,6 @@ Dockerfile
 metrics/*
 # Remove config files, create seperate repository(?) for example configurations.
 *.json
+
 !cider_config.json
+
