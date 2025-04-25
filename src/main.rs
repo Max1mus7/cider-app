@@ -68,6 +68,7 @@ fn main() -> std::io::Result<()> {
             get_files_time_elapsed_since_changed(&mut elapsed_times, source_dir, &conf.s_config.get_ignore_dirs())?;
             let checked_time = get_least_time(&elapsed_times);
             if checked_time < recent_file_changed {
+                let conf = json_parser::new_top_level(&filename);
                 recent_file_changed = checked_time;
                 output_file
                     .write_fmt(format_args!("{:#?}", exec_actions(&conf.get_all_actions())))?;
@@ -96,10 +97,10 @@ fn get_least_time(elapsed_times: &HashMap<OsString, Duration>) -> Duration {
     for entry in elapsed_times {
         if entry.1 < &least_time {
             least_time = *entry.1;
-            info!("The file with the newest changes is {:#?} with the last change {:#?} ago",entry.0, entry.1);
+            debug!("The file with the newest changes is {:#?} with the last change {:#?} ago",entry.0, entry.1);
         }
     }
-    info!(
+    debug!(
         "Most recent time in a which a file was changed: {:#?}",
         least_time
     );
@@ -139,7 +140,13 @@ fn get_files_time_elapsed_since_changed<'a>(
                     .unwrap(),
             );
         }
-        if entry.as_ref().unwrap().metadata()?.is_dir() && !ignore_dirs.as_ref().unwrap().contains(&String::from(&entry.as_ref().unwrap().path().as_os_str().to_str().unwrap().to_owned())) {
+        if entry.as_ref().unwrap().metadata()?.is_dir() && match ignore_dirs {
+            Some(ignore_dirs) => !ignore_dirs.contains(&String::from(&entry.as_ref().unwrap().path().as_os_str().to_str().unwrap().to_owned())),
+            None => {
+                panic!("ignore_dirs not set properly. This should have a default value, but this is not getting set. Currently set to: {:#?}. Check debug logs for more info.", ignore_dirs);
+            }
+        }
+        {
             get_files_time_elapsed_since_changed(
                 elapsed_times,
                 entry.as_ref().unwrap().path().as_path(),
